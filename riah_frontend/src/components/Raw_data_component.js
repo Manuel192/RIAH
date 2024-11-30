@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Tabs from './Tabs_component';
 import '../App.css';
 
@@ -19,30 +19,29 @@ function Modal({ onClose, onConfirm }) {
 function Raw_data() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [selectedSessions, setSelectedSessions] = useState(["Sesión 1", "Sesión 2", "Sesión 3"]);
-  const [selectedDataItems, setSelectedDataItems] = useState(["fecha", "frame", "velManoDrch", "velManoIzqrd"]);
-  const [tabs, setTabs] = useState(['Sesión 1', 'Sesión 2', 'Sesión 3']);
+  const [selectedSessions, setSelectedSessions] = useState([]);
+  const [selectedDataItems, setSelectedDataItems] = useState([]);
+  const [tabs, setTabs] = useState([]);
 
-  const sessions = ["Sesión 1", "Sesión 2", "Sesión 3", "Sesión 4", "Sesión 5"];
-  const dataItems = ["fecha", "frame", "velManoDrch", "velManoIzqrd"];
+  const [sessions, setSessions] = useState([]);
+  const [dataItems,setDataItems] = useState([]);
 
-  const [activeTab, setActiveTab] = useState(0);
-
-  const dataSesion1 = [
-    { fecha: '2024-10-25', frame: 'Frame1', velManoDrch: '1.5', velManoIzqrd: '1.2', edit: false },
-    { fecha: '2024-10-25', frame: 'Frame2', velManoDrch: '2.1', velManoIzqrd: '1.8', edit: false },
-    { fecha: '2024-10-25', frame: 'Frame3', velManoDrch: '1.7', velManoIzqrd: '1.5', edit: false },
-  ];
-
-  const dataSesion2 = [
-    { fecha: '2024-10-28', frame: 'Frame1', velManoDrch: '2.5', velManoIzqrd: '1.9', edit: false },
-    { fecha: '2024-10-28', frame: 'Frame2', velManoDrch: '2.3', velManoIzqrd: '1.8', edit: false },
-    { fecha: '2024-10-28', frame: 'Frame3', velManoDrch: '2.2', velManoIzqrd: '1.7', edit: false },
-  ];
-
-  const [data, setData]=useState(dataSesion1)
+  const [activeSession, setActiveSession] = useState([[]]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    loadSessionsRawData();
+  },[]);
+
+  const loadSessionsRawData = async () => {
+    const response = await fetch('/session/loadSessionsRawData?firstDate=2023-06-18&lastDate=2024-06-18');
+    const sessionData = await response.json();
+    for(var i=0;i<sessionData.length;i++){
+      sessionData[i].dataTypes.sort();
+      setSessions(sessions.concat(sessionData[i]));
+    }
+  };
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -53,7 +52,7 @@ function Raw_data() {
   };
 
   const handleConfirm = () => {
-    // Acción de confirmación
+    // Acción de confirmaciónsession
     alert("Confirmado");
     setIsModalOpen(false);
   };
@@ -61,13 +60,18 @@ function Raw_data() {
   const toggleSelection = (item, listType) => {
     if (listType === "sessions") {
       setTabs(prev =>
-        prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
+        prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id]
       );
 
       setSelectedSessions(prev =>
-        prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
+        prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id]
       );
+
+      setDataItems(dataItems.length>0?[]:item.dataTypes);
+      setSelectedDataItems([]);
+      setActiveSession(item);
     } else {
+      console.log(activeSession.frames);
       setSelectedDataItems(prev =>
         prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
       );
@@ -93,19 +97,7 @@ function Raw_data() {
   };
 
   const handleTabChange = (index) => {
-    setActiveTab(index);
-    switch(index){
-      default:
-        setData([]);
-        break;
-      case 0:
-        setData(dataSesion1);
-        break;
-      case 1:
-        setData([]);
-        setData(dataSesion2);
-        break;
-    }
+    setDataItems(sessions.filter(session => session.id===index).dataTypes);
   };
 
   return (
@@ -148,10 +140,10 @@ function Raw_data() {
               {sessions.map((session, index) => (
                 <div
                   key={index}
-                  className={`list-item ${selectedSessions.includes(session) ? "selected" : ""}`}
+                  className={`list-item ${selectedSessions.includes(session.id) ? "selected" : ""}`}
                   onClick={() => toggleSelection(session, "sessions")}
                 >
-                  {session}
+                  {session.id}
                 </div>
                 ))}
             </div>
@@ -159,9 +151,9 @@ function Raw_data() {
           <div className="list-container">
             <h3>DATOS</h3>
             <div className="scrollable-list">
-              {dataItems.map((data, index) => (
+              {dataItems.sort().map((data, index) => (
                 <div
-                  key={index}
+                key={index}
                   className={`list-item ${selectedDataItems.includes(data) ? "selected" : ""}`}
                   onClick={() => toggleSelection(data, "dataItems")}
                 >
@@ -181,42 +173,19 @@ function Raw_data() {
       {selectedSessions.length>0?
         <div className="table-container">
           <table>
-            <thead>
-              <tr className='table-header'>
-              {selectedDataItems.includes("fecha")?
-                <td>FECHA</td>
-              :null}
-              {selectedDataItems.includes("frame")?
-                <td>FRAME</td>
-              :null}
-              {selectedDataItems.includes("velManoDrch")? 
-                <td>VEL. MANO DRCH</td>
-              :null}
-              {selectedDataItems.includes("velManoIzqrd")? 
-                <td>VEL. MANO IZQRD</td>
-              :null}
-                <th>ACCIONES</th>
-              </tr>
+            <thead className='table-header'>
+              {selectedDataItems.map((data)=>
+                  <th>{data}</th>
+              )}
             </thead>
             <tbody>
-              {data.map((row) => (
-                <tr key={row.frame}>
-                  {selectedDataItems.includes("fecha")? 
-                    <td><input type="text" value={row.fecha} className={`input${row.edit?"-edit":""}`}></input></td>
-                  :null}
-                  {selectedDataItems.includes("frame")?
-                    <td>{row.frame}</td>
-                  :null}
-                  {selectedDataItems.includes("velManoDrch")?
-                    <td>{row.velManoDrch}</td>
-                  :null}
-                  {selectedDataItems.includes("velManoIzqrd")?
-                    <td>{row.velManoIzqrd}</td>
-                  :null}
-                  <td>
-                    <button className="action-btn">Editar</button>
-                    <button className="action-btn" onClick={handleOpenModal}>Limpiar</button>
-                  </td>
+              {activeSession.frames.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {Object.keys(row.dataValues).map((data, colIndex) => (
+                    selectedDataItems.includes(data)?
+                    <td key={colIndex}>{row.dataValues[data] || ""}</td>
+                    :""
+                  ))}
                 </tr>
               ))}
             </tbody>
