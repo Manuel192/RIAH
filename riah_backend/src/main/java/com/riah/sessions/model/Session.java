@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "Sessions")
 public class Session {
+	private String _id;
 	private String Date;
     private ArrayList<String> Data;
 
@@ -15,5 +16,9 @@ public class Session {
     
     public String getDate() {
         return Date;
+    }
+    
+    public String getId() {
+        return _id;
     }
 }
