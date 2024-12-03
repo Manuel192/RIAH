@@ -1,6 +1,6 @@
 /* Todo lo común a todas las páginas */
 .App {
-  background: linear-gradient(135deg, white, #d8ffdb);
+  background: linear-gradient(135deg, white, #d8f6ff);
 }
 
 .app {
@@ -13,7 +13,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: #efffef;
+  background-color: #effbff;
 }
 
 .left-section {
@@ -36,7 +36,7 @@
 .nav-button {
   background: transparent;
   border: none;
-  color: #00792c;
+  color: #005779;
   font-size: 1em;
   cursor: pointer;
   padding: 5px 10px;
@@ -44,7 +44,7 @@
 }
 
 .nav-button:hover {
-  color: #00b345;
+  color: #0080b3;
 }
 
 .right-section {
@@ -62,8 +62,8 @@
 
 .sub-banner {
   padding: 10px 20px;
-  background-color: #d8ffdd;
-  color: #003f0c;
+  background-color: #d8f7ff;
+  color: #002b3f;
   font-size: 0.9em;
 }
 
@@ -75,7 +75,7 @@
   display: flex;
   justify-content: flex-start;
   padding: 10px 20px;
-  background-color: #d8ffd8;
+  background-color: #d8f6ff;
 }
 
 .footer-nav {
@@ -86,7 +86,7 @@
 .footer-button {
   background: transparent;
   border: none;
-  color: #00792c;
+  color: #005779;
   font-size: 1em;
   cursor: pointer;
   padding: 5px 10px;
@@ -94,12 +94,12 @@
 }
 
 .footer-button:hover {
-  color: #00b31b;
+  color: #0098b3;
 }
 
 .rights-sub-banner {
   padding: 10px 20px;
-  background-color: #e9efe9;
+  background-color: #e9eeef;
   color: #666666;
   font-size: 0.9em;
   text-align: left;
@@ -167,8 +167,8 @@
 }
 
 .list-item.selected {
-  background-color: #ccffd9;
-  color: #06af0f;
+  background-color: #ccf1ff;
+  color: #0696af;
 }
 
 .scrollable-list::-webkit-scrollbar {
@@ -199,8 +199,8 @@
 }
 
 .tab-button.active {
-  border-bottom: 3px solid #7eff9a;
-  background: #ecfff1;
+  border-bottom: 3px solid #7edaff;
+  background: #ecfdff;
 }
 
 .table-container {
@@ -218,27 +218,29 @@ table {
 .btn-add{
   justify-content: left;
   width: 100%;
+  height: 50px;
+  font-size: 36px;
   background-color: white;
-  border-color: #8effac;
-  color: #8effb0;
+  border-color: #8ee8ff;
+  color: #8edfff;
 }
 
 th, td {
   flex-direction: row;
   padding: 10px;
-  border: 1px solid #8effac;
+  border: 1px solid #8edbff;
   text-align: center;
 }
 
 th, .table-header {
-  background-color: hsl(135, 82%, 40%);
+  background-color: hsl(199, 82%, 40%);
   color: white;
 }
 
 .action-btn {
   margin: 0 5px;
   padding: 5px 10px;
-  background-color: #00c134;
+  background-color: #009ac1;
   color: white;
   border: none;
   border-radius: 4px;
@@ -246,7 +248,7 @@ th, .table-header {
 }
 
 .action-btn:hover {
-  background-color: #56ff75;
+  background-color: #56c1ff;
 }
 
 .input {
@@ -281,7 +283,7 @@ th, .table-header {
 }
 
 .btn.red:hover {
-  background-color: #2cc951;
+  background-color: #c92c2c;
 }
 
 .btn.green {

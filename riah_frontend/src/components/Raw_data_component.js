@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { act, useState } from 'react';
 import Tabs from './Tabs_component';
 import '../App.css';
 
@@ -17,8 +17,8 @@ function Modal({ onClose, onConfirm }) {
 }
 
 function Raw_data() {
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [selectedSessions, setSelectedSessions] = useState([]);
   const [selectedDataItems, setSelectedDataItems] = useState([]);
   const [tabs, setTabs] = useState([]);
@@ -30,17 +30,38 @@ function Raw_data() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    loadSessionsRawData();
-  },[]);
+  const handleSetStartDate = (value) => {
+    if(endDate){
+      if(endDate<value){
+        alert("La fecha de inicio no debe ser posterior a la fecha de fin.");
+        return;
+      }
+      setStartDate(value);
+      loadSessionsRawData(value, endDate);
+    }else
+      setStartDate(value);
+  }
 
-  const loadSessionsRawData = async () => {
-    const response = await fetch('/session/loadSessionsRawData?firstDate=2023-06-18&lastDate=2024-06-18');
+  const handleSetEndDate = (value) => {
+    if(startDate){
+      if(startDate>value){
+        alert("La fecha de inicio no debe ser posterior a la fecha de fin.");
+        return;
+      }
+      setEndDate(value);
+      loadSessionsRawData(startDate, value);
+    }else
+      setEndDate(value);
+  }
+
+  const loadSessionsRawData = async (start,end) => {
+    const url="/session/loadSessionsRawData?firstDate="+start+"&lastDate="+end;
+    const response = await fetch(url);
     const sessionData = await response.json();
-    for(var i=0;i<sessionData.length;i++){
-      sessionData[i].dataTypes.sort();
-      setSessions(sessions.concat(sessionData[i]));
-    }
+    if(sessionData.length>0)
+      setSessions(sessionData);
+    else
+      alert("No hay sesiones para el usuario durante las fechas indicadas.");
   };
 
   const handleOpenModal = () => {
@@ -59,21 +80,26 @@ function Raw_data() {
 
   const toggleSelection = (item, listType) => {
     if (listType === "sessions") {
-      setTabs(prev =>
-        prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id]
-      );
-
+      if(activeSession?.id===item.id){
+        setDataItems([]);
+        setSelectedDataItems([]);
+        setActiveSession();
+      }else if(selectedSessions.length===0){
+        setDataItems(item.dataTypes);
+        setSelectedDataItems([]);
+        setActiveSession(item);
+        console.log(item);
+      }
+      
       setSelectedSessions(prev =>
         prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id]
       );
-
-      setDataItems(dataItems.length>0?[]:item.dataTypes);
-      setSelectedDataItems([]);
-      setActiveSession(item);
+      setTabs(prev =>
+        prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id]
+      );
     } else {
-      console.log(activeSession.frames);
       setSelectedDataItems(prev =>
-        prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
+        prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item].sort()
       );
     }
   };
@@ -97,7 +123,13 @@ function Raw_data() {
   };
 
   const handleTabChange = (index) => {
-    setDataItems(sessions.filter(session => session.id===index).dataTypes);
+    if(index!==activeSession?.id){
+      const item = sessions.filter(i => index ===i.id)[0];
+      setDataItems(item.dataTypes);
+      setSelectedDataItems([]);
+      setActiveSession(item);
+    }
+    console.log(startDate);
   };
 
   return (
@@ -118,7 +150,7 @@ function Raw_data() {
             <input 
               type="date" 
               value={startDate} 
-              onChange={(e) => setStartDate(e.target.value)} 
+              onChange={(e) => handleSetStartDate(e.target.value)} 
               className="date-input" 
             />
           </div>
@@ -127,7 +159,7 @@ function Raw_data() {
             <input 
               type="date" 
               value={endDate} 
-              onChange={(e) => setEndDate(e.target.value)} 
+              onChange={(e) => handleSetEndDate(e.target.value)} 
               className="date-input" 
             />
           </div>
@@ -137,7 +169,7 @@ function Raw_data() {
           <div className="list-container">
             <h3>SESIONES</h3>
             <div className="scrollable-list">
-              {sessions.map((session, index) => (
+              {sessions?.map((session, index) => (
                 <div
                   key={index}
                   className={`list-item ${selectedSessions.includes(session.id) ? "selected" : ""}`}
@@ -151,7 +183,7 @@ function Raw_data() {
           <div className="list-container">
             <h3>DATOS</h3>
             <div className="scrollable-list">
-              {dataItems.sort().map((data, index) => (
+              {dataItems.length>0?dataItems.sort().map((data, index) => (
                 <div
                 key={index}
                   className={`list-item ${selectedDataItems.includes(data) ? "selected" : ""}`}
@@ -159,7 +191,7 @@ function Raw_data() {
                 >
                   {data}
                 </div>
-              ))}
+              )):""}
             </div>
           </div>
         </div>
@@ -174,18 +206,24 @@ function Raw_data() {
         <div className="table-container">
           <table>
             <thead className='table-header'>
-              {selectedDataItems.map((data)=>
+              <th>Id</th>
+              {selectedDataItems?.map((data)=>
                   <th>{data}</th>
               )}
+              <th>Opciones</th>
             </thead>
             <tbody>
-              {activeSession.frames.map((row, rowIndex) => (
+              {activeSession?.frames.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  {Object.keys(row.dataValues).map((data, colIndex) => (
+                  <td>{rowIndex}</td>
+                  {Object.keys(row?.dataValues).sort().map((data, colIndex) => (
                     selectedDataItems.includes(data)?
                     <td key={colIndex}>{row.dataValues[data] || ""}</td>
-                    :""
-                  ))}
+                  :""))}
+                  <td>
+                      <button className="action-btn">Editar</button>
+                      <button className="action-btn" onClick={handleOpenModal}>Limpiar</button>
+                    </td>
                 </tr>
               ))}
             </tbody>

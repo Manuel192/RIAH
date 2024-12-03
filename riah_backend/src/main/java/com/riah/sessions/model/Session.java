@@ -7,15 +7,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "Sessions")
 public class Session {
 	private String _id;
-	private String Date;
-    private ArrayList<String> Data;
+	private String date;
+    private ArrayList<String> data;
 
     public ArrayList<String> getData() {
-        return Data;
+        return data;
     }
     
     public String getDate() {
-        return Date;
+        return date;
     }
     
     public String getId() {
