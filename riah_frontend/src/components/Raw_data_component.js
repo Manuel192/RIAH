@@ -1,4 +1,5 @@
-import React, { act, useState } from 'react';
+import React, { act, useEffect, useState } from 'react';
+import Dropdown from 'react-dropdown';
 import Tabs from './Tabs_component';
 import '../App.css';
 
@@ -19,6 +20,8 @@ function Modal({ onClose, onConfirm }) {
 function Raw_data() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [games, setGames] = useState([]);
+  const [game, setGame] = useState("");
   const [selectedSessions, setSelectedSessions] = useState([]);
   const [selectedDataItems, setSelectedDataItems] = useState([]);
   const [tabs, setTabs] = useState([]);
@@ -26,42 +29,56 @@ function Raw_data() {
   const [sessions, setSessions] = useState([]);
   const [dataItems,setDataItems] = useState([]);
 
-  const [activeSession, setActiveSession] = useState([[]]);
+  const [activeSession, setactiveSession] = useState([]);
+  const [activeSessionData, setactiveSessionData] = useState([[]]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSetStartDate = (value) => {
-    if(endDate){
-      if(endDate<value){
-        alert("La fecha de inicio no debe ser posterior a la fecha de fin.");
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      // get the data from the api
+      const response = await fetch('http://localhost:8081/game/loadGames');
+      if(!response.ok){
+        setGames([]);
+        alert("No pudieron cargarse los juegos para filtrar.");
         return;
       }
-      setStartDate(value);
-      loadSessionsRawData(value, endDate);
-    }else
-      setStartDate(value);
+      // convert data to json
+      const responseData = await response.json();
+      setGames(responseData);;
+    }
+  
+    // call the function
+    fetchGames()
+  }, []);
+
+  const handleSetStartDate = (value) => {
+    setStartDate(value);
   }
 
   const handleSetEndDate = (value) => {
-    if(startDate){
-      if(startDate>value){
-        alert("La fecha de inicio no debe ser posterior a la fecha de fin.");
-        return;
-      }
-      setEndDate(value);
-      loadSessionsRawData(startDate, value);
-    }else
-      setEndDate(value);
+    setEndDate(value);
   }
 
-  const loadSessionsRawData = async (start,end) => {
-    const url="/session/loadSessionsRawData?firstDate="+start+"&lastDate="+end;
+  const loadSessions = async () => {
+    if(startDate>endDate){
+      alert("La fecha de inicio no debe ser posterior a la fecha de fin.");
+      return;
+    }
+    const stDate=startDate?startDate:"X";
+    const lDate=endDate?endDate:"X";
+    const gameId=game?game:"X";
+    const url="http://localhost:8081/session/loadFilteredSessions?firstDate="+stDate+"&lastDate="+lDate+"&gameId="+gameId;
+    console.log(url);
     const response = await fetch(url);
-    const sessionData = await response.json();
-    if(sessionData.length>0)
-      setSessions(sessionData);
-    else
+    if(!response.ok){
+      setSessions([]);
       alert("No hay sesiones para el usuario durante las fechas indicadas.");
+      return;
+    }
+    const sessionData = await response.json();
+    setSessions(sessionData);
   };
 
   const handleOpenModal = () => {
@@ -78,16 +95,23 @@ function Raw_data() {
     setIsModalOpen(false);
   };
 
-  const toggleSelection = (item, listType) => {
+  const toggleSelection = async (item, listType) => {
     if (listType === "sessions") {
-      if(activeSession?.id===item.id){
+      if(activeSessionData?.id===item.id){
         setDataItems([]);
         setSelectedDataItems([]);
-        setActiveSession();
+        setactiveSession();
+        setactiveSessionData();
       }else if(selectedSessions.length===0){
-        setDataItems(item.dataTypes);
+        const sessionData=await obtainRawData(item);
+        if(!sessionData){
+          alert("No hay datos para esta sesión.");
+          return;
+        }
+        setDataItems(sessionData.dataTypes);
         setSelectedDataItems([]);
-        setActiveSession(item);
+        setactiveSession(item);
+        setactiveSessionData(sessionData);
         console.log(item);
       }
       
@@ -104,33 +128,40 @@ function Raw_data() {
     }
   };
 
-  const handleStartDateClick = () => {
-    // Código para abrir un selector de fecha (puedes usar un DatePicker de una librería externa)
-    setStartDate(new Date().toLocaleDateString());
-  };
+  const obtainRawData = async (item) => {
+    const url="http://localhost:9000/rawDataSession/loadSessionRawData?id="+item.id;
+      console.log(url);
+      const response = await fetch(url);
+      if(!response.ok){
+        return null;
+      }
+      const sessionData = await response.json();
+      return sessionData;
+  }
 
-  const handleEndDateClick = () => {
-    // Código para abrir un selector de fecha (puedes usar un DatePicker de una librería externa)
-    setEndDate(new Date().toLocaleDateString());
-  };
-
-  const handleLimpiarSesion = () => {
-    console.log("Sesión limpiada");
-  };
-
-  const handleExportar = () => {
+  const handleExport = () => {
     console.log("Datos exportados");
   };
 
-  const handleTabChange = (index) => {
-    if(index!==activeSession?.id){
+  const handleTabChange = async (index) => {
+    if(index!==activeSessionData?.id){
       const item = sessions.filter(i => index ===i.id)[0];
-      setDataItems(item.dataTypes);
+      const sessionData=await obtainRawData(item);
+      if(!sessionData){
+        alert("No hay datos para esta sesión.");
+        return;
+      }
+      setDataItems(sessionData.dataTypes);
       setSelectedDataItems([]);
-      setActiveSession(item);
+      setactiveSession(item);
+      setactiveSessionData(sessionData);
     }
     console.log(startDate);
   };
+
+  const handleGameChanged = (event) =>{
+    setGame(event.target.value);
+  }
 
   return (
     <div>
@@ -144,6 +175,7 @@ function Raw_data() {
     <div className="app">
 
     <div className="filter-section">
+    <h3>FILTROS</h3>
         <div className="date-fields">
           <div className="date-field">
             <span>FECHA INICIO</span>
@@ -163,6 +195,18 @@ function Raw_data() {
               className="date-input" 
             />
           </div>
+          <div className="date-field">
+            <span>JUEGO</span>
+            <select id="dropdown" value={game} onChange={handleGameChanged}>
+              <option value="">Ninguno</option>
+              {games?.map((option, index) => (
+                <option key={index} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button className="btn search " onClick={loadSessions}>Buscar</button>
         </div>
 
         <div className="list-sections">
@@ -176,6 +220,8 @@ function Raw_data() {
                   onClick={() => toggleSelection(session, "sessions")}
                 >
                   {session.id}
+                  <label className="secondary-txt">{session.date}</label>
+                  <label className="secondary-txt">{session.game}</label>
                 </div>
                 ))}
             </div>
@@ -183,7 +229,7 @@ function Raw_data() {
           <div className="list-container">
             <h3>DATOS</h3>
             <div className="scrollable-list">
-              {dataItems.length>0?dataItems.sort().map((data, index) => (
+              {dataItems?.length>0?dataItems.sort().map((data, index) => (
                 <div
                 key={index}
                   className={`list-item ${selectedDataItems.includes(data) ? "selected" : ""}`}
@@ -202,7 +248,7 @@ function Raw_data() {
 
       
       <Tabs tabs={tabs} onTabChange={handleTabChange} />
-      {selectedSessions.length>0?
+      {selectedSessions?.length>0?
         <div className="table-container">
           <table>
             <thead className='table-header'>
@@ -210,33 +256,25 @@ function Raw_data() {
               {selectedDataItems?.map((data)=>
                   <th>{data}</th>
               )}
-              <th>Opciones</th>
             </thead>
             <tbody>
-              {activeSession?.frames.map((row, rowIndex) => (
+              {activeSessionData?.frames.map((row, rowIndex) => (
                 <tr key={rowIndex}>
                   <td>{rowIndex}</td>
                   {Object.keys(row?.dataValues).sort().map((data, colIndex) => (
                     selectedDataItems.includes(data)?
                     <td key={colIndex}>{row.dataValues[data] || ""}</td>
                   :""))}
-                  <td>
-                      <button className="action-btn">Editar</button>
-                      <button className="action-btn" onClick={handleOpenModal}>Limpiar</button>
-                    </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <button className="btn-add">
-              + 
-            </button>
         </div>
         :null}
-      {selectedSessions.length>0?
+      {selectedSessions?.length>0?
       <div className="button-bar">
         <button className="btn red" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>
-        <button className="btn green" onClick={handleExportar}>EXPORTAR</button>
+        <button className="btn green" onClick={handleExport}>EXPORTAR</button>
       </div>
       :null}
     </div>
