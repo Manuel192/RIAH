@@ -29,6 +29,10 @@ function Patients_list() {
     navigate('/create-session', { state: {user:"cb7c8009-b7c0-11ef-bbaf-e4e749429566"}})
   }
 
+  const handleEvolution = () => {
+    navigate('/evolution');
+  }
+
   return (
     <>
     <div className="sub-banner">
@@ -68,7 +72,7 @@ function Patients_list() {
           <>
             <h2>{selectedPatient}</h2>
             <button className="button-aniadir-sesion" onClick={handleCreateSession}>Añadir sesión</button>
-            <button className="button-evolucion">Evolución</button>
+            <button className="button-evolucion" onClick={handleEvolution}>Evolución</button>
             <button className="button-gestionar-datos" onClick={handleRawData}>Gestionar datos</button>
           </>
         ) : (

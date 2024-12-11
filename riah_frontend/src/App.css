@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Todo lo común a todas las páginas */
 .App {
   background: linear-gradient(135deg, white, #d8f6ff);
@@ -518,7 +522,7 @@ select:focus {
 /* Dropdown */
 .dropdown {
   width: 100%;
-  padding: 10px;
+  padding: 10px 30px 10px 10px;
   margin-top: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -576,4 +580,67 @@ select:focus {
 
 .boton-crear-sesion:hover {
   background-color: #218838;
+}
+
+
+/* Contenedor principal */
+.usuario-detalle-container {
+  width: 80%;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+/* Título */
+.titulo {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Contenedor de secciones */
+.contenedor-secciones {
+  display: flex;
+  justify-content: space-between;
+  gap: 100px;
+}
+
+/* Sección izquierda */
+.seccion-izquierda {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+/* Campo */
+.campo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.campo h3 {
+  margin-bottom: 10px;
+}
+
+/* Sección derecha */
+.seccion-derecha {
+  flex: 2;
+}
+
+/* Card Tremor */
+.tremor-Card {
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Title Tremor */
+.tremor-Title {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #333;
 }
