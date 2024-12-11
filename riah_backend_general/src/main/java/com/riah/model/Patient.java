@@ -7,6 +7,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -20,6 +24,27 @@ public class Patient {
 
     @Column(name = "name", nullable = false)
     private String name;
+    
+    @ManyToOne
+    @JoinColumn(name = "hospital_id", nullable = false)
+    private Hospital hospital;
+    
+
+	public Patient(UUID id) {
+		this.id=id;
+	}
+	
+	public Patient() {
+		
+	}
+
+	public Hospital getHospital() {
+		return hospital;
+	}
+
+	public void setHospital(Hospital hospital) {
+		this.hospital = hospital;
+	}
 
 	public UUID getId() {
 		return id;

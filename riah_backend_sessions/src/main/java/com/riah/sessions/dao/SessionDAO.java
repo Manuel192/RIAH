@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import com.riah.sessions.model.Session;
+import com.riah.sessions.model.SessionInsert;
 
 @Repository
 public class SessionDAO {
@@ -26,5 +27,9 @@ public class SessionDAO {
 	public Session loadSessionRawData(UUID id) {
 		Query query = new Query(Criteria.where("ID").is(id.toString()));
 		return mongoTemplate.findOne(query, Session.class);
+	}
+
+	public void insertSession(SessionInsert sessionToInsert) {
+		mongoTemplate.save(sessionToInsert);
 	}
 }

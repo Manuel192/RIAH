@@ -20,9 +20,6 @@ public class SessionDTO{
 	@JsonProperty("game")
 	private String game;
 	
-	@JsonProperty("hospital")
-	private String hospital;
-	
 	@JsonProperty("patient")
     private String patient;
 
@@ -48,14 +45,6 @@ public class SessionDTO{
 
 	public void setGame(String game) {
 		this.game = game;
-	}
-
-	public String getHospital() {
-		return hospital;
-	}
-
-	public void setHospital(String hospital) {
-		this.hospital = hospital;
 	}
 
 	public String getPatient() {

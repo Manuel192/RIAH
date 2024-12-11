@@ -10,10 +10,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,4 +73,11 @@ public class SessionController {
     	else
     		return ResponseEntity.ofNullable(null);
     }
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@PostMapping("/insertSession")
+	public ResponseEntity<String> insertSession(@RequestBody String session){
+		String id=sessionService.insertSession(session);
+		return ResponseEntity.ok(id); 
+	}
 }

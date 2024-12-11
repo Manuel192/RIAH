@@ -9,6 +9,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -42,7 +45,6 @@ public class SessionService {
             sessionDTO.setId(session.getId());
             sessionDTO.setDate(session.getDate());
             sessionDTO.setPatient(session.getPatient().getName());
-            sessionDTO.setHospital(session.getHospital().getName());
             sessionDTO.setGame(session.getGame().getName());
             return sessionDTO;
         }).collect(Collectors.toList());
@@ -65,5 +67,24 @@ public class SessionService {
 		
 		List<SessionDTO> parsedSessions= mapSessions(sessions);
 		return parsedSessions;
+	}
+
+	public String insertSession(String session) {
+		JSONObject json = new JSONObject(session);
+		UUID gameId=UUID.fromString(json.getString("game"));
+		UUID patientId=UUID.fromString(json.getString("patient"));
+		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
+		System.out.print(session);
+		String dateString=json.getString("date");
+		Date date=null;
+		try {
+			date = sdf.parse(dateString);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Session sessionToInsert=new Session(gameId,patientId,date);
+		Session savedSession=sessionDAO.save(sessionToInsert);
+		return savedSession.getId().toString();
 	}
 }

@@ -1,5 +1,5 @@
 import React, { act, useEffect, useState } from 'react';
-import Dropdown from 'react-dropdown';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Tabs from './Tabs_component';
 import '../App.css';
 
@@ -18,6 +18,9 @@ function Modal({ onClose, onConfirm }) {
 }
 
 function Raw_data() {
+  const navigate=useNavigate();
+  const location=useLocation();
+  const {user}=location.state;
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [games, setGames] = useState([]);
@@ -37,16 +40,19 @@ function Raw_data() {
 
   useEffect(() => {
     const fetchGames = async () => {
-      // get the data from the api
-      const response = await fetch('http://localhost:8081/game/loadGames');
-      if(!response.ok){
-        setGames([]);
-        alert("No pudieron cargarse los juegos para filtrar.");
-        return;
-      }
-      // convert data to json
-      const responseData = await response.json();
-      setGames(responseData);;
+        try{
+            const response = await fetch('http://localhost:8081/game/loadGames');
+            if(!response.ok){
+                setGames([]);
+                alert("No pudieron cargarse los juegos para filtrar.");
+                return;
+            }
+            // convert data to json
+            const responseData = await response.json();
+            setGames(responseData);
+        }catch(error){
+            alert("La web no funciona por el momento. Inténtelo más tarde.")
+        }
     }
   
     // call the function
@@ -69,16 +75,20 @@ function Raw_data() {
     const stDate=startDate?startDate:"X";
     const lDate=endDate?endDate:"X";
     const gameId=game?game:"X";
-    const url="http://localhost:8081/session/loadFilteredSessions?firstDate="+stDate+"&lastDate="+lDate+"&gameId="+gameId;
-    console.log(url);
-    const response = await fetch(url);
-    if(!response.ok){
-      setSessions([]);
-      alert("No hay sesiones para el usuario durante las fechas indicadas.");
-      return;
+    try{
+      const url="http://localhost:8081/session/loadFilteredSessions?firstDate="+stDate+"&lastDate="+lDate+"&gameId="+gameId;
+      console.log(url);
+      const response = await fetch(url);
+      if(!response.ok){
+        setSessions([]);
+        alert("No hay sesiones para el usuario durante las fechas indicadas.");
+        return;
+      }
+      const sessionData = await response.json();
+      setSessions(sessionData);
+    }catch(error){
+      alert("La web no funciona por el momento. Inténtelo más tarde.")
     }
-    const sessionData = await response.json();
-    setSessions(sessionData);
   };
 
   const handleOpenModal = () => {
@@ -163,17 +173,20 @@ function Raw_data() {
     setGame(event.target.value);
   }
 
+  const handlePatientList = () => {
+    navigate('/')
+  }
+
   return (
     <div>
     <div className="sub-banner">
       <button className="nav-button">Home</button> &gt; 
       <button className="nav-button">Mi portal</button> &gt; 
-      <button className="nav-button">Listado de pacientes</button> &gt;
-      <button className="nav-button">Evolución</button> &gt;
-      Gestión de sesiones
+      <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
+      Gestión de sesiones - Juan Pérez
     </div>
     <div className="app">
-
+    <h1>Juan Pérez</h1>
     <div className="filter-section">
     <h3>FILTROS</h3>
         <div className="date-fields">
@@ -197,7 +210,7 @@ function Raw_data() {
           </div>
           <div className="date-field">
             <span>JUEGO</span>
-            <select id="dropdown" value={game} onChange={handleGameChanged}>
+            <select id="dropdown" className='date-input' value={game} onChange={handleGameChanged}>
               <option value="">Ninguno</option>
               {games?.map((option, index) => (
                 <option key={index} value={option.id}>
@@ -257,7 +270,7 @@ function Raw_data() {
                   <th>{data}</th>
               )}
             </thead>
-            <tbody>
+            <tbody className='table-body'>
               {activeSessionData?.frames.map((row, rowIndex) => (
                 <tr key={rowIndex}>
                   <td>{rowIndex}</td>

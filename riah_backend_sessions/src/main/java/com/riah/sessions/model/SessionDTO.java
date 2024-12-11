@@ -6,11 +6,11 @@ import java.util.Set;
 import java.util.UUID;
 
 public class SessionDTO{
-	private UUID ID;
+	private String ID;
 	private Set<String> dataTypes;
     private ArrayList<Frame> frames;
     
-    public SessionDTO(UUID id) {
+    public SessionDTO(String id) {
     	this.ID=id;
     	this.frames= new ArrayList<Frame>();
     	this.dataTypes=new HashSet<String>();
@@ -24,14 +24,15 @@ public class SessionDTO{
     }
     
     public void addDataType(String dataName) {
-    	dataTypes.add(dataName);
+    	if(!dataName.isBlank())
+    		dataTypes.add(dataName);
     }
     
     public void addFrame(Frame frame) {
     	frames.add(frame);
     }
     
-    public UUID getId() {
+    public String getId() {
         return ID;
     }
     

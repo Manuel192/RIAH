@@ -1,5 +1,8 @@
 import './App.css';
+import Create_session from './components/Create_session_component';
+import Patients_list from './components/Patients_list_component';
 import Raw_data from "./components/Raw_data_component"
+import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
 function App() {
   
@@ -17,7 +20,13 @@ function App() {
           <img src={require('./media/RIAH_profile.png')} alt="Profile" className="profile-pic" />
         </div>
       </header>
-      <Raw_data></Raw_data>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Patients_list />} />
+          <Route path="/raw-data" element={<Raw_data />} />
+          <Route path="/create-session" element={<Create_session />} />
+        </Routes>
+      </Router>
       <footer className="footer">
         <div className="footer-nav">
           <button className="footer-button">Sobre nosotros</button>
@@ -29,6 +38,7 @@ function App() {
         &copy; 2024 Grupo AIR - Todos los derechos reservados
       </div>
     </div>
+
   );
 }
 

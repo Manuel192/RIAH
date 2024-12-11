@@ -8,12 +8,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.riah.sessions.dao.SessionDAO;
 import com.riah.sessions.model.Frame;
 import com.riah.sessions.model.Session;
+import com.riah.sessions.model.SessionInsert;
 import com.riah.sessions.model.SessionDTO;
 
 @Service
@@ -48,6 +51,15 @@ public class SessionService {
 			parsedSession.addFrame(frame);
 		}
 		return parsedSession;
+	}
+
+	public boolean insertSession(String session) {
+		JSONObject json = new JSONObject(session);
+		ArrayList<String> parsedFrames=new ArrayList<>();
+		JSONArray frames=json.getJSONArray("frames");
+		SessionInsert sessionToInsert=new SessionInsert(json.getString("id"),frames.toList());
+		sessionDAO.insertSession(sessionToInsert);
+		return true;
 	}
 	
 }

@@ -11,7 +11,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -27,18 +29,29 @@ public class Session {
     @Column(name = "date", nullable = false)
     private Date date;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    @OneToOne
-    @JoinColumn(name = "hospital_id", nullable = false)
-    private Hospital hospital;
-
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "game_id", nullable = false)
     private Game game;
-
+    
+    public Session(UUID id, Date date, Patient patient) {
+    	this.id=id;
+    	this.date=date;
+    	this.patient=patient;
+    }
+    
+    public Session(UUID game, UUID patient, Date date) {
+    	this.game=new Game(game);
+    	this.date=date;
+    	this.patient=new Patient(patient);
+    }
+    
+    public Session() {
+    	
+    }
  
     public UUID getId() {
 		return id;
@@ -62,14 +75,6 @@ public class Session {
 
 	public void setPatient(Patient patient) {
 		this.patient = patient;
-	}
-
-	public Hospital getHospital() {
-		return hospital;
-	}
-
-	public void setHospital(Hospital hospital) {
-		this.hospital = hospital;
 	}
 
 	public Game getGame() {
