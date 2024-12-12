@@ -97,10 +97,6 @@ const Evolution = () => {
         for(var i=0;i<optionToObtain.sessions.length;i++){
           await graphSet.push({"session":optionToObtain.sessions[i],"value":Math.round(responseData[optionToObtain.sessions[i]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
         }
-        await graphSet.sort((a,b) => {
-          return a.tiempo <
-              b.tiempo
-      });
         setGraphData(graphSet);
         console.log(graphSet);
     }catch(error){
@@ -153,6 +149,7 @@ const Evolution = () => {
                 categories={["value"]}
                 onValueChange={(v) => console.log(v)}
                 xLabel="Time"
+                valueFormatter={(value, index) => `${value}m/s`}
                 yLabel="Velocity"
                 fill="solid"
                 showLegend={false}
@@ -168,6 +165,7 @@ const Evolution = () => {
                 xLabel="Time"
                 yLabel="Velocity"
                 categories={['value']}
+                valueFormatter={(value, index) => `${value}m/s`}
                 showLegend={false}
                 showXAxis={true}
                 tooltip={({ index }) => <CustomTooltip index={index} />}

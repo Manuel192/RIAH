@@ -3,6 +3,8 @@ package com.riah.services;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -104,6 +106,12 @@ public class SessionService {
 	public List<String> getSessionsByGame(UUID gameId) {
 		Game game=new Game(gameId);
 		List<Session> sessions= sessionDAO.findByGame(game);
+		sessions.sort(new Comparator<Session>() {
+			@Override
+			public int compare(Session o1, Session o2) {
+				return o1.getDate().compareTo(o2.getDate());
+			}
+		});
 		List<String> result=new ArrayList<>();
 		for(int i=0;i<sessions.size();i++) {
 			result.add(sessions.get(i).getId().toString());

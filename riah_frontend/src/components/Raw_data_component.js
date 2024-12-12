@@ -68,6 +68,11 @@ function Raw_data() {
   }
 
   const loadSessions = async () => {
+    if((startDate&&!endDate) || (!startDate&&endDate)){
+      alert("Ha indicado únicamente un campo de fecha. Para filtrar por fecha, debe marcar ambos.");
+      return;
+    }
+
     if(startDate>endDate){
       alert("La fecha de inicio no debe ser posterior a la fecha de fin.");
       return;

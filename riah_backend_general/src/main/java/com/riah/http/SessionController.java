@@ -59,13 +59,13 @@ public class SessionController {
 		if(!gameId.equals("X")) {
 			sessionsGame=sessionService.loadGameFilteredSessions(gameId);
 		}
-		if(sessionsDate.isEmpty()) {
+		if(firstDate.equals("X") || firstDate.equals("X")) {
 			if(!sessionsGame.isEmpty())
 				return ResponseEntity.ok(sessionsGame);
 	    	else
 	    		return ResponseEntity.ofNullable(null);
 		}
-		if(sessionsGame.isEmpty()) 
+		if(gameId.equals("X")) 
 			return ResponseEntity.ok(sessionsDate);
 		sessionsDate.retainAll(sessionsGame);
 		if(!sessionsDate.isEmpty())
