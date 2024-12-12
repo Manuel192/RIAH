@@ -77,7 +77,7 @@ function Create_session() {
                 body: JSON.stringify({ id: sessionId, frames: importedData }),
             });
 
-            alert("Se ha creado la sesión correctamnte");
+            alert("Se ha creado la sesión correctamente");
             navigate('/')
 
 
@@ -88,22 +88,26 @@ function Create_session() {
   
     const handleGameChanged = (event) =>{
         setSelectedGame(event.target.value);
-        console.log(event.target.value);
     }
 
     const handleSetselectedDate = (value) => {
         setselectedDate(value);
     }   
 
+    const handlePatientList = () => {
+        navigate('/')
+      }
+
     return (
     <>
         <div className="sub-banner">
             <button className="nav-button">Home</button> &gt; 
             <button className="nav-button">Mi portal</button> &gt; 
-            Listado de pacientes
+            <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
+            Nueva sesión - Juan Pérez
         </div>
         <div class="app">
-            <h1 className="titulo">Nueva sesión</h1>
+            <h1 className="titulo">Nueva sesión - Juan Pérez</h1>
     
             <hr className="linea-delimitadora" />
             <div>

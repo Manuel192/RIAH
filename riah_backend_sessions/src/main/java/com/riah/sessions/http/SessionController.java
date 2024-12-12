@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -54,5 +56,20 @@ public class SessionController {
 	public ResponseEntity<String> insertSession (@RequestBody String session){
 		sessionService.insertSession(session);
 		return ResponseEntity.ok("Session created successfully!");
+	}
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@PutMapping("/calculateData")
+	public ResponseEntity<Map<UUID, Double>> calculateData (@RequestParam String operation,@RequestParam String parameter1, @RequestParam Optional<String> parameter2,  @RequestBody List<String> sessions) throws ParseException{
+		switch(operation) {
+		case "Mean":
+			Map<UUID,Double> sessionsMeans=sessionService.calculateMeans(parameter1,sessions);
+			return ResponseEntity.ok(sessionsMeans);
+		case "Difference":
+			Map<UUID,Double> sessionsDifferences=sessionService.calculateDifferences(parameter1, parameter2.get(), sessions);
+			return ResponseEntity.ok(sessionsDifferences);
+		default:
+			return ResponseEntity.ofNullable(null);
+		}
 	}
 } 

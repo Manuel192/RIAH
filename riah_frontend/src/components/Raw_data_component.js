@@ -186,8 +186,8 @@ function Raw_data() {
       Gestión de sesiones - Juan Pérez
     </div>
     <div className="app">
-    <h1>Juan Pérez</h1>
-    <div className="filter-section">
+    <h1>Gestión de sesiones - Juan Pérez</h1>
+    <hr className="linea-delimitadora" />
     <h3>FILTROS</h3>
         <div className="date-fields">
           <div className="date-field">
@@ -221,7 +221,7 @@ function Raw_data() {
           </div>
           <button className="btn search " onClick={loadSessions}>Buscar</button>
         </div>
-
+        <hr className="linea-delimitadora" />
         <div className="list-sections">
           <div className="list-container">
             <h3>SESIONES</h3>
@@ -254,7 +254,6 @@ function Raw_data() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Modal para confirmar */}
       {isModalOpen && <Modal onClose={handleCloseModal} onConfirm={handleConfirm} />}

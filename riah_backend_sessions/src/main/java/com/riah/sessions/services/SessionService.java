@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.json.JSONArray;
@@ -60,6 +61,42 @@ public class SessionService {
 		SessionInsert sessionToInsert=new SessionInsert(json.getString("id"),frames.toList());
 		sessionDAO.insertSession(sessionToInsert);
 		return true;
+	}
+
+	public Map<UUID, Double> calculateMeans(String parameter1, List<String> sessions) throws ParseException {
+		Map<UUID, Double> means=new HashMap<>();
+		for(int i=0;i<sessions.size();i++) {
+			List<Double> values= new ArrayList<>();
+			SessionDTO session=loadSessionRawData(UUID.fromString(sessions.get(i)));
+			List<Frame> sessionFrames=session.getFrames();
+			for(int j=0;j<sessionFrames.size();j++) {
+				values.add(Math.abs(Double.parseDouble(sessionFrames.get(j).getDataValues().get(parameter1))));
+			}
+			Double mean=values.stream()
+	                .mapToDouble(a -> a)
+	                .average().getAsDouble();
+			means.put(UUID.fromString(sessions.get(i)), mean);
+		}
+		return means;
+	}
+
+	public Map<UUID, Double> calculateDifferences(String parameter1, String parameter2, List<String> sessions) throws ParseException {
+		Map<UUID, Double> differences=new HashMap<>();
+		for(int i=0;i<sessions.size();i++) {
+			List<Double> values= new ArrayList<>();
+			SessionDTO session=loadSessionRawData(UUID.fromString(sessions.get(i)));
+			List<Frame> sessionFrames=session.getFrames();
+			for(int j=0;j<sessionFrames.size();j++) {
+				Double param1=Double.parseDouble(sessionFrames.get(j).getDataValues().get(parameter1));
+				Double param2=Double.parseDouble(sessionFrames.get(j).getDataValues().get(parameter2));
+				values.add(Math.abs(param1-param2));
+			}
+			Double difference=values.stream()
+	                .mapToDouble(a -> a)
+	                .average().getAsDouble();
+			differences.put(UUID.fromString(sessions.get(i)), difference);
+		}
+		return differences;
 	}
 	
 }

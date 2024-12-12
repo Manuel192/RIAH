@@ -4,7 +4,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -86,5 +88,26 @@ public class SessionService {
 		Session sessionToInsert=new Session(gameId,patientId,date);
 		Session savedSession=sessionDAO.save(sessionToInsert);
 		return savedSession.getId().toString();
+	}
+
+	public Map<String,Date> getSessionDatesByGame(UUID gameId) {
+		Game game=new Game(gameId);
+		List<Session> sessions= sessionDAO.findByGame(game);
+		Map<String,Date> result=new HashMap<>();
+		for(int i=0;i<sessions.size();i++) {
+			Session session=sessions.get(i);
+			result.put(session.getId().toString(), session.getDate());
+		}
+		return result;
+	}
+	
+	public List<String> getSessionsByGame(UUID gameId) {
+		Game game=new Game(gameId);
+		List<Session> sessions= sessionDAO.findByGame(game);
+		List<String> result=new ArrayList<>();
+		for(int i=0;i<sessions.size();i++) {
+			result.add(sessions.get(i).getId().toString());
+		}
+		return result;
 	}
 }

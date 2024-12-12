@@ -1,6 +1,7 @@
 import React, { act, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
+import { height } from '@mui/system';
 
 function Patients_list() {
   // Estado para la búsqueda y la selección
@@ -41,10 +42,11 @@ function Patients_list() {
       Listado de pacientes
     </div>
     <div div class="app">
+    <h1>Listado de pacientes</h1>
+    <hr className="linea-delimitadora" />
     <div className="listado-pacientes-container">
       {/* Margen izquierdo */}
       <div className="listado-pacientes-left">
-        <h1>Listado de pacientes</h1>
         <input
           type="text"
           placeholder="Buscar paciente..."
@@ -70,13 +72,13 @@ function Patients_list() {
       <div className="listado-pacientes-right">
         {selectedPatient ? (
           <>
-            <h2>{selectedPatient}</h2>
+            <h3>{selectedPatient}</h3>
             <button className="button-aniadir-sesion" onClick={handleCreateSession}>Añadir sesión</button>
             <button className="button-evolucion" onClick={handleEvolution}>Evolución</button>
-            <button className="button-gestionar-datos" onClick={handleRawData}>Gestionar datos</button>
+            <button className="button-gestionar-datos" onClick={handleRawData}>Gestionar sesiones</button>
           </>
         ) : (
-          <p>Selecciona un paciente de la lista</p>
+          <p style={{height:"150px", alignContent:"center"}}>Selecciona un paciente de la lista</p>
         )}
       </div>
     </div>
