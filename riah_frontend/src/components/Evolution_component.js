@@ -1,11 +1,12 @@
 "use client"
 import React, { useState, useEffect } from "react";
 import { AreaChart, BarChart, Card, Title } from "@tremor/react";
-import "../App.css"; // Archivo CSS separado
 import { useNavigate, useLocation } from "react-router-dom";
-import { isDisabled } from "@testing-library/user-event/dist/utils";
+import { ResponsiveContainer } from "recharts";
+import { Tooltip } from "@mui/material";
+import "../App.css"; // Archivo CSS separado
 
-const UsuarioDetalle = () => {
+const Evolution = () => {
   const navigate=useNavigate();
   const [selectedGraph, setSelectedGraph] = useState("G. Lineal");
   const [selectedGame, setSelectedGame] = useState("");
@@ -14,10 +15,21 @@ const UsuarioDetalle = () => {
   const [games, setGames] = useState([]);
   const [dataOptions, setDataOptions] = useState([]);
   const [graphData, setGraphData] = useState([
-    { tiempo: "Ene", "m/s": 10 },
-    { tiempo: "Feb", "m/s": 20 },
-    { tiempo: "Mar", "m/s": 30 },
+    { session: "1", date: "Ene", value: 10 },
+    { session: "2", date: "Feb", value: 20 },
+    { session: "3", date: "Mar", value: 30 },
   ]);
+
+  const CustomTooltip = ({ index }) => {
+    const dataPoint = graphData[index];
+    return (
+      <div className="custom-tooltip">
+        <p><strong>ID:</strong> {dataPoint.session}</p>
+        <p><strong>Fecha:</strong> {dataPoint.date}</p>
+        <p><strong>Velocidad:</strong> {dataPoint.value}</p>
+      </div>
+    );
+  };
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -83,13 +95,14 @@ const UsuarioDetalle = () => {
         const responseData = await response.json();
         const graphSet = [];
         for(var i=0;i<optionToObtain.sessions.length;i++){
-          await graphSet.push({"session":optionToObtain.sessions[i],"m/s":responseData[optionToObtain.sessions[i]], "tiempo":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
+          await graphSet.push({"session":optionToObtain.sessions[i],"value":Math.round(responseData[optionToObtain.sessions[i]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
         }
         await graphSet.sort((a,b) => {
           return a.tiempo <
               b.tiempo
       });
         setGraphData(graphSet);
+        console.log(graphSet);
     }catch(error){
         alert("La web no funciona por el momento. Inténtelo más tarde.")
         console.log(error);
@@ -136,29 +149,30 @@ const UsuarioDetalle = () => {
                 <AreaChart
                 className="h-80"
                 data={graphData}
-                index="tiempo"
-                categories={["m/s"]}
+                index="date"
+                categories={["value"]}
                 onValueChange={(v) => console.log(v)}
-                valueFormatter={(number) =>
-                    `${number.toString()}`
-                  }
                 xLabel="Time"
                 yLabel="Velocity"
                 fill="solid"
                 showLegend={false}
                 showXAxis={true}
-              />
+                tooltip={({ index }) => <CustomTooltip index={index} />}
+              >
+              </AreaChart>
             ) : (
-                <BarChart
-                className="mt-12 hidden h-72 sm:block"
+                  <BarChart
+                  className="mt-12 hidden h-72 sm:block"
                 data={graphData}
-                index="tiempo"
+                index="date"
                 xLabel="Time"
                 yLabel="Velocity"
-                categories={['m/s']}
+                categories={['value']}
                 showLegend={false}
                 showXAxis={true}
-              />  
+                tooltip={({ index }) => <CustomTooltip index={index} />}
+                >
+              </BarChart>
             )}
           </Card>
         {/* Sección Inferior */}
@@ -208,4 +222,4 @@ const UsuarioDetalle = () => {
   );
 };
 
-export default UsuarioDetalle;
+export default Evolution;
