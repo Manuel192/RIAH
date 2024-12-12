@@ -37,6 +37,23 @@ function Raw_data() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const exportDataToTxt = async () => {
+    var dataString = "ID: "+activeSession.id+"\nPatient: "+activeSession.patient+"\nDate: "+activeSession.date+"\nGame: "+activeSession.game;
+    for(var i=0;i<activeSessionData.frames.length;i++){
+      dataString+="\n\nFRAME "+i+"\n";
+      for(var j=0; j<selectedDataItems.length;j++){
+        dataString+="\n"+selectedDataItems[j]+": "+
+        activeSessionData.frames[i].dataValues[selectedDataItems[j]];
+      }
+    }
+    const blob = new Blob([dataString], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = activeSession.id;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -128,6 +145,7 @@ function Raw_data() {
         setactiveSession(item);
         setactiveSessionData(sessionData);
         console.log(item);
+        console.log(sessionData);
       }
       
       setSelectedSessions(prev =>
@@ -154,10 +172,6 @@ function Raw_data() {
       return sessionData;
   }
 
-  const handleExport = () => {
-    console.log("Datos exportados");
-  };
-
   const handleTabChange = async (index) => {
     if(index!==activeSessionData?.id){
       const item = sessions.filter(i => index ===i.id)[0];
@@ -169,6 +183,7 @@ function Raw_data() {
       setDataItems(sessionData.dataTypes);
       setSelectedDataItems([]);
       setactiveSession(item);
+      console.log(item);
       setactiveSessionData(sessionData);
     }
     console.log(startDate);
@@ -291,7 +306,7 @@ function Raw_data() {
       {selectedSessions?.length>0?
       <div className="button-bar">
         <button className="btn red" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>
-        <button className="btn green" onClick={handleExport}>EXPORTAR</button>
+        <button className="btn green" onClick={exportDataToTxt}>EXPORTAR</button>
       </div>
       :null}
     </div>
