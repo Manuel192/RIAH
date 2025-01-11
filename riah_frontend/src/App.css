@@ -1,11 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Todo lo común a todas las páginas */
 .App {
-  background: linear-gradient(135deg, white, #d8ffdb);
+  background: linear-gradient(135deg, white, #d8f6ff);
 }
 
 .app {
   font-family: Arial, sans-serif;
   padding: 40px;
+  min-height: 700px;
 }
 
 .header {
@@ -13,7 +18,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: #efffef;
+  background-color: #effbff;
 }
 
 .left-section {
@@ -36,7 +41,7 @@
 .nav-button {
   background: transparent;
   border: none;
-  color: #00792c;
+  color: #005779;
   font-size: 1em;
   cursor: pointer;
   padding: 5px 10px;
@@ -44,7 +49,7 @@
 }
 
 .nav-button:hover {
-  color: #00b345;
+  color: #0080b3;
 }
 
 .right-section {
@@ -62,8 +67,8 @@
 
 .sub-banner {
   padding: 10px 20px;
-  background-color: #d8ffdd;
-  color: #003f0c;
+  background-color: #d8f7ff;
+  color: #002b3f;
   font-size: 0.9em;
 }
 
@@ -75,7 +80,7 @@
   display: flex;
   justify-content: flex-start;
   padding: 10px 20px;
-  background-color: #d8ffd8;
+  background-color: #d8f6ff;
 }
 
 .footer-nav {
@@ -86,7 +91,7 @@
 .footer-button {
   background: transparent;
   border: none;
-  color: #00792c;
+  color: #005779;
   font-size: 1em;
   cursor: pointer;
   padding: 5px 10px;
@@ -94,12 +99,12 @@
 }
 
 .footer-button:hover {
-  color: #00b31b;
+  color: #0098b3;
 }
 
 .rights-sub-banner {
   padding: 10px 20px;
-  background-color: #e9efe9;
+  background-color: #e9eeef;
   color: #666666;
   font-size: 0.9em;
   text-align: left;
@@ -128,8 +133,9 @@
   padding: 8px 12px;
   font-size: 1em;
   margin-top: 5px;
+  border-radius: 5px;
   border: 1px solid #cccccc;
-  background-color: #f9f9f9;
+  background-color: #ffffff;
 }
 
 .list-sections {
@@ -138,10 +144,15 @@
 }
 
 .list-container {
-  width: 50%;
+  width: 100%;
+}
+h3{
+  font-size: 22px;
+  margin-bottom: 10px;
+  font-weight: bold;
 }
 
-.list-container h3 {
+.list-container {
   margin-bottom: 10px;
   font-size: 1.2em;
   font-weight: bold;
@@ -149,11 +160,12 @@
 }
 
 .scrollable-list {
-  max-height: 150px;
+  max-height: 300px;
   overflow-y: auto;
   border: 1px solid #dddddd;
+  border-radius: 5px;
   padding: 10px;
-  background-color: #f9f9f9;
+  background-color: #ffffff;
 }
 
 .list-item {
@@ -167,8 +179,8 @@
 }
 
 .list-item.selected {
-  background-color: #ccffd9;
-  color: #06af0f;
+  background-color: #ccf1ff;
+  color: #0696af;
 }
 
 .scrollable-list::-webkit-scrollbar {
@@ -178,6 +190,11 @@
 .scrollable-list::-webkit-scrollbar-thumb {
   background-color: #cccccc;
   border-radius: 4px;
+}
+
+.secondary-txt {
+  color:#c0c0c0;
+  padding-left: 10px;
 }
 
 /* Sección de tabla */
@@ -199,12 +216,13 @@
 }
 
 .tab-button.active {
-  border-bottom: 3px solid #7eff9a;
-  background: #ecfff1;
+  border-bottom: 3px solid #7edaff;
+  background: #ecfdff;
 }
 
 .table-container {
   overflow-x: auto;
+  max-height: 600px;
   margin-bottom: 20px;
 }
 
@@ -218,26 +236,29 @@ table {
 .btn-add{
   justify-content: left;
   width: 100%;
+  height: 50px;
+  font-size: 36px;
   background-color: white;
-  border-color: #8effac;
-  color: #8effb0;
+  border-color: #8ee8ff;
+  color: #8edfff;
 }
 
 th, td {
+  flex-direction: row;
   padding: 10px;
-  border: 1px solid #8effac;
+  border: 1px solid #8edbff;
   text-align: center;
 }
 
 th, .table-header {
-  background-color: hsl(135, 82%, 40%);
+  background-color: hsl(199, 82%, 40%);
   color: white;
 }
 
 .action-btn {
   margin: 0 5px;
   padding: 5px 10px;
-  background-color: #00c134;
+  background-color: #009ac1;
   color: white;
   border: none;
   border-radius: 4px;
@@ -245,7 +266,7 @@ th, .table-header {
 }
 
 .action-btn:hover {
-  background-color: #56ff75;
+  background-color: #56c1ff;
 }
 
 .input {
@@ -267,7 +288,6 @@ th, .table-header {
 }
 
 .btn {
-  padding: 20px 30px;
   color: white;
   border: none;
   border-radius: 4px;
@@ -277,14 +297,44 @@ th, .table-header {
 
 .btn.red {
   background-color: #d94f4f;
+  padding: 20px 30px;
 }
 
 .btn.red:hover {
-  background-color: #2cc951;
+  background-color: #c92c2c;
 }
 
 .btn.green {
   background-color: #5cb85c;
+  padding: 20px 30px;
+}
+
+.btn.search {
+  background-color: #8de7f7;
+  padding-left: 20px;
+  padding-right: 20px;
+  height: 50px;
+  margin-top: 20px;
+  margin-left: 20px;
+}
+
+.btn.mostrar {
+  background-color: #64d9ee;
+  padding-left: 20px;
+  padding-right: 20px;
+  height: 50px;
+  margin-top: 40px;
+  margin-left: 20px;
+}
+
+.btn.mostrar.disabled {
+  background-color: #6f99a0;
+  color: rgb(196, 196, 196);
+  padding-left: 20px;
+  padding-right: 20px;
+  height: 50px;
+  margin-top: 40px;
+  margin-left: 20px;
 }
 
 .btn.green:hover {
@@ -352,4 +402,292 @@ th, .table-header {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+}
+
+select {
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+}
+select:focus {
+  border-color: #007BFF;
+}
+
+/* Contenedor principal */
+.listado-pacientes-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Margen izquierdo */
+.listado-pacientes-left {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.search-bar {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.patients-list-container {
+  background-color: #ffffff;
+  border: 1px solid rgb(212, 212, 212);
+  padding: 10px;
+  width: 100%;
+  border-radius: 8px;
+  vertical-align: top;
+}
+
+.patients-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.patient-item {
+  padding: 10px;
+  cursor: pointer;
+  background-color: white;
+  border: 1px solid #ccc;
+  margin-bottom: 5px;
+  border-radius: 4px;
+}
+
+.patient-item.selected {
+  background-color: #d0e7ff;
+}
+
+/* Margen derecho */
+.listado-pacientes-right {
+  display:flexbox;
+  align-content:center;
+  margin-left: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  text-align: center;
+  gap: 20px;
+  width: 50%;
+  background-color: white;
+}
+
+.button-evolucion {
+  padding: 10px 20px;
+  margin: 10px 5px;
+  border: none;
+  border-radius: 4px;
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+  background-color: #007bff;
+}
+
+.button-gestionar-datos {
+  padding: 10px 20px;
+  margin: 10px 5px;
+  border: none;
+  border-radius: 4px;
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+  background-color: #28a745;
+}
+
+.button-aniadir-sesion{
+  padding: 10px 20px;
+  margin: 10px 5px;
+  border: none;
+  border-radius: 4px;
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+  background-color: #e0b336;
+}
+
+
+
+/* Contenedor principal */
+.nueva-sesion-container {
+  width: 60%;
+  margin: 0 auto;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+/* Título principal */
+.titulo {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  font-weight: bolder;
+}
+
+h1{
+  font-size: 2rem;
+  margin-bottom: 20px;
+  font-weight: bolder;
+}
+
+/* Línea delimitadora */
+.linea-delimitadora {
+  border: none;
+  width: 100%;
+  border-top: 2px solid rgb(154, 216, 223);
+  margin: 20px 0;
+}
+
+/* Sección de campos */
+.seccion-campos {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 20px 0;
+  align-items: flex-start;
+}
+
+.importar {
+  float: right;
+  display:flexbox;
+  text-align: center;
+  margin-right: 200px;
+  margin-top:25px;
+}
+
+/* Dropdown */
+.dropdown {
+  width: 100%;
+  padding: 10px 30px 10px 10px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Botón de selección de fecha */
+.boton-fecha {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.boton-fecha:hover {
+  background-color: #0056b3;
+}
+
+/* Botón importar datos */
+.boton-importar {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  background-color: #28a745;
+  color: white;
+  font-size: 1.5rem;
+  line-height: 50px;
+  text-align: center;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.boton-importar:hover {
+  background-color: #218838;
+}
+
+/* Nombre del archivo */
+.nombre-archivo {
+  font-size: 0.9rem;
+  color: #555;
+  word-break: break-all;
+}
+
+/* Botón de crear sesión */
+.boton-crear-sesion {
+  padding: 15px 30px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.boton-crear-sesion:hover {
+  background-color: #218838;
+}
+
+
+/* Contenedor principal */
+.usuario-detalle-container {
+  width: 100%;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+/* Título */
+.titulo {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Contenedor de secciones */
+.contenedor-secciones {
+  display: flexbox;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.seccion-inferior {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* Campo */
+.campo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.campo h3 {
+  margin-bottom: 10px;
+}
+
+/* Sección derecha */
+.seccion-derecha {
+  flex: 2;
+}
+
+/* Card Tremor */
+.tremor-Card{
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: "hidden";
+  transition: "transform 0.3s ease-in-out";
+}
+
+.recharts-tooltip-wrapper{
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease-in-out; 
+}
+
+/* Title Tremor */
+.tremor-Title {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #333;
 }
