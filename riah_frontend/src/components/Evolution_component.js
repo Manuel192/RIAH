@@ -105,10 +105,6 @@ const Evolution = () => {
     }
   }
 
-  const handlePatientList = () => {
-    navigate('/')
-  }
-
   const handleGameChanged = (event) =>{
     const value=event.target.value
     setSelectedGame(value);
@@ -125,12 +121,20 @@ const Evolution = () => {
     console.log(event.target.value);
   }
 
-  return (
-    <>
+  const handlePatientList = () => {
+    navigate('/patients-list')
+  }
+
+  const handleUserPanel = () => {
+  navigate('/')
+  }
+
+return (
+<>
     <div className="sub-banner">
-      <button className="nav-button">Home</button> &gt; 
-      <button className="nav-button">Mi portal</button> &gt; 
-      <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
+        <button className="nav-button">Home</button> &gt; 
+        <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
+        <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
       Evolución - Juan Pérez
     </div>
     <div div class="app">

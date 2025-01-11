@@ -1,4 +1,5 @@
 import './App.css';
+import User_panel from './components/User_panel_component';
 import Create_session from './components/Create_session_component';
 import Evolution from './components/Evolution_component';
 import Patients_list from './components/Patients_list_component';
@@ -17,13 +18,14 @@ function App() {
         <div className="right-section">
           <button className="nav-button">Home</button>
           <button className="nav-button">Sobre RIAH</button>
-          <button className="nav-button">Mi portal</button>
+          <button className="nav-button">Mi panel</button>
           <img src={require('./media/RIAH_profile.png')} alt="Profile" className="profile-pic" />
         </div>
       </header>
       <Router>
         <Routes>
-          <Route path="/" element={<Patients_list />} />
+          <Route path="/" element={<User_panel />} />
+          <Route path="/patients-list" element={<Patients_list />} />
           <Route path="/raw-data" element={<Raw_data />} />
           <Route path="/evolution" element={<Evolution />} />
           <Route path="/create-session" element={<Create_session />} />

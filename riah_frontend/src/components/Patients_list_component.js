@@ -33,15 +33,22 @@ function Patients_list() {
   const handleEvolution = () => {
     navigate('/evolution');
   }
+  const handlePatientList = () => {
+    navigate('/patients-list')
+  }
+
+  const handleUserPanel = () => {
+  navigate('/')
+  }
 
   return (
-    <>
+  <>
     <div className="sub-banner">
-      <button className="nav-button">Home</button> &gt; 
-      <button className="nav-button">Mi portal</button> &gt; 
+        <button className="nav-button">Home</button> &gt; 
+        <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
       Listado de pacientes
     </div>
-    <div div class="app">
+    <div class="app">
     <h1>Listado de pacientes</h1>
     <hr className="linea-delimitadora" />
     <div className="listado-pacientes-container">

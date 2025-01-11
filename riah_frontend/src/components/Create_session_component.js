@@ -95,14 +95,18 @@ function Create_session() {
     }   
 
     const handlePatientList = () => {
-        navigate('/')
-      }
+        navigate('/patients-list')
+    }
+
+    const handleUserPanel = () => {
+    navigate('/')
+    }
 
     return (
     <>
         <div className="sub-banner">
             <button className="nav-button">Home</button> &gt; 
-            <button className="nav-button">Mi portal</button> &gt; 
+            <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
             <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
             Nueva sesión - Juan Pérez
         </div>
