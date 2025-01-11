@@ -8,16 +8,24 @@ import "../App.css"; // Archivo CSS separado
 
 const Evolution = () => {
   const navigate=useNavigate();
-  const [selectedGraph, setSelectedGraph] = useState("G. Lineal");
-  const [selectedGame, setSelectedGame] = useState("");
-  const [selectedData, setSelectedData] = useState("");
-  const [calculatedData, setCalculatedData] = useState([]);
+  const [graphs, setGraphs]=useState(["bar","area","bar","bar"]);
+  const [selectedGame, setSelectedGame] = useState(["","","",""]);
+  const [selectedData, setSelectedData] = useState(["","","",""]);
   const [games, setGames] = useState([]);
-  const [dataOptions, setDataOptions] = useState([]);
+  const [dataOptions, setDataOptions] = useState([[],[],[],[]]);
   const [graphData, setGraphData] = useState([
-    { session: "1", date: "Ene", value: 10 },
-    { session: "2", date: "Feb", value: 20 },
-    { session: "3", date: "Mar", value: 30 },
+    { index:0, session: "1", date: "Ene", value: 10 },
+    { index:0, session: "2", date: "Feb", value: 20 },
+    { index:0, session: "3", date: "Mar", value: 30 },
+    { index:1, session: "1", date: "Ene", value: 30 },
+    { index:1, session: "2", date: "Feb", value: 20 },
+    { index:1, session: "3", date: "Mar", value: 10 },
+    { index:2, session: "1", date: "Ene", value: 10 },
+    { index:2, session: "2", date: "Feb", value: 20 },
+    { index:2, session: "3", date: "Mar", value: 50 },
+    { index:3, session: "1", date: "Ene", value: 50 },
+    { index:3, session: "2", date: "Feb", value: 20 },
+    { index:3, session: "3", date: "Mar", value: 30 },
   ]);
 
   const CustomTooltip = ({ index }) => {
@@ -46,37 +54,43 @@ const Evolution = () => {
         }catch(error){
             alert("La web no funciona por el momento. Inténtelo más tarde.")
         }
+        console.log(graphData);
     }
   
     // call the function
     fetchGames()
   }, []);
 
-  const fetchCalculatedData = async (gameId) => {
+  const fetchCalculatedData = async (gameId, index) => {
     try{
         const response = await fetch("http://localhost:8081/calculatedData/loadCalculatedData?gameId="+gameId);
         if(!response.ok){
-          setDataOptions([]);
-          setSelectedData("");
-          alert("No pudieron cargarse los datos calculables.");
+          const newDataOptions=[...dataOptions];
+          newDataOptions[index]=[];
+          setDataOptions(newDataOptions);
+          const newSelectedData=[...selectedData];
+          newSelectedData[index]="";
+          setSelectedData(newSelectedData);
+          alert("No existen datos calculables para este juego o no cargaron correctamente.");
           return;
         }
         // convert data to json
         const responseData = await response.json();
-        setDataOptions(responseData);
+        const newDataOptions=[...dataOptions];
+        newDataOptions[index]=responseData;
+        setDataOptions(newDataOptions);
     }catch(error){
         alert("La web no funciona por el momento. Inténtelo más tarde.")
     }
   }
 
-  const obtainDynamicCalculus = async () => {
-    const optionToObtain=dataOptions.filter(data=>data.id===selectedData).at(0);
+  const obtainDynamicCalculus = async (event,index) => {
+    const optionToObtain=dataOptions[index].filter(data=>data.id===event.target.value).at(0);
     if(optionToObtain===null){
       alert("Algo ha ido mal.");
       return;
     }
     try{
-      console.log(optionToObtain.session_dates);
       const parsedParam2=optionToObtain.parameter2?optionToObtain.parameter2:"a";
       const response = await fetch("http://localhost:9000/rawDataSession/calculateData?operation="+optionToObtain.operation+
         "&parameter1="+optionToObtain.parameter1+"&parameter2="+parsedParam2, {
@@ -90,37 +104,53 @@ const Evolution = () => {
           alert("No pudieron cargarse los cálculos.");
           return;
         }
-        await setGraphData([]);
         // convert data to json
         const responseData = await response.json();
-        const graphSet = [];
+        const newGraphData = graphData.filter(graph => graph.index!=index);
+        console.log(newGraphData);
         for(var i=0;i<optionToObtain.sessions.length;i++){
-          await graphSet.push({"session":optionToObtain.sessions[i],"value":Math.round(responseData[optionToObtain.sessions[i]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
+          await newGraphData.push({"index":index,"session":optionToObtain.sessions[i],"value":Math.round(responseData[optionToObtain.sessions[i]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
         }
-        setGraphData(graphSet);
-        console.log(graphSet);
+        console.log(newGraphData);
+        setGraphData(newGraphData);
     }catch(error){
         alert("La web no funciona por el momento. Inténtelo más tarde.")
         console.log(error);
     }
   }
 
-  const handleGameChanged = (event) =>{
-    const value=event.target.value
-    setSelectedGame(value);
+  const handleGameChanged = index => (event,value) =>{
+    const newSelectedGame=[...selectedGame];
+    newSelectedGame[index]=event.target.value;
+    setSelectedGame(newSelectedGame);
+    console.log(newSelectedGame);
     if(value===""){
       setDataOptions([]);
-      setSelectedData("");
+      const newSelectedData=[...selectedData];
+      newSelectedData[index]="";
+      setSelectedData(newSelectedData);
       return;
     }
-    fetchCalculatedData(event.target.value);
+    fetchCalculatedData(event.target.value, index);
   }
 
-  const handleDataOptionChanged = (event) =>{
-    setSelectedData(event.target.value);
-    console.log(event.target.value);
+  const handleDataOptionChanged = index => async (event,value) =>{
+    const newSelectedData=[...selectedData];
+    newSelectedData[index]=event.target.value;
+    setSelectedData(newSelectedData);
+    console.log(newSelectedData);
+    if(event.target.value===""){
+      setGraphData(graphData.filter(graph => graph.index!=index));
+      return;
+    }
+    obtainDynamicCalculus(event,index);
   }
 
+  const handleGraphChanged = index => async (event,value) =>{
+    const newGraphs=[...graphs];
+    newGraphs[index]=event.target.value;
+    setGraphs(newGraphs);
+  }
   const handlePatientList = () => {
     navigate('/patients-list')
   }
@@ -141,47 +171,14 @@ return (
     <div className="usuario-detalle-container">
       {/* Título */}
       <h1>Evolución - Juan Pérez</h1>
-
-      <div className="contenedor-secciones">
+      <div class="graphs">
         {/* Sección Superior */}
+        {graphs.map((graph, index) => (
           <Card className="tremor-Card">
-            {selectedGraph === "G. Lineal" ? (
-                <AreaChart
-                className="h-80"
-                data={graphData}
-                index="date"
-                categories={["value"]}
-                onValueChange={(v) => console.log(v)}
-                xLabel="Time"
-                valueFormatter={(value, index) => `${value}m/s`}
-                yLabel="Velocity"
-                fill="solid"
-                showLegend={false}
-                showXAxis={true}
-                tooltip={({ index }) => <CustomTooltip index={index} />}
-              >
-              </AreaChart>
-            ) : (
-                  <BarChart
-                  className="mt-12 hidden h-72 sm:block"
-                data={graphData}
-                index="date"
-                xLabel="Time"
-                yLabel="Velocity"
-                categories={['value']}
-                valueFormatter={(value, index) => `${value}m/s`}
-                showLegend={false}
-                showXAxis={true}
-                tooltip={({ index }) => <CustomTooltip index={index} />}
-                >
-              </BarChart>
-            )}
-          </Card>
-        {/* Sección Inferior */}
-        <div className="seccion-inferior">
+          <div className="seccion-inferior">
           <div className="campo">
             <h3>JUEGO</h3>
-            <select id="dropdown" value={selectedGame} className="dropdown" onChange={handleGameChanged}>
+            <select id="dropdown" value={selectedGame[index]} className="dropdown" onChange={handleGameChanged(index)}>
                 <option value="">Ninguno</option>
                     {games?.map((option, index) => (
                         <option key={index} value={option.id}>
@@ -193,9 +190,9 @@ return (
 
           <div className="campo">
             <h3>DATO</h3>
-            <select id="dropdown" value={selectedData} className="dropdown" onChange={handleDataOptionChanged} disabled={selectedGame===""}>
+            <select id="dropdown" value={selectedData[index]} className="dropdown" onChange={handleDataOptionChanged(index)} disabled={selectedGame[index]===""}>
                 <option value="">Ninguno</option>
-                    {dataOptions?.map((option, index) => (
+                    {dataOptions[index]?.map((option, index) => (
                         <option key={index} value={option.id}>
                         {option.name}
                         </option>
@@ -207,19 +204,51 @@ return (
             <h3>GRÁFICO</h3>
             <select 
               className="dropdown"
-              value={selectedGraph}
-              onChange={(e) => setSelectedGraph(e.target.value)}
-              disabled={selectedData===""}
+              value={graphs[index]}
+              onChange={handleGraphChanged(index)}
+              disabled={selectedData[index]===""}
             >
-              <option value="G. Lineal">G. Lineal</option>
-              <option value="G. Barras">G. Barras</option>
+              <option value="area">G. Lineal</option>
+              <option value="bar">G. Barras</option>
             </select>
           </div>
-          <button className={`btn mostrar ${selectedData.length==0? "disabled":""}`} disabled={selectedData.length==0} onClick={obtainDynamicCalculus}>Calcular</button>
-        </div>        
+        </div> 
+          {graph==="area"?(
+            <AreaChart
+            data={graphData.filter(graph=>graph.index==index)}
+            index="date"
+            categories={["value"]}
+            onValueChange={(v) => console.log(v)}
+            xLabel="Time"
+            valueFormatter={(value, index) => `${value}m/s`}
+            yLabel="Velocity"
+            fill="solid"
+            showLegend={false}
+            showXAxis={true}
+            tooltip={({ index }) => <CustomTooltip index={index} />}
+          >
+          </AreaChart>
+          ):""}
+          {graph==="bar"?(
+            <BarChart
+                data={graphData.filter(graph=>graph.index==index)}
+                index="date"
+                xLabel="Time"
+                yLabel="Velocity"
+                categories={['value']}
+                valueFormatter={(value, index) => `${value}m/s`}
+                showLegend={false}
+                showXAxis={true}
+                tooltip={({ index }) => <CustomTooltip index={index} />}
+                >
+              </BarChart>
+          ):""}
+           <button className='btn mostrar'>Exportar</button>
+        </Card>
+        ))}       
       </div>
-    </div>
-    </div>
+      </div>
+      </div>
     </>
   );
 };
