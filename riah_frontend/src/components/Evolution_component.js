@@ -159,6 +159,30 @@ const Evolution = () => {
   navigate('/')
   }
 
+  const exportDataToCsv = (index) => {
+    const dataName=dataOptions[index].filter(option=>option.id===selectedData[index])[0].name;
+    const gameName=games.filter(option=>option.id===selectedGame[index])[0].name;
+    const title=gameName+"_"+dataName;
+    var dataString = "Date;Session;"+dataName;
+    console.log(dataOptions[index].filter(option=>option.id===selectedData[index]));
+    if(selectedData[index]===""){
+      alert("Error al exportar: no se han seleccionado parámetros.");
+      return;
+    }
+    var data=graphData.filter(graph=>graph.index===index);
+    for(var i=0;i<data.length;i++){
+      dataString+="\n"+data[i].date+";"+data[i].session+";"+data[i].value;
+    }
+    const blob = new Blob([dataString], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = title;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    console.log(dataString);
+  };
+
 return (
 <>
     <div className="sub-banner">
@@ -243,7 +267,7 @@ return (
                 >
               </BarChart>
           ):""}
-           <button className='btn mostrar'>Exportar</button>
+           <button className='btn mostrar' onClick={()=>exportDataToCsv(index)}>Exportar</button>
         </Card>
         ))}       
       </div>
