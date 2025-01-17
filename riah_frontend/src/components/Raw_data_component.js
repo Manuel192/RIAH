@@ -44,22 +44,28 @@ function Raw_data() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const exportDataToTxt = async () => {
-    var dataString = "ID: "+activeSession.id+"\nPatient: "+activeSession.patient+"\nDate: "+activeSession.date+"\nGame: "+activeSession.game;
+  const exportDataToCsv = async () => {
+    var dataString = "";
+    if(selectedDataItems.length<1){
+      alert("Error al exportar: no se han seleccionado parámetros.");
+      return;
+    }
+    for(var i=0; i<selectedDataItems.length;i++)
+      dataString+=selectedDataItems[i]+";";
     for(var i=0;i<activeSessionData.frames.length;i++){
-      dataString+="\n\nFRAME "+i+"\n";
+      dataString+="\n";
       for(var j=0; j<selectedDataItems.length;j++){
-        dataString+="\n"+selectedDataItems[j]+": "+
-        activeSessionData.frames[i].dataValues[selectedDataItems[j]];
+        dataString+=activeSessionData.frames[i].dataValues[selectedDataItems[j]]+";";
       }
     }
-    const blob = new Blob([dataString], { type: "text/plain" });
+    const blob = new Blob([dataString], { type: "text/csv" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = activeSession.id;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    console.log(dataString);
   };
 
   useEffect(() => {
@@ -366,7 +372,7 @@ function Raw_data() {
     {selectedSessions?.length>0?
     <div className="button-bar">
       <button className="btn red" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>
-      <button className="btn green" onClick={exportDataToTxt}>EXPORTAR</button>
+      <button className="btn green" onClick={exportDataToCsv}>EXPORTAR</button>
     </div>
     :null}
     </div>
