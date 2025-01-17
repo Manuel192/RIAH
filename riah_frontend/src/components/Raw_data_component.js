@@ -1,5 +1,6 @@
 import React, { act, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { AreaChart, BarChart, Card, Title } from "@tremor/react";
 import Tabs from './Tabs_component';
 import '../App.css';
 
@@ -18,6 +19,7 @@ function Modal({ onClose, onConfirm }) {
 }
 
 function Raw_data() {
+
   const navigate=useNavigate();
   const location=useLocation();
   const {user}=location.state;
@@ -27,12 +29,17 @@ function Raw_data() {
   const [game, setGame] = useState("");
   const [selectedSessions, setSelectedSessions] = useState([]);
   const [selectedDataItems, setSelectedDataItems] = useState([]);
+  const [selectedDataItemsValues, setSelectedDataItemsValues] = useState({});
   const [tabs, setTabs] = useState([]);
 
+  // Whole sessions data
   const [sessions, setSessions] = useState([]);
+  // Data items names
   const [dataItems,setDataItems] = useState([]);
 
+  // Selected session data
   const [activeSession, setactiveSession] = useState([]);
+  // Seleted data items names
   const [activeSessionData, setactiveSessionData] = useState([[]]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -155,9 +162,36 @@ function Raw_data() {
         prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id]
       );
     } else {
-      setSelectedDataItems(prev =>
-        prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item].sort()
-      );
+      if(selectedDataItems.includes(item)){
+        setSelectedDataItems(selectedDataItems.filter(i => i !== item));
+        const newDataItemValues={...selectedDataItemsValues}
+        delete newDataItemValues[item];
+        setSelectedDataItemsValues(newDataItemValues)
+        return;
+      }else{
+        setSelectedDataItems([...selectedDataItems, item].sort());
+        const newDataItemValues=[];
+        var maxValue=null;
+        var minValue=null;
+        for(var i=0;i<activeSessionData.frames.length;i++){
+          if(activeSessionData.frames[i].dataValues[item]==="") continue;
+          if(activeSessionData.frames[i].dataValues[item]===" True"||activeSessionData.frames[i].dataValues[item]===" False"){
+            if(maxValue===null){
+              maxValue=1;
+              minValue=0;
+            }
+            newDataItemValues.push({"frame":activeSessionData.frames[i].dataValues.frame,"value":activeSessionData.frames[i].dataValues[item]===" True"?1:0});
+          }else{
+            newDataItemValues.push({"frame":activeSessionData.frames[i].dataValues.frame,"value":activeSessionData.frames[i].dataValues[item]});
+            if(maxValue===null || Number(maxValue)<Number(activeSessionData.frames[i].dataValues[item]))
+              maxValue=activeSessionData.frames[i].dataValues[item];
+            if(minValue===null || Number(minValue)>Number(activeSessionData.frames[i].dataValues[item]))
+              minValue=activeSessionData.frames[i].dataValues[item];
+          }
+        }
+        console.log({...selectedDataItemsValues, [item]:{...newDataItemValues, "min":minValue, "max":maxValue}});
+        setSelectedDataItemsValues({...selectedDataItemsValues, [item]:{"values":newDataItemValues, "min":minValue, "max":maxValue}});
+      };
     }
   };
 
@@ -282,7 +316,6 @@ function Raw_data() {
       {/* Modal para confirmar */}
       {isModalOpen && <Modal onClose={handleCloseModal} onConfirm={handleConfirm} />}
 
-      
       <Tabs tabs={tabs} onTabChange={handleTabChange} />
       {selectedSessions?.length>0?
         <div className="table-container">
@@ -307,12 +340,35 @@ function Raw_data() {
           </table>
         </div>
         :null}
-      {selectedSessions?.length>0?
-      <div className="button-bar">
-        <button className="btn red" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>
-        <button className="btn green" onClick={exportDataToTxt}>EXPORTAR</button>
+
+    <div class="graphs">
+        {/* Sección Superior */}
+        {selectedDataItems.map((dataItem, index) => (
+          <Card className="tremor-Card">
+            <h3>{dataItem}</h3>
+            <AreaChart
+            data={selectedDataItemsValues[dataItem].values}
+            index="frame"
+            categories={["value"]}
+            onValueChange={(v) => console.log(v)}
+            maxValue={Number(selectedDataItemsValues[dataItem].max)}
+            minValue={Number(selectedDataItemsValues[dataItem].min)}
+            xLabel="Frame"
+            yLabel="Value"
+            fill="solid"
+            showLegend={false}
+            showXAxis={true}
+          >
+          </AreaChart>
+        </Card>
+        ))}       
       </div>
-      :null}
+    {selectedSessions?.length>0?
+    <div className="button-bar">
+      <button className="btn red" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>
+      <button className="btn green" onClick={exportDataToTxt}>EXPORTAR</button>
+    </div>
+    :null}
     </div>
     </>
   );
