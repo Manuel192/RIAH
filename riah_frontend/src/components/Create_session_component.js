@@ -17,7 +17,9 @@ function Create_session() {
     useEffect(() => {
         const fetchGames = async () => {
             try{
-                const response = await fetch('http://localhost:8081/game/loadGames');
+                const a=process.env.REACT_APP_GENERAL_URL;
+                console.log(a);
+                const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
                 if(!response.ok){
                     setGames([]);
                     alert("No pudieron cargarse los juegos para filtrar.");
@@ -46,7 +48,7 @@ function Create_session() {
             console.log(jsonData);
             setImportedFileName(file.name);
           } catch (error) {
-            console.error("Error parsing JSON file", error);
+            alert("Error parsing JSON file", error);
           }
         };
         reader.readAsText(file);
@@ -54,12 +56,26 @@ function Create_session() {
     };
 
     const handleCreateSession = async () => {
+        if(!user || !selectedDate || !selectedGame || !importedData){
+            alert("Asegúrese de rellenar todos los campos e importar sus datos antes de crear una sesión.")
+            return;
+        }
+
+        const responseCheck = await fetch(process.env.REACT_APP_SESSIONS_URL+'/rawDataSession/checkJson', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ frames: importedData }),
+        });
+
+        if(!responseCheck.ok){
+            alert("Formato de JSON o CSV inválido. Asegúrese de que se trata del fichero correcto.");
+            return;
+        }
+
         try {
-            if(!user || !selectedDate || !selectedGame || !importedData){
-                alert("Asegúrese de rellenar todos los campos e importar sus datos antes de crear una sesión.")
-                return;
-            }
-            const response = await fetch('http://localhost:8081/session/insertSession', {
+            const response = await fetch(process.env.REACT_APP_GENERAL_URL+'session/insertSession', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,7 +85,7 @@ function Create_session() {
 
             const sessionId = await response.text();
 
-            const responseMongo = await fetch('http://localhost:9000/rawDataSession/insertSession', {
+            const responseMongo = await fetch(process.env.REACT_APP_SESSIONS_URL+'rawDataSession/insertSession', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

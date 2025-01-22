@@ -42,7 +42,7 @@ const Evolution = () => {
   useEffect(() => {
     const fetchGames = async () => {
         try{
-            const response = await fetch('http://localhost:8081/game/loadGames');
+            const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
             if(!response.ok){
                 setGames([]);
                 alert("No pudieron cargarse los juegos para filtrar.");
@@ -63,7 +63,7 @@ const Evolution = () => {
 
   const fetchCalculatedData = async (gameId, index) => {
     try{
-        const response = await fetch("http://localhost:8081/calculatedData/loadCalculatedData?gameId="+gameId);
+        const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/loadCalculatedData?gameId="+gameId);
         if(!response.ok){
           const newDataOptions=[...dataOptions];
           newDataOptions[index]=[];
@@ -92,7 +92,7 @@ const Evolution = () => {
     }
     try{
       const parsedParam2=optionToObtain.parameter2?optionToObtain.parameter2:"a";
-      const response = await fetch("http://localhost:9000/rawDataSession/calculateData?operation="+optionToObtain.operation+
+      const response = await fetch(process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/calculateData?operation="+optionToObtain.operation+
         "&parameter1="+optionToObtain.parameter1+"&parameter2="+parsedParam2, {
           method: 'PUT',
           headers: {

@@ -71,7 +71,7 @@ function Raw_data() {
   useEffect(() => {
     const fetchGames = async () => {
         try{
-            const response = await fetch('http://localhost:8081/game/loadGames');
+            const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
             if(!response.ok){
                 setGames([]);
                 alert("No pudieron cargarse los juegos para filtrar.");
@@ -111,7 +111,7 @@ function Raw_data() {
     const lDate=endDate?endDate:"X";
     const gameId=game?game:"X";
     try{
-      const url="http://localhost:8081/session/loadFilteredSessions?firstDate="+stDate+"&lastDate="+lDate+"&gameId="+gameId;
+      const url=process.env.REACT_APP_GENERAL_URL+"/session/loadFilteredSessions?firstDate="+stDate+"&lastDate="+lDate+"&gameId="+gameId;
       console.log(url);
       const response = await fetch(url);
       if(!response.ok){
@@ -202,7 +202,7 @@ function Raw_data() {
   };
 
   const obtainRawData = async (item) => {
-    const url="http://localhost:9000/rawDataSession/loadSessionRawData?id="+item.id;
+    const url=process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/loadSessionRawData?id="+item.id;
       console.log(url);
       const response = await fetch(url);
       if(!response.ok){

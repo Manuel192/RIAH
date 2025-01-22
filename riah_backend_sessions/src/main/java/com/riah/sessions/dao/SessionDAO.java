@@ -20,16 +20,18 @@ public class SessionDAO {
 	@Autowired
 	MongoTemplate mongoTemplate;
     
+	String sessionsCollection="Sessions";
+	
 	public List<Session> example(){
-		return mongoTemplate.findAll(Session.class);
+		return mongoTemplate.findAll(Session.class, sessionsCollection);
 	}
 
 	public Session loadSessionRawData(UUID id) {
 		Query query = new Query(Criteria.where("ID").is(id.toString()));
-		return mongoTemplate.findOne(query, Session.class);
+		return mongoTemplate.findOne(query, Session.class, sessionsCollection);
 	}
 
 	public void insertSession(SessionInsert sessionToInsert) {
-		mongoTemplate.save(sessionToInsert);
+		mongoTemplate.save(sessionToInsert, sessionsCollection);
 	}
 }

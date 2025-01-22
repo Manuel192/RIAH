@@ -59,6 +59,13 @@ public class SessionController {
 	}
 	
 	@CrossOrigin(origins = "http://localhost:3000")
+	@PostMapping("/checkJson")
+	public ResponseEntity<String> checkJson (@RequestBody String session){
+		sessionService.checkJSON(session);
+		return ResponseEntity.ok("Session checked successfully!");
+	}
+	
+	@CrossOrigin(origins = "http://localhost:3000")
 	@PutMapping("/calculateData")
 	public ResponseEntity<Map<UUID, Double>> calculateData (@RequestParam String operation,@RequestParam String parameter1, @RequestParam Optional<String> parameter2,  @RequestBody List<String> sessions) throws ParseException{
 		switch(operation) {

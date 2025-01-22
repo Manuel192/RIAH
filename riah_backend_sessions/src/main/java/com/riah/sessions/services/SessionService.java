@@ -53,6 +53,12 @@ public class SessionService {
 		}
 		return parsedSession;
 	}
+	
+	public void checkJSON(String session) {
+		JSONObject json = new JSONObject(session);
+		JSONArray frames=json.getJSONArray("frames");
+		return;
+	}
 
 	public boolean insertSession(String session) {
 		JSONObject json = new JSONObject(session);
