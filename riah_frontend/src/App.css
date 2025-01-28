@@ -10,7 +10,7 @@
 .app {
   font-family: Arial, sans-serif;
   padding: 40px;
-  min-height: 400px;
+  min-height: 800px;
 }
 
 .header {
@@ -550,7 +550,7 @@ h1{
 .linea-delimitadora {
   border: none;
   width: 100%;
-  border-top: 2px solid rgb(154, 216, 223);
+  border-top: 2px solid rgb(224, 252, 255);
   margin: 20px 0;
 }
 
@@ -711,14 +711,6 @@ h1{
   margin-left: 10px;
 }
 
-.scrollable-list-admin {
-  min-height: 200px;
-  border: 1px solid #dddddd;
-  border-radius: 5px;
-  padding: 10px;
-  background-color: #ffffff;
-}
-
 .button-admin-add{
   width: 100%;
   padding-top: 4px;
@@ -729,6 +721,29 @@ h1{
   cursor: pointer;
   color: white;
   background-color: #6cc4da;
+}
+
+.button-admin-new{
+  padding: 4px,4px,4px,4px;
+  float:inline-end;
+  border: none;
+  border-radius: 4px;
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+  background-color: #6cc4da;
+}
+
+.button-admin-cancel{
+  padding: 4px,4px,4px,4px;
+  float:inline-end;
+  margin-left: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+  background-color: #da7c6c;
 }
 
 .button-admin-game{
@@ -743,4 +758,12 @@ h1{
   cursor: pointer;
   color: white;
   background-color: #6cc4da;
+}
+
+.rectangle {
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: #ffffff;
+  font-weight: bold;
 }

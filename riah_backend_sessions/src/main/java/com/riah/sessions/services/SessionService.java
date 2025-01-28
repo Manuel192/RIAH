@@ -26,14 +26,6 @@ public class SessionService {
 	@Autowired
 	private SessionDAO sessionDAO;
 
-	public List<String> example() {
-		Session session=sessionDAO.example().getFirst();
-		String frame=session.getData().getFirst();
-		frame=frame.replace("\"", "").replace("{","").replace("}","");
-		List<String> data=List.of(frame.split(", "));
-		return data;
-	}
-
 	public SessionDTO loadSessionRawData(UUID id) throws ParseException {
 		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
 		Session session= sessionDAO.loadSessionRawData(id);

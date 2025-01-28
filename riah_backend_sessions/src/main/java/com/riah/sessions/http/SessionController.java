@@ -36,11 +36,6 @@ public class SessionController {
 	@Autowired
 	SessionService sessionService;
 	
-	@GetMapping("/example")
-    public ResponseEntity<List<String>> example(){
-    	return ResponseEntity.ok(sessionService.example());
-    }
-	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@GetMapping("/loadSessionRawData")
     public ResponseEntity<SessionDTO> loadSessionRawData(@RequestParam UUID id) throws ParseException{

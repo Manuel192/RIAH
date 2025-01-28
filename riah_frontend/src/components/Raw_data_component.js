@@ -65,7 +65,6 @@ function Raw_data() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    console.log(dataString);
   };
 
   useEffect(() => {
@@ -112,7 +111,6 @@ function Raw_data() {
     const gameId=game?game:"X";
     try{
       const url=process.env.REACT_APP_GENERAL_URL+"/session/loadFilteredSessions?firstDate="+stDate+"&lastDate="+lDate+"&gameId="+gameId;
-      console.log(url);
       const response = await fetch(url);
       if(!response.ok){
         setSessions([]);
@@ -157,8 +155,6 @@ function Raw_data() {
         setSelectedDataItems([]);
         setactiveSession(item);
         setactiveSessionData(sessionData);
-        console.log(item);
-        console.log(sessionData);
       }
       
       setSelectedSessions(prev =>
@@ -195,7 +191,6 @@ function Raw_data() {
               minValue=activeSessionData.frames[i].dataValues[item];
           }
         }
-        console.log({...selectedDataItemsValues, [item]:{...newDataItemValues, "min":minValue, "max":maxValue}});
         setSelectedDataItemsValues({...selectedDataItemsValues, [item]:{"values":newDataItemValues, "min":minValue, "max":maxValue}});
       };
     }
@@ -203,7 +198,6 @@ function Raw_data() {
 
   const obtainRawData = async (item) => {
     const url=process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/loadSessionRawData?id="+item.id;
-      console.log(url);
       const response = await fetch(url);
       if(!response.ok){
         return null;
@@ -223,10 +217,8 @@ function Raw_data() {
       setDataItems(sessionData.dataTypes);
       setSelectedDataItems([]);
       setactiveSession(item);
-      console.log(item);
       setactiveSessionData(sessionData);
     }
-    console.log(startDate);
   };
 
   const handleGameChanged = (event) =>{

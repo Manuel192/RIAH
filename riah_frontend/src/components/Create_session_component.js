@@ -17,8 +17,6 @@ function Create_session() {
     useEffect(() => {
         const fetchGames = async () => {
             try{
-                const a=process.env.REACT_APP_GENERAL_URL;
-                console.log(a);
                 const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
                 if(!response.ok){
                     setGames([]);
@@ -45,7 +43,6 @@ function Create_session() {
           try {
             const jsonData = await JSON.parse(e.target.result);
             setImportedData(jsonData);
-            console.log(jsonData);
             setImportedFileName(file.name);
           } catch (error) {
             alert("Error parsing JSON file", error);

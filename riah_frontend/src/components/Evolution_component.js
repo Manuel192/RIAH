@@ -9,10 +9,11 @@ import "../App.css"; // Archivo CSS separado
 const Evolution = () => {
   const navigate=useNavigate();
   const [graphs, setGraphs]=useState(["bar","area","bar","bar"]);
-  const [selectedGame, setSelectedGame] = useState(["","","",""]);
-  const [selectedData, setSelectedData] = useState(["","","",""]);
+  const [selectedGame, setSelectedGame] = useState([]);
+  const [selectedData, setSelectedData] = useState([]);
   const [games, setGames] = useState([]);
   const [dataOptions, setDataOptions] = useState([[],[],[],[]]);
+  const [recordID,setRecordID] = useState({});
   const [graphData, setGraphData] = useState([
     { index:0, session: "1", date: "Ene", value: 10 },
     { index:0, session: "2", date: "Feb", value: 20 },
@@ -54,12 +55,54 @@ const Evolution = () => {
         }catch(error){
             alert("La web no funciona por el momento. Inténtelo más tarde.")
         }
-        console.log(graphData);
+        const response = await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/loadRecord');
+        if(!response.ok){
+          setSelectedData(["","","",""]);
+          setSelectedGame(["","","",""]);
+          return;
+        }
+        // convert data to json
+        const responseData = await response.json();
+        setRecordID(responseData.id);
+        const graphs=responseData.graphs;
+        console.log(recordID);
+        for(var i=0;i<graphs.length;i++)
+          selectedGame.push(graphs[i].game);
+        const obtainedDataOptions=await fetchAll(graphs);
+        for(var i=0;i<graphs.length;i++)
+          selectedData.push(graphs[i].calculatedData);
+        const newGraphData=await calculateAll(graphs, obtainedDataOptions);
+        console.log(newGraphData);
+        setGraphData(newGraphData);
     }
   
     // call the function
     fetchGames()
   }, []);
+
+  const fetchAll = async (graphs) => {
+    try{
+      const newDataOptions=[...dataOptions];
+      for(var i=0;i<graphs.length;i++){
+        const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/loadCalculatedData?gameId="+graphs[i].game);
+        if(!response.ok){
+          newDataOptions[i]=[];
+          setDataOptions(newDataOptions);
+          const newSelectedData=[...selectedData];
+          newSelectedData[i]="";
+          setSelectedData(newSelectedData);
+          continue;
+        }
+        // convert data to json
+        const responseData = await response.json();
+        newDataOptions[i]=responseData;
+      }
+      setDataOptions(newDataOptions);
+      return newDataOptions;
+    }catch(error){
+        alert("La web no funciona por el momento. Inténtelo más tarde.")
+    }
+  }
 
   const fetchCalculatedData = async (gameId, index) => {
     try{
@@ -84,8 +127,42 @@ const Evolution = () => {
     }
   }
 
-  const obtainDynamicCalculus = async (event,index) => {
-    const optionToObtain=dataOptions[index].filter(data=>data.id===event.target.value).at(0);
+  const calculateAll = async (graphs, obtainedDataOptions) => {
+    const newGraphData = [];
+    for(var i=0;i<graphs.length;i++){
+      const optionToObtain=obtainedDataOptions[i].filter(data=>data.id===graphs[i].calculatedData).at(0);
+      if(optionToObtain===null){
+        alert("Algo ha ido mal.");
+        continue;
+      }
+      try{
+        const parsedParam2=optionToObtain.parameter2?optionToObtain.parameter2:"a";
+        const response = await fetch(process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/calculateData?operation="+optionToObtain.operation+
+          "&parameter1="+optionToObtain.parameter1+"&parameter2="+parsedParam2, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(optionToObtain.sessions),
+        });
+          if(!response.ok){
+            alert("No pudieron cargarse los cálculos.");
+            return;
+          }
+          // convert data to json
+          const responseData = await response.json();
+          for(var j=0;j<optionToObtain.sessions.length;j++){
+            await newGraphData.push({"index":i,"session":optionToObtain.sessions[j],"value":Math.round(responseData[optionToObtain.sessions[j]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[j]].split('T')[0]});
+          }
+      }catch(error){
+        alert("La web no funciona por el momento. Inténtelo más tarde.")
+      }
+    }
+    return newGraphData;
+  }
+
+  const obtainDynamicCalculus = async (dataId,index) => {
+    const optionToObtain=dataOptions[index].filter(data=>data.id===dataId).at(0);
     if(optionToObtain===null){
       alert("Algo ha ido mal.");
       return;
@@ -107,15 +184,12 @@ const Evolution = () => {
         // convert data to json
         const responseData = await response.json();
         const newGraphData = graphData.filter(graph => graph.index!=index);
-        console.log(newGraphData);
         for(var i=0;i<optionToObtain.sessions.length;i++){
           await newGraphData.push({"index":index,"session":optionToObtain.sessions[i],"value":Math.round(responseData[optionToObtain.sessions[i]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
         }
-        console.log(newGraphData);
         setGraphData(newGraphData);
     }catch(error){
         alert("La web no funciona por el momento. Inténtelo más tarde.")
-        console.log(error);
     }
   }
 
@@ -123,7 +197,6 @@ const Evolution = () => {
     const newSelectedGame=[...selectedGame];
     newSelectedGame[index]=event.target.value;
     setSelectedGame(newSelectedGame);
-    console.log(newSelectedGame);
     if(value===""){
       setDataOptions([]);
       const newSelectedData=[...selectedData];
@@ -138,12 +211,31 @@ const Evolution = () => {
     const newSelectedData=[...selectedData];
     newSelectedData[index]=event.target.value;
     setSelectedData(newSelectedData);
-    console.log(newSelectedData);
+
+    var data=[];
+    for(var i=0;i<selectedGame.length;i++){
+      data.push({"game":selectedGame[i],"calculatedData":newSelectedData[i]});
+    }
+
     if(event.target.value===""){
       setGraphData(graphData.filter(graph => graph.index!=index));
       return;
     }
-    obtainDynamicCalculus(event,index);
+
+    const responseCheck = await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/updateRecord', {
+      method: 'PUT',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: recordID, data: data }),
+    });
+
+    if(!responseCheck.ok){
+      alert("Algo ha ido mal al actualizar la configuración.");
+      return;
+    }
+
+    obtainDynamicCalculus(event.target.value,index);
   }
 
   const handleGraphChanged = index => async (event,value) =>{
@@ -164,7 +256,6 @@ const Evolution = () => {
     const gameName=games.filter(option=>option.id===selectedGame[index])[0].name;
     const title=gameName+"_"+dataName;
     var dataString = "Date;Session;"+dataName;
-    console.log(dataOptions[index].filter(option=>option.id===selectedData[index]));
     if(selectedData[index]===""){
       alert("Error al exportar: no se han seleccionado parámetros.");
       return;
@@ -180,7 +271,6 @@ const Evolution = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    console.log(dataString);
   };
 
 return (
