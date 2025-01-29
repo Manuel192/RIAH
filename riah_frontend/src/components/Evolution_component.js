@@ -65,15 +65,14 @@ const Evolution = () => {
         const responseData = await response.json();
         setRecordID(responseData.id);
         const graphs=responseData.graphs;
-        console.log(recordID);
         for(var i=0;i<graphs.length;i++)
           selectedGame.push(graphs[i].game);
         const obtainedDataOptions=await fetchAll(graphs);
         for(var i=0;i<graphs.length;i++)
           selectedData.push(graphs[i].calculatedData);
         const newGraphData=await calculateAll(graphs, obtainedDataOptions);
-        console.log(newGraphData);
         setGraphData(newGraphData);
+        console.log(newGraphData);
     }
   
     // call the function
@@ -128,47 +127,28 @@ const Evolution = () => {
   }
 
   const calculateAll = async (graphs, obtainedDataOptions) => {
-    const newGraphData = [];
+    var newGraphData = [];
     for(var i=0;i<graphs.length;i++){
-      const optionToObtain=obtainedDataOptions[i].filter(data=>data.id===graphs[i].calculatedData).at(0);
-      if(optionToObtain===null){
-        alert("Algo ha ido mal.");
-        continue;
-      }
-      try{
-        const parsedParam2=optionToObtain.parameter2?optionToObtain.parameter2:"a";
-        const response = await fetch(process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/calculateData?operation="+optionToObtain.operation+
-          "&parameter1="+optionToObtain.parameter1+"&parameter2="+parsedParam2, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(optionToObtain.sessions),
-        });
-          if(!response.ok){
-            alert("No pudieron cargarse los cálculos.");
-            return;
-          }
-          // convert data to json
-          const responseData = await response.json();
-          for(var j=0;j<optionToObtain.sessions.length;j++){
-            await newGraphData.push({"index":i,"session":optionToObtain.sessions[j],"value":Math.round(responseData[optionToObtain.sessions[j]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[j]].split('T')[0]});
-          }
-      }catch(error){
-        alert("La web no funciona por el momento. Inténtelo más tarde.")
-      }
+      const obtainedGraphData=await obtainDynamicCalculus(graphs[i].calculatedData,i,obtainedDataOptions);
+      if(obtainedGraphData.length>0) newGraphData=[... newGraphData, ... obtainedGraphData];
+      else newGraphData.push({"index":i,"session":"","value":0, "date":""});
     }
     return newGraphData;
   }
 
-  const obtainDynamicCalculus = async (dataId,index) => {
-    const optionToObtain=dataOptions[index].filter(data=>data.id===dataId).at(0);
+  const obtainDynamicCalculus = async (dataId,index,obtainedDataOptions) => {
+    const optionToObtain=obtainedDataOptions[index].filter(data=>data.id===dataId).at(0);
     if(optionToObtain===null){
       alert("Algo ha ido mal.");
       return;
     }
+    var parsedParam2="";
     try{
-      const parsedParam2=optionToObtain.parameter2?optionToObtain.parameter2:"a";
+      parsedParam2=optionToObtain.parameter2?optionToObtain.parameter2:"a";
+    }catch(error){
+      alert("La gráfica "+i+" indica un valor que fue borrado recientemente. Por favor, seleccione otro.");
+      return [];
+    }try{
       const response = await fetch(process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/calculateData?operation="+optionToObtain.operation+
         "&parameter1="+optionToObtain.parameter1+"&parameter2="+parsedParam2, {
           method: 'PUT',
@@ -179,17 +159,18 @@ const Evolution = () => {
       });
         if(!response.ok){
           alert("No pudieron cargarse los cálculos.");
-          return;
+          return [];
         }
         // convert data to json
         const responseData = await response.json();
-        const newGraphData = graphData.filter(graph => graph.index!=index);
+        const newGraphData = [];
         for(var i=0;i<optionToObtain.sessions.length;i++){
           await newGraphData.push({"index":index,"session":optionToObtain.sessions[i],"value":Math.round(responseData[optionToObtain.sessions[i]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
         }
-        setGraphData(newGraphData);
+        return newGraphData;
     }catch(error){
-        alert("La web no funciona por el momento. Inténtelo más tarde.")
+        alert("La web no funciona por el momento. Inténtelo más tarde.");
+        return [];
     }
   }
 
@@ -235,7 +216,11 @@ const Evolution = () => {
       return;
     }
 
-    obtainDynamicCalculus(event.target.value,index);
+    const obtainedGraphData=await obtainDynamicCalculus(event.target.value,index,dataOptions);
+    console.log(obtainedGraphData);
+    var newGraphData=graphData.filter(graph => graph.index!=index);
+    newGraphData=[... newGraphData, ...obtainedGraphData];
+    setGraphData(newGraphData);
   }
 
   const handleGraphChanged = index => async (event,value) =>{

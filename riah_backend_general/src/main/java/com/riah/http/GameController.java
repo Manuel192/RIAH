@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,4 +39,11 @@ public class GameController {
     	else
     		return ResponseEntity.ofNullable(null);
     }
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@PostMapping("/insertGame")
+	public ResponseEntity<GameDTO> insertGame(@RequestBody String name){
+		GameDTO game=gameService.insertGame(name);
+		return ResponseEntity.ok(game); 
+	}
 }

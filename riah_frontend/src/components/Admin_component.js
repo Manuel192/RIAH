@@ -110,7 +110,22 @@ function Admin() {
   }
 
   const addGame = name => async () => {
-    setGames([...games,{"name":name}]);
+    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/insertGame", {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name: name }),
+    });
+
+    if(!response.ok){
+      setGames([]);
+      alert("No se pudo insertar el nuevo juego. Inténtelo más tarde.");
+      return;
+    }
+
+    const responseData = await response.json();
+    setGames([... games, responseData]);
     setAddValue("");
     setNewGameActivated(0);
   }
