@@ -118,10 +118,10 @@
   padding: 20px;
 }
 
-.date-fields {
+.filters {
   display: flex;
+  text-align: center;
   gap: 20px;
-  margin-bottom: 20px;
 }
 
 .date-field {
@@ -132,7 +132,6 @@
 .date-input {
   padding: 8px 12px;
   font-size: 1em;
-  margin-top: 5px;
   border-radius: 5px;
   border: 1px solid #cccccc;
   background-color: #ffffff;
@@ -414,18 +413,20 @@ select {
 }
 select:focus {
   border-color: #007BFF;
-}
-
-/* Contenedor principal */
-.listado-pacientes-container {
-  display: flex;
-  justify-content: space-between;
-}
+} 
 
 /* Margen izquierdo */
 .listado-pacientes-left {
   flex: 1;
-  margin-right: 20px;
+}
+
+.scrollable-list-patients {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: #ffffff;
 }
 
 .search-bar {
@@ -433,6 +434,7 @@ select:focus {
   padding: 8px;
   margin-bottom: 10px;
   border-radius: 8px;
+  background-color: rgb(238, 238, 238);
 }
 
 .patients-list-container {
@@ -462,17 +464,9 @@ select:focus {
   background-color: #d0e7ff;
 }
 
-/* Margen derecho */
-.listado-pacientes-right {
+.patient-info {
   display:flexbox;
-  align-content:center;
-  margin-left: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
   text-align: center;
-  gap: 20px;
-  width: 50%;
-  background-color: white;
 }
 
 .button-evolucion {
@@ -506,6 +500,19 @@ select:focus {
   cursor: pointer;
   color: white;
   background-color: #e0b336;
+}
+
+.create-session{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items:center;
+  grid-template-rows: repeat(2, 1fr);
+  text-align: center;
+}
+
+.create-session-field{
+  width:300px;
+  height:40px;
 }
 
 .button-patients-list{
@@ -544,6 +551,7 @@ h1{
   font-size: 2rem;
   margin-bottom: 20px;
   font-weight: bolder;
+  text-align: center;
 }
 
 /* Línea delimitadora */
@@ -596,14 +604,13 @@ h1{
 /* Botón importar datos */
 .boton-importar {
   display: inline-block;
-  width: 50px;
-  height: 50px;
   background-color: #28a745;
   color: white;
   font-size: 1.5rem;
-  line-height: 50px;
+  padding-left: 15px;
+  padding-right: 15px;
   text-align: center;
-  border-radius: 50%;
+  border-radius: 10px;
   cursor: pointer;
 }
 
@@ -614,17 +621,17 @@ h1{
 /* Nombre del archivo */
 .nombre-archivo {
   font-size: 0.9rem;
-  color: #555;
+  color: #ffffff;
   word-break: break-all;
 }
 
-/* Botón de crear sesión */
 .boton-crear-sesion {
   padding: 15px 30px;
   background-color: #28a745;
   color: white;
   border: none;
   border-radius: 5px;
+  margin-top: 20px;
   font-size: 1rem;
   cursor: pointer;
 }
@@ -764,6 +771,41 @@ h1{
   border: 1px solid #dddddd;
   border-radius: 5px;
   padding: 10px;
+  margin-bottom: 10px;
   background-color: #ffffff;
   font-weight: bold;
+}
+
+/* Pantalla de carga */
+/* Fondo oscuro translúcido */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Fondo negro translúcido */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items:center;
+  z-index: 9999;
+  font-size: large;
+  color: white;
+}
+
+/* Spinner de carga */
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top: 5px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Animación del spinner */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

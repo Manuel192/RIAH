@@ -4,11 +4,13 @@ import { AreaChart, BarChart, Card, Title } from "@tremor/react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ResponsiveContainer } from "recharts";
 import { Tooltip } from "@mui/material";
+import LoadingScreen from "./loadingScreen"; // Importamos el componente de carga
 import "../App.css"; // Archivo CSS separado
 
 const Evolution = () => {
   const navigate=useNavigate();
   const [graphs, setGraphs]=useState(["bar","area","bar","bar"]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
   const [games, setGames] = useState([]);
@@ -53,7 +55,7 @@ const Evolution = () => {
             const responseData = await response.json();
             setGames(responseData);
         }catch(error){
-            alert("La web no funciona por el momento. Inténtelo más tarde.")
+            alert(error)
         }
         const response = await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/loadRecord');
         if(!response.ok){
@@ -72,7 +74,7 @@ const Evolution = () => {
           selectedData.push(graphs[i].calculatedData);
         const newGraphData=await calculateAll(graphs, obtainedDataOptions);
         setGraphData(newGraphData);
-        console.log(newGraphData);
+        setIsLoading(false);
     }
   
     // call the function
@@ -137,37 +139,27 @@ const Evolution = () => {
   }
 
   const obtainDynamicCalculus = async (dataId,index,obtainedDataOptions) => {
+    console.log(obtainedDataOptions);
     const optionToObtain=obtainedDataOptions[index].filter(data=>data.id===dataId).at(0);
-    if(optionToObtain===null){
-      alert("Algo ha ido mal.");
-      return;
-    }
-    var parsedParam2="";
-    try{
-      parsedParam2=optionToObtain.parameter2?optionToObtain.parameter2:"a";
-    }catch(error){
-      alert("La gráfica "+i+" indica un valor que fue borrado recientemente. Por favor, seleccione otro.");
-      return [];
-    }try{
-      const response = await fetch(process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/calculateData?operation="+optionToObtain.operation+
-        "&parameter1="+optionToObtain.parameter1+"&parameter2="+parsedParam2, {
+    try{ 
+      console.log(obtainedDataOptions);
+      const response = await fetch(process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/calculateData?operation="+optionToObtain.operation, {
           method: 'PUT',
           headers: {
               'Content-Type': 'application/json',
           },
-          body: JSON.stringify(optionToObtain.sessions),
+          body: JSON.stringify({"sessions":optionToObtain.sessions,"parameters":optionToObtain.parameters}),
       });
-        if(!response.ok){
-          alert("No pudieron cargarse los cálculos.");
-          return [];
-        }
-        // convert data to json
-        const responseData = await response.json();
-        const newGraphData = [];
-        for(var i=0;i<optionToObtain.sessions.length;i++){
-          await newGraphData.push({"index":index,"session":optionToObtain.sessions[i],"value":Math.round(responseData[optionToObtain.sessions[i]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
-        }
-        return newGraphData;
+      if(!response.ok){
+        alert("No existen datos calculables para este juego o no cargaron correctamente.");
+        return;
+      }
+      const responseData = await response.json();
+      const newGraphData = [];
+      for(var i=0;i<optionToObtain.sessions.length;i++){
+        await newGraphData.push({"index":index,"session":optionToObtain.sessions[i],"value":Math.round(responseData[optionToObtain.sessions[i]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
+      }
+      return newGraphData;
     }catch(error){
         alert("La web no funciona por el momento. Inténtelo más tarde.");
         return [];
@@ -259,96 +251,99 @@ const Evolution = () => {
   };
 
 return (
-<>
-    <div className="sub-banner">
-        <button className="nav-button">Home</button> &gt; 
-        <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
-        <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
-      Evolución - Juan Pérez
-    </div>
-    <div div class="app">
-    <div className="usuario-detalle-container">
-      {/* Título */}
-      <h1>Evolución - Juan Pérez</h1>
-      <div class="graphs">
-        {/* Sección Superior */}
-        {graphs.map((graph, index) => (
-          <Card className="tremor-Card">
-          <div className="seccion-inferior">
-          <div className="campo">
-            <h3>JUEGO</h3>
-            <select id="dropdown" value={selectedGame[index]} className="dropdown" onChange={handleGameChanged(index)}>
-                <option value="">Ninguno</option>
-                    {games?.map((option, index) => (
-                        <option key={index} value={option.id}>
-                        {option.name}
-                        </option>
-                    ))}
-                </select>
-          </div>
+  <>
+  {/* Pantalla de carga */}
+  <LoadingScreen isLoading={isLoading} />
 
-          <div className="campo">
-            <h3>DATO</h3>
-            <select id="dropdown" value={selectedData[index]} className="dropdown" onChange={handleDataOptionChanged(index)} disabled={selectedGame[index]===""}>
-                <option value="">Ninguno</option>
-                    {dataOptions[index]?.map((option, index) => (
-                        <option key={index} value={option.id}>
-                        {option.name}
-                        </option>
-                    ))}
-                </select>
-          </div>
+  <div className="sub-banner">
+      <button className="nav-button">Home</button> &gt; 
+      <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
+      <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
+    Evolución - Juan Pérez
+  </div>
+  <div div class="app">
+  <div className="usuario-detalle-container">
+    {/* Título */}
+    <h1>Evolución - Juan Pérez</h1>
+    <div class="graphs">
+      {/* Sección Superior */}
+      {graphs.map((graph, index) => (
+        <Card className="tremor-Card">
+        <div className="seccion-inferior">
+        <div className="campo">
+          <h3>JUEGO</h3>
+          <select id="dropdown" value={selectedGame[index]} className="dropdown" onChange={handleGameChanged(index)}>
+              <option value="">Ninguno</option>
+                  {games?.map((option, index) => (
+                      <option key={index} value={option.id}>
+                      {option.name}
+                      </option>
+                  ))}
+              </select>
+        </div>
 
-          <div className="campo">
-            <h3>GRÁFICO</h3>
-            <select 
-              className="dropdown"
-              value={graphs[index]}
-              onChange={handleGraphChanged(index)}
-              disabled={selectedData[index]===""}
-            >
-              <option value="area">G. Lineal</option>
-              <option value="bar">G. Barras</option>
-            </select>
-          </div>
-        </div> 
-          {graph==="area"?(
-            <AreaChart
-            data={graphData.filter(graph=>graph.index==index)}
-            index="date"
-            categories={["value"]}
-            onValueChange={(v) => console.log(v)}
-            xLabel="Time"
-            valueFormatter={(value, index) => `${value}m/s`}
-            yLabel="Velocity"
-            fill="solid"
-            showLegend={false}
-            showXAxis={true}
-            tooltip={({ index }) => <CustomTooltip index={index} />}
+        <div className="campo">
+          <h3>DATO</h3>
+          <select id="dropdown" value={selectedData[index]} className="dropdown" onChange={handleDataOptionChanged(index)} disabled={selectedGame[index]===""}>
+              <option value="">Ninguno</option>
+                  {dataOptions[index]?.map((option, index) => (
+                      <option key={index} value={option.id}>
+                      {option.name}
+                      </option>
+                  ))}
+              </select>
+        </div>
+
+        <div className="campo">
+          <h3>GRÁFICO</h3>
+          <select 
+            className="dropdown"
+            value={graphs[index]}
+            onChange={handleGraphChanged(index)}
+            disabled={selectedData[index]===""}
           >
-          </AreaChart>
-          ):""}
-          {graph==="bar"?(
-            <BarChart
-                data={graphData.filter(graph=>graph.index==index)}
-                index="date"
-                xLabel="Time"
-                yLabel="Velocity"
-                categories={['value']}
-                valueFormatter={(value, index) => `${value}m/s`}
-                showLegend={false}
-                showXAxis={true}
-                tooltip={({ index }) => <CustomTooltip index={index} />}
-                >
-              </BarChart>
-          ):""}
-           <button className='btn mostrar' onClick={()=>exportDataToCsv(index)}>Exportar</button>
-        </Card>
-        ))}       
-      </div>
-      </div>
-      </div>
-    </>
+            <option value="area">G. Lineal</option>
+            <option value="bar">G. Barras</option>
+          </select>
+        </div>
+      </div> 
+        {graph==="area"?(
+          <AreaChart
+          data={graphData.filter(graph=>graph.index==index)}
+          index="date"
+          categories={["value"]}
+          onValueChange={(v) => console.log(v)}
+          xLabel="Time"
+          valueFormatter={(value, index) => `${value}m/s`}
+          yLabel="Velocity"
+          fill="solid"
+          showLegend={false}
+          showXAxis={true}
+          tooltip={({ index }) => <CustomTooltip index={index} />}
+        >
+        </AreaChart>
+        ):""}
+        {graph==="bar"?(
+          <BarChart
+              data={graphData.filter(graph=>graph.index==index)}
+              index="date"
+              xLabel="Time"
+              yLabel="Velocity"
+              categories={['value']}
+              valueFormatter={(value, index) => `${value}m/s`}
+              showLegend={false}
+              showXAxis={true}
+              tooltip={({ index }) => <CustomTooltip index={index} />}
+              >
+            </BarChart>
+        ):""}
+          <button className='btn mostrar' onClick={()=>exportDataToCsv(index)}>Exportar</button>
+      </Card>
+      ))}       
+    </div>
+    </div>
+    </div>
+  </>
   );
 };
 

@@ -114,7 +114,7 @@ function Raw_data() {
       const response = await fetch(url);
       if(!response.ok){
         setSessions([]);
-        alert("No hay sesiones para el usuario durante las fechas indicadas.");
+        alert("El paciente no ha realizado sesiones que cumplan con el filtro establecido.");
         return;
       }
       const sessionData = await response.json();
@@ -243,41 +243,42 @@ function Raw_data() {
     </div>
     <div className="app">
     <h1>Gestión de sesiones - Juan Pérez</h1>
-    <hr className="linea-delimitadora" />
     <h3>FILTROS</h3>
-        <div className="date-fields">
-          <div className="date-field">
-            <span>FECHA INICIO</span>
-            <input 
-              type="date" 
-              value={startDate} 
-              onChange={(e) => handleSetStartDate(e.target.value)} 
-              className="date-input" 
-            />
-          </div>
-          <div className="date-field">
-            <span>FECHA FIN</span>
-            <input 
-              type="date" 
-              value={endDate} 
-              onChange={(e) => handleSetEndDate(e.target.value)} 
-              className="date-input" 
-            />
-          </div>
-          <div className="date-field">
-            <span>JUEGO</span>
-            <select id="dropdown" className='date-input' value={game} onChange={handleGameChanged}>
-              <option value="">Ninguno</option>
-              {games?.map((option, index) => (
-                <option key={index} value={option.id}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button className="btn search " onClick={loadSessions}>Buscar</button>
+    <div class="rectangle">
+      <div className="filters">
+        <div className="date-field">
+          <span>FECHA INICIO</span>
+          <input 
+            type="date" 
+            value={startDate} 
+            onChange={(e) => handleSetStartDate(e.target.value)} 
+            className="date-input" 
+          />
         </div>
-        <hr className="linea-delimitadora" />
+        <div className="date-field">
+          <span>FECHA FIN</span>
+          <input 
+            type="date" 
+            value={endDate} 
+            onChange={(e) => handleSetEndDate(e.target.value)} 
+            className="date-input" 
+          />
+        </div>
+        <div className="date-field">
+          <span>JUEGO</span>
+          <select id="dropdown" className='date-input' value={game} onChange={handleGameChanged}>
+            <option value="">Ninguno</option>
+            {games?.map((option, index) => (
+              <option key={index} value={option.id}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button className="btn search " onClick={loadSessions}>Buscar</button>
+      </div>
+    </div>
+        {sessions.length>0?
         <div className="list-sections">
           <div className="list-container">
             <h3>SESIONES</h3>
@@ -310,6 +311,7 @@ function Raw_data() {
             </div>
           </div>
         </div>
+        :""}
 
       {/* Modal para confirmar */}
       {isModalOpen && <Modal onClose={handleCloseModal} onConfirm={handleConfirm} />}

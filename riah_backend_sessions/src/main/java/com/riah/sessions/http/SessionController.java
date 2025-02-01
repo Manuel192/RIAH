@@ -62,16 +62,8 @@ public class SessionController {
 	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@PutMapping("/calculateData")
-	public ResponseEntity<Map<UUID, Double>> calculateData (@RequestParam String operation,@RequestParam String parameter1, @RequestParam Optional<String> parameter2,  @RequestBody List<String> sessions) throws ParseException{
-		switch(operation) {
-		case "Mean":
-			Map<UUID,Double> sessionsMeans=sessionService.calculateMeans(parameter1,sessions);
-			return ResponseEntity.ok(sessionsMeans);
-		case "Difference":
-			Map<UUID,Double> sessionsDifferences=sessionService.calculateDifferences(parameter1, parameter2.get(), sessions);
-			return ResponseEntity.ok(sessionsDifferences);
-		default:
-			return ResponseEntity.ofNullable(null);
-		}
+	public ResponseEntity<Map<UUID, String>> calculateData (@RequestParam String operation, @RequestBody String sessionsParameters) throws ParseException{
+		Map<UUID,String> sessionsMeans=sessionService.calculateData(sessionsParameters, operation);
+		return ResponseEntity.ok(sessionsMeans);
 	}
 } 

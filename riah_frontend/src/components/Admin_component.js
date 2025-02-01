@@ -11,6 +11,7 @@ function Admin() {
   const [parameters, setParameters] = useState([]); 
   const [calculatedData, setCalculatedData] = useState([]);
   const [newParameterActivated, setNewParameterActivated] = useState([]);
+  const [newCDataActivated, setNewCDataActivated] = useState([]);
   const [newGameActivated, setNewGameActivated] = useState(0);
   const [addValue, setAddValue] = useState("");
 
@@ -23,7 +24,7 @@ function Admin() {
     if (listContainer) {
       listContainer.scrollTop = listContainer.scrollHeight;
     }
-  }, [newParameterActivated]);
+  }, [newParameterActivated, newCDataActivated]);
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -37,11 +38,11 @@ function Admin() {
         // convert data to json
         const gamesParsed = await responseGames.json();
         setGames(gamesParsed);
-        var newParameterActivatedTemp=[];
+        var newActivatedTemp=[];
         var calculatedDataTemp=[];
         var parametersTemp=[];
         for(var i=0;i<gamesParsed?.length;i++){
-          newParameterActivatedTemp.push({"id":gamesParsed[i].id,"value":0});
+          newActivatedTemp.push({"id":gamesParsed[i].id,"value":0});
           const responseCalculatedData = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/loadCalculatedData?gameId="+gamesParsed[i].id);
           if(responseCalculatedData.ok){
             const calculatedDataParse=await responseCalculatedData.json();
@@ -56,7 +57,8 @@ function Admin() {
         }
         setCalculatedData(calculatedDataTemp);
         setParameters(parametersTemp);
-        setNewParameterActivated(newParameterActivatedTemp);
+        setNewParameterActivated(newActivatedTemp);
+        setNewCDataActivated(newActivatedTemp);
       }catch(error){
         alert("La web no funciona por el momento. Inténtelo más tarde.")
       }
@@ -74,6 +76,24 @@ function Admin() {
     var newParameterActivatedTemp=newParameterActivated.filter(p=>(p.id!==gameId));
     newParameterActivatedTemp.push({"id":gameId,"value":1});
     setNewParameterActivated(newParameterActivatedTemp);
+  }
+
+  const activateNewCalculatedDataPanel = gameId => () =>{
+    var newCDataActivatedTemp=newParameterActivated.filter(p=>(p.id!==gameId));
+    newCDataActivatedTemp.push({"id":gameId,"value":1});
+    setNewCDataActivated(newCDataActivatedTemp);
+  }
+
+  const deactivateNewParameterPanel = gameId => () => {
+    var newParameterActivatedTemp=newParameterActivated.filter(p=>(p.id!==gameId));
+    newParameterActivatedTemp.push({"id":gameId,"value":0});
+    setNewParameterActivated(newParameterActivatedTemp);
+  }
+
+  const deactivateNewCalculatedDataPanel = gameId => () => {
+    var newCDataActivatedTemp=newParameterActivated.filter(p=>(p.id!==gameId));
+    newCDataActivatedTemp.push({"id":gameId,"value":0});
+    setNewCDataActivated(newCDataActivatedTemp);
   }
 
   const addParameter = (gameId, name) => async () => {
@@ -134,16 +154,6 @@ function Admin() {
     setNewGameActivated(0);
   }
 
-  const deactivateNewParameterPanel = gameId => () => {
-    var newParameterActivatedTemp=newParameterActivated.filter(p=>(p.id!==gameId));
-    newParameterActivatedTemp.push({"id":gameId,"value":0});
-    setNewParameterActivated(newParameterActivatedTemp);
-  }
-
-  const activateNewCalculatedDataPanel = (gameId) =>{
-    
-  }
-
   return (
   <>
     <div class="app">
@@ -157,12 +167,12 @@ function Admin() {
     <br/><br/>
     <button className="button-admin-game" onClick={activateNewGamePanel}>Nuevo juego</button>
     {newGameActivated===1?
-              <div class="rectangle">
-                <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
-                <button className="button-admin-cancel" onClick={deactivateNewGamePanel}> Cancelar </button>
-                <button className="button-admin-new" onClick={addGame(addValue)}> Añadir </button>
-              </div>
-            :""}
+      <div class="rectangle">
+        <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
+        <button className="button-admin-cancel" onClick={deactivateNewGamePanel}> Cancelar </button>
+        <button className="button-admin-new" onClick={addGame(addValue)}> Añadir </button>
+      </div>
+    :""}
     {games.map((game, index) => (
     <>
     <h1>{game.name}</h1>
@@ -195,7 +205,7 @@ function Admin() {
       <div className="admin-right">
         <div className="list-container">
         <h3>CÁLCULOS</h3>
-          <div className="scrollable-list" id="scrollable-list">
+          <div className="scrollable-list">
           {calculatedData.filter(cData=>cData.id===game.id)[0]?.data.map((cData, index) => (
               <div
                 key={index}
@@ -203,6 +213,25 @@ function Admin() {
                 {cData.name}
               </div>
             ))}
+          {newCDataActivated.filter(p=>p.id===game.id)[0]?.value===1?
+          <>
+              <div className={`list-item`}>
+                <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
+                <button className="button-admin-cancel" onClick={deactivateNewCalculatedDataPanel(game.id)}> Cancelar </button>
+                <button className="button-admin-new" onClick={addParameter(game.id, addValue)}> Añadir </button>
+                <div className={`list-item`}>
+                  <select id="dropdown" className='date-input' value={game}>
+                    <option value="">Selecciona una operación</option>
+                    {games?.map((option, index) => (
+                      <option key={index} value={option.id}>
+                        {option.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              </>
+            :""}
           </div>
         <button className="button-admin-add" onClick={activateNewCalculatedDataPanel(game.id)}>+</button>
         </div>

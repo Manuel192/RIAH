@@ -50,46 +50,41 @@ function Patients_list() {
     </div>
     <div class="app">
     <h1>Listado de pacientes</h1>
-    <hr className="linea-delimitadora" />
     <div className="listado-pacientes-container">
       {/* Margen izquierdo */}
-      <div className="listado-pacientes-left">
-        <input
-          type="text"
-          placeholder="Buscar paciente..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-bar"
-        />
-          <div className="list-container">
-            <div className="scrollable-list">
-            {filteredPatients.map((patient, index) => (
-              <div
-                key={index}
-                onClick={() => handleSelectPatient(patient)}
-                className={`list-item ${selectedPatient === patient ?"selected" : ""}`}>
-                {patient}
-              </div>
-            ))}
+      <div className="list-container">
+        <div className="scrollable-list-patients">
+          <input
+            type="text"
+            placeholder="Buscar paciente..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-bar"
+          />
+          {filteredPatients.map((patient, index) => (
+            <div
+              key={index}
+              onClick={() => handleSelectPatient(patient)}
+              className={`list-item ${selectedPatient === patient ?"selected" : ""}`}>
+              {patient}
+            </div>
+          ))}
           </div>
           </div>
         </div>
 
       {/* Margen derecho */}
-      <div className="listado-pacientes-right">
-        {selectedPatient ? (
-          <>
-            <h3>{selectedPatient}</h3>
-            <button className="button-aniadir-sesion" onClick={handleCreateSession}>Añadir sesión</button>
-            <button className="button-evolucion" onClick={handleEvolution}>Evolución</button>
-            <button className="button-gestionar-datos" onClick={handleRawData}>Gestionar sesiones</button>
-          </>
+      {selectedPatient ? (
+        <div className="patient-info rectangle">
+          <h3>{selectedPatient}</h3>
+          <button className="button-aniadir-sesion" onClick={handleCreateSession}>Añadir sesión</button>
+          <button className="button-evolucion" onClick={handleEvolution}>Evolución</button>
+          <button className="button-gestionar-datos" onClick={handleRawData}>Gestionar sesiones</button>
+        </div>
         ) : (
-          <p style={{height:"150px", alignContent:"center"}}>Selecciona un paciente de la lista</p>
+          ""
         )}
       </div>
-    </div>
-    </div>
     </>
   );
  }

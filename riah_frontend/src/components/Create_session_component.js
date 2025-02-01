@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import "../App.css";
+import { width } from "@mui/system";
 
 function Create_session() {
     const location=useLocation();
@@ -125,42 +126,36 @@ function Create_session() {
         </div>
         <div class="app">
             <h1 className="titulo">Nueva sesión - Juan Pérez</h1>
-    
-            <hr className="linea-delimitadora" />
-            <div>
-                <div class="importar">
-                    <h3>Importar Datos</h3>
-                    <label className="boton-importar" htmlFor="import-json">
-                        +
-                        </label>
-                        <input
-                        type="file"
-                        id="import-json"
-                        accept="application/json"
-                        onChange={handleImportJson}
-                        style={{ display: "none" }}
-                        />
-                    {importedFileName && <p className="nombre-archivo">{importedFileName}</p>}
-                </div>
+            <div class="rectangle create-session">
                 <h3>Juego</h3>
-                <select id="dropdown" value={selectedGame} className="date-input" onChange={handleGameChanged}>
-                <option value="">Ninguno</option>
+                <h3>Fecha</h3>
+                <h3>Importar Datos</h3>
+                <select id="dropdown" value={selectedGame} className="date-input create-session-field" onChange={handleGameChanged}>
+                <option value="">Selecciona un juego</option>
                     {games?.map((option, index) => (
                         <option key={index} value={option.id}>
                         {option.name}
                         </option>
                     ))}
                 </select>
-                <h3>Fecha</h3>
                 <input 
-                type="date" 
-                value={selectedDate} 
-                onChange={(e) => handleSetselectedDate(e.target.value)} 
-                className="date-input" 
+                    type="date" 
+                    value={selectedDate} 
+                    onChange={(e) => handleSetselectedDate(e.target.value)} 
+                    className="date-input create-session-field" 
                 />
-            </div>
-            <hr className="linea-delimitadora" />
-    
+                <label className="boton-importar" htmlFor="import-json">
+                    +
+                    {importedFileName && <p className="nombre-archivo">{importedFileName}</p>}
+                    </label>
+                    <input
+                    type="file"
+                    id="import-json"
+                    accept="application/json"
+                    onChange={handleImportJson}
+                    style={{ display: "none" }}
+                    />
+                </div>
             <button className="boton-crear-sesion" onClick={handleCreateSession}>CREAR SESIÓN</button>
             </div>
         </>

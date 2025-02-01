@@ -21,11 +21,8 @@ public class CalculatedDataDTO{
 	@JsonProperty("operation")
     private String operation;
 
-	@JsonProperty("parameter1")
-    private String parameter1;
-	
-	@JsonProperty("parameter2")
-    private String parameter2;
+	@JsonProperty("parameters")
+    private List<CalculatedDataParameterDTO> parameters;
 	
 	@JsonProperty("sessions")
 	private List<String> sessions;
@@ -57,20 +54,12 @@ public class CalculatedDataDTO{
 		this.sessionDates = sessionDates;
 	}
 
-	public String getParameter1() {
-		return parameter1;
+	public List<CalculatedDataParameterDTO> getParameters() {
+		return parameters;
 	}
 
-	public void setParameter1(String parameter1) {
-		this.parameter1 = parameter1;
-	}
-
-	public String getParameter2() {
-		return parameter2;
-	}
-
-	public void setParameter2(String parameter2) {
-		this.parameter2 = parameter2;
+	public void setParameters(List<CalculatedDataParameterDTO> parameters) {
+		this.parameters = parameters;
 	}
 
 	public UUID getId() {

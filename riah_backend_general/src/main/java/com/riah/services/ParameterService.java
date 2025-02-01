@@ -46,6 +46,15 @@ public class ParameterService {
 		List<ParameterDTO> parsedParameter= mapParameters(parameters);
 		return parsedParameter;
 	}
+	
+	public List<String> loadParametersNames(String id) throws ParseException {
+		Game game=new Game(UUID.fromString(id));
+		List<Parameter> parameters=parameterDAO.findByGame(game);
+		List<String> result=new ArrayList<>();
+		for(int i=0;i<parameters.size();i++)
+			result.add(parameters.get(i).getName());
+		return result;
+	}
 
 	private List<ParameterDTO> mapParameters(List<Parameter> parameters) {
 		return parameters.stream().map(parameter -> {

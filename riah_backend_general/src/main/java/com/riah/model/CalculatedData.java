@@ -31,12 +31,6 @@ import jakarta.persistence.Table;
 	     
 	    @Column(name = "operation", nullable = false)
 	    private String operation;
-
-		@Column(name = "parameter1", nullable = false)
-	    private String parameter1;
-	    
-	    @Column(name = "parameter2")
-	    private String parameter2;
 	    
 	    @PrePersist
 	    public void prePersist() {
@@ -91,21 +85,5 @@ import jakarta.persistence.Table;
 
 		public void setOperation(String operation) {
 			this.operation = operation;
-		}
-
-		public String getParameter1() {
-			return parameter1;
-		}
-
-		public void setParameter1(String parameter1) {
-			this.parameter1 = parameter1;
-		}
-
-		public String getParameter2() {
-			return parameter2;
-		}
-
-		public void setParameter2(String parameter2) {
-			this.parameter2 = parameter2;
 		}
 	}
