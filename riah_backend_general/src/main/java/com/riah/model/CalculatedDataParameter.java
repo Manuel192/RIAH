@@ -29,7 +29,14 @@ import jakarta.persistence.Table;
 	    @JoinColumn(name = "parameter_id", nullable = false)
 	    private Parameter parameter;
 	    
-	    @ManyToOne
+	    public CalculatedDataParameter(Parameter parameter, CalculatedData calculatedData, int parameter_order) {
+			super();
+			this.parameter = parameter;
+			this.calculatedData = calculatedData;
+			this.parameter_order = parameter_order;
+		}
+
+		@ManyToOne
 	    @JoinColumn(name = "calculatedData_id", nullable = false)
 	    private CalculatedData calculatedData; 
 	    

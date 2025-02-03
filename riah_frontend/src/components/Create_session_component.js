@@ -42,9 +42,16 @@ function Create_session() {
         const reader = new FileReader();
         reader.onload = async (e) => {
           try {
-            const jsonData = await JSON.parse(e.target.result);
-            setImportedData(jsonData);
+            const content=e.target.result;
             setImportedFileName(file.name);
+            const fileExtension = file.name.split(".").pop().toLowerCase();
+            if(fileExtension==="json"){
+                const jsonData = await JSON.parse(content);
+                setImportedData(jsonData);
+            }else if(fileExtension === "csv"){
+                const jsonData = parseCSVtoJSON(content);
+                setImportedData(jsonData);
+            }
           } catch (error) {
             alert("Error parsing JSON file", error);
           }
@@ -52,6 +59,21 @@ function Create_session() {
         reader.readAsText(file);
       }
     };
+
+    const parseCSVtoJSON = (csvString) => {
+        const lines = csvString.trim().split("\n");
+        const headers = lines[0].split(";").map(header => header.trim());
+        const result = lines.slice(1).map(line => {
+          const values = line.split(";").map(value => value.trim());
+          let obj = {};
+          headers.forEach((header, index) => {
+            obj[header] = values[index] || ""; // Asigna valores a las claves correctas
+          });
+          return obj;
+        });
+        console.log(result);
+        return result;
+      };
 
     const handleCreateSession = async () => {
         if(!user || !selectedDate || !selectedGame || !importedData){
@@ -144,14 +166,14 @@ function Create_session() {
                     onChange={(e) => handleSetselectedDate(e.target.value)} 
                     className="date-input create-session-field" 
                 />
-                <label className="boton-importar" htmlFor="import-json">
+                <label className="boton-importar" htmlFor="import-json-csv">
                     +
                     {importedFileName && <p className="nombre-archivo">{importedFileName}</p>}
                     </label>
                     <input
                     type="file"
-                    id="import-json"
-                    accept="application/json"
+                    id="import-json-csv"
+                    accept=".json,.csv"
                     onChange={handleImportJson}
                     style={{ display: "none" }}
                     />

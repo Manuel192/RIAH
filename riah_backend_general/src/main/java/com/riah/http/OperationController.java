@@ -19,34 +19,37 @@ import org.springframework.web.bind.annotation.RestController;
 import com.riah.dao.SessionDAO;
 import com.riah.model.CalculatedDataDTO;
 import com.riah.model.GameDTO;
+import com.riah.model.OperationDTO;
 import com.riah.model.ParameterDTO;
 import com.riah.model.Session;
 import com.riah.services.CalculatedDataService;
 import com.riah.services.GameService;
+import com.riah.services.OperationService;
+import com.riah.services.ParameterService;
 import com.riah.services.SessionService;
 import com.riah.model.SessionDTO;
 
 @RestController
-@RequestMapping("/calculatedData")
-public class CalculatedDataController {
+@RequestMapping("/operation")
+public class OperationController {
 	
 	@Autowired
-	private CalculatedDataService calculatedDataService;
+	private OperationService operationService;
 	
 	@CrossOrigin(origins = "http://localhost:3000")
-	@GetMapping("/loadCalculatedData")
-    public ResponseEntity<List<CalculatedDataDTO>> loadCalculatedData(@RequestParam String gameId) throws ParseException{
-		List<CalculatedDataDTO> calculatedData=calculatedDataService.loadCalculatedData(gameId);
-    	if(!calculatedData.isEmpty())
-			return ResponseEntity.ok(calculatedData);
+	@GetMapping("/loadOperations")
+    public ResponseEntity<List<OperationDTO>> loadOperations() throws ParseException{
+		List<OperationDTO> operations=operationService.loadOperations();
+    	if(!operations.isEmpty())
+			return ResponseEntity.ok(operations);
     	else
     		return ResponseEntity.ofNullable(null);
     }
 	
 	@CrossOrigin(origins = "http://localhost:3000")
-	@PostMapping("/insertCalculatedData")
-	public ResponseEntity<CalculatedDataDTO> insertCalculatedData(@RequestBody String cData){
-		CalculatedDataDTO result=calculatedDataService.insertCalculatedData(cData);
+	@PostMapping("/insertOperation")
+	public ResponseEntity<OperationDTO> insertOperation(@RequestBody String operation){
+		OperationDTO result=operationService.insertOperation(operation);
 		return ResponseEntity.ok(result); 
 	}
 }

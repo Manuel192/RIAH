@@ -2,6 +2,8 @@ package com.riah.sessions.services;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -33,5 +35,15 @@ public class OperationService {
 			result+=lines.get(i)+"\n";
 		;
 		return result;
+	}
+	
+	public boolean insertOperation(String operation) {
+		JSONObject json = new JSONObject(operation);
+		String id=json.getString("id");
+		String[] lines=json.getString("python").split("\n");
+		List<String> parsedLines=Arrays.asList(lines);
+		Operation op=new Operation(id,parsedLines);
+		operationDAO.insertOperation(op);
+		return true;
 	}
 }

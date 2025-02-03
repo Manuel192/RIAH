@@ -29,8 +29,8 @@ function User_panel() {
             <br/>
             le permitirá hacer. Cualquier comentario será de utilidad para un mejor resultado final.
             <br/>
+            <button className="button-patients-list" onClick={handlePatientList}>Lista de pacientes</button>
         </div>
-        <button className="button-patients-list" onClick={handlePatientList}>Lista de pacientes</button>
     </div>
     </>
     )

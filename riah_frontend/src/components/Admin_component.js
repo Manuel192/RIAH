@@ -1,8 +1,6 @@
 import React, { act, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
-import { height } from '@mui/system';
-import { Input } from 'postcss';
 
 function Admin() {    
   // Estado para la búsqueda y la selección
@@ -13,7 +11,15 @@ function Admin() {
   const [newParameterActivated, setNewParameterActivated] = useState([]);
   const [newCDataActivated, setNewCDataActivated] = useState([]);
   const [newGameActivated, setNewGameActivated] = useState(0);
+  const [newOperationActivated, setNewOperationActivated] = useState(0);
   const [addValue, setAddValue] = useState("");
+
+  const [operations, setOperations] = useState([]);
+  const [selectedOperation, setSelectedOperation] = useState();
+  const [cDataParameters, setCDataParameters] = useState ([]);
+  const [addNoParameters, setAddNoParameters] = useState();
+  const [importedFileName, setImportedFileName] = useState("");
+  const [importedData, setImportedData] = useState(null);
 
   // Lista de pacientes (solo incluye "Juan Pérez" como se indicó)
   const pacientes = ["Juan Pérez"];
@@ -32,12 +38,22 @@ function Admin() {
         const responseGames = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames");
         if(!responseGames.ok){
           setGames([]);
-          alert("No pudieron cargarse los juegos para filtrar.");
+          alert("No pudieron cargarse los juegos.");
           return;
         }
         // convert data to json
         const gamesParsed = await responseGames.json();
         setGames(gamesParsed);
+        const responseOperations = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations");
+        if(!responseOperations.ok){
+          setOperations([]);
+          alert("No pudieron cargarse las operaciones.");
+          return;
+        }
+        // convert data to json
+        const operationsParsed = await responseOperations.json();
+        setOperations(operationsParsed);
+
         var newActivatedTemp=[];
         var calculatedDataTemp=[];
         var parametersTemp=[];
@@ -68,8 +84,29 @@ function Admin() {
     fetchGames()
   }, []);
 
+  const handleImportPython = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const content=e.target.result;
+          setImportedData(content);
+          setImportedFileName(file.name);
+        } catch (error) {
+          alert("Error al importar el archivo Python.", error);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
   const activateNewGamePanel = () =>{
     setNewGameActivated(1);
+  }
+
+  const activateNewOperationPanel = () =>{
+    setNewOperationActivated(1);
   }
 
   const activateNewParameterPanel = gameId => () => {
@@ -96,29 +133,55 @@ function Admin() {
     setNewCDataActivated(newCDataActivatedTemp);
   }
 
-  const addParameter = (gameId, name) => async () => {
-    const parametersTemp=parameters;
-    if(parameters.filter(p=>p.id===gameId).length>0){
-      if(name==="" || parameters.filter(p=>p.id===gameId)[0].data.filter(d=>d.name===name).length>0){
-        alert("No se puede insertar el nuevo parámetro: el valor es repetido o no es válido. Pruebe con otro valor.");
-        return;
-      }
-    }else{
-      parametersTemp.push({"id":gameId,"data":[]});
+  const addCData = (gameId) => async () => {
+    const cDataTemp=calculatedData;
+    if(addValue==="" || selectedOperation ==="" || cDataParameters.length<1 || cDataParameters.filter(param => param === "").length>0){
+      alert("No se puede insertar el nuevo cálculo. Asegúrese de haber rellenado los campos correctamente.");
+      return;
     }
-    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/parameter/insertParameter", {
+    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/insertCalculatedData", {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ game: gameId, name: name }),
+      body: JSON.stringify({ game: gameId, name: addValue, operation: selectedOperation, parameters: cDataParameters }),
     });
 
     if(!response.ok){
-      setGames([]);
-      alert("No se pudo insertar el nuevo parámetro. Inténtelo más tarde.");
+      alert("No se pudo insertar el nuevo cálculo. Asegúrese de haber rellenado los campos correctamente.");
       return;
     }
+    const responseData = await response.json();
+    const newGameCalculatedData=cDataTemp.filter(p=>p.id===gameId)[0];
+    const newCData=cDataTemp.filter(p=>p.id!==gameId);
+    newGameCalculatedData.data.push(responseData);
+    newCData.push(newGameCalculatedData);
+    setAddValue("");
+    setCalculatedData(newCData);
+  }
+
+    const addParameter = (gameId, name) => async () => {
+      const parametersTemp=parameters;
+      if(parameters.filter(p=>p.id===gameId).length>0){
+        if(name==="" || parameters.filter(p=>p.id===gameId)[0].data.filter(d=>d.name===name).length>0){
+          alert("No se puede insertar el nuevo parámetro. Asegúrese de haber rellenado los campos correctamente.");
+          return;
+        }
+      }else{
+        parametersTemp.push({"id":gameId,"data":[]});
+      }
+      const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/parameter/insertParameter", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ game: gameId, name: name }),
+      });
+  
+      if(!response.ok){
+        alert("No se pudo insertar el nuevo parámetro. Inténtelo más tarde.");
+        return;
+      }
 
     const responseData = await response.json();
     const newGameParameters=parametersTemp.filter(p=>p.id===gameId)[0];
@@ -137,50 +200,134 @@ function Admin() {
       },
       body: JSON.stringify({ name: name }),
     });
-
     if(!response.ok){
       setGames([]);
       alert("No se pudo insertar el nuevo juego. Inténtelo más tarde.");
       return;
     }
-
     const responseData = await response.json();
     setGames([... games, responseData]);
     setAddValue("");
     setNewGameActivated(0);
   }
 
+  const addOperation = async () => {
+    if(addValue==="" || addNoParameters==="" || importedData===null){
+      alert("No se puede insertar la nueva operación. Asegúrese de haber rellenado todos los campos correctamente.");
+      return;
+    }
+    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/insertOperation", {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name: addValue, noParameters: addNoParameters }),
+    });
+    if(!response.ok){
+      alert("No se pudo insertar la nueva operación. Asegúrese de haber rellenado todos los campos correctamente.");
+      return;
+    }
+    const responseData = await response.json();
+
+    const responseRaw = await fetch(process.env.REACT_APP_SESSIONS_URL+"/rawDataOperation/insertOperation", {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ python: importedData, id: responseData.id }),
+    });
+    if(!responseRaw.ok){
+      alert("No se pudo insertar la nueva operación. El código importado no es válido. Inténtelo más tarde.");
+      return;
+    }
+    setOperations([... operations, responseData]);
+    setAddValue("");
+    setNewOperationActivated(0);
+  }
+
   const deactivateNewGamePanel = () => {
     setNewGameActivated(0);
   }
 
+  const deactivateNewOperationPanel = () => {
+    setNewOperationActivated(0);
+  }
+
+  const handleOperationChanged = (event) => {
+    setSelectedOperation(event.target.value);
+    if(event.target.value===""){
+      setCDataParameters([]);
+      return;
+    }
+    const noParameters=operations.filter(op=>op.id===event.target.value)[0].no_parameters;
+    const newCDataParameters=[];
+    for(var i=0;i<noParameters;i++){
+      newCDataParameters.push("");
+    }
+    setCDataParameters(newCDataParameters);
+  }
+
+  const handleParameterChanged = index => async (event,value) => {
+    const newCDataParameters=[...cDataParameters];
+    newCDataParameters[index]=event.target.value;
+    setCDataParameters(newCDataParameters);
+  }
+
+  const updateNoParameters = (event) => {
+    if((event.target.value<10 && event.target.value>0)||event.target.value===""){
+      setAddNoParameters(event.target.value);
+    }
+  }
+
   return (
   <>
-    <div class="app">
-    <h1>Panel de administración</h1>
-    <hr className="linea-delimitadora" />
-    Bienvenid@ al panel de administración. Este es un panel especial cuya función es gestionar los juegos y 
-    <br/>
-    operaciones disponibles para los terapeutas. Si un terapeuta necesita incorporar nuevas operaciones, aquí
-    <br/>
-    es donde se puede hacer. Este panel está en una versión temprana, por lo que se puede someter a cambios.
-    <br/><br/>
-    <button className="button-admin-game" onClick={activateNewGamePanel}>Nuevo juego</button>
-    {newGameActivated===1?
-      <div class="rectangle">
-        <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
-        <button className="button-admin-cancel" onClick={deactivateNewGamePanel}> Cancelar </button>
-        <button className="button-admin-new" onClick={addGame(addValue)}> Añadir </button>
+  <div class="app">
+    <h1>Panel de administración</h1> 
+    <div className="list-container">
+      <h3 style={{marginTop: "40px", fontSize: "30px"}}>OPERACIONES</h3>
+      <div className="scrollable-list" id="scrollable-list">
+        {operations.map((o, index) => (
+          <div
+            key={index}
+            className={`list-item`}>
+            {o.name}
+          </div>
+        ))}
+        {newOperationActivated===1?
+          <div class="list-item">
+            <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
+            <button className="button-admin-cancel" onClick={deactivateNewOperationPanel}> Cancelar </button>
+            <button className="button-admin-new" onClick={addOperation}> Añadir </button>
+            <div className={`list-item`}>
+              <input type='number' onChange={updateNoParameters} placeholder="No. Parámetros (1-9)" value={addNoParameters}/>
+            </div>
+            <div class="list-item">
+              <label className="boton-importar" htmlFor="import-python">
+              +
+              {importedFileName && <p className="nombre-archivo">{importedFileName}</p>}
+              </label>
+              <input
+              type="file"
+              id="import-python"
+              accept=".py"
+              onChange={handleImportPython}
+              style={{ display: "none" }}
+              />
+          </div>
+          </div>
+        :""}
       </div>
-    :""}
-    {games.map((game, index) => (
+      <button className="button-admin-add" onClick={activateNewOperationPanel}>+</button>
+    </div>
+    <h3 style={{marginTop: "40px", fontSize: "30px"}}>JUEGOS</h3>
+    {games.map((game) => (
     <>
-    <h1>{game.name}</h1>
+    <h3>{game.name}</h3>
     <div className="admin-container">
       {/* Margen izquierdo */}
       <div className="admin-left">
           <div className="list-container">
-          <h3>PARÁMETROS</h3>
+          <label>PARÁMETROS</label>
             <div className="scrollable-list" id="scrollable-list">
             {parameters.filter(p=>p.id===game.id)[0]?.data.map((p, index) => (
               <div
@@ -204,7 +351,7 @@ function Admin() {
       {/* Margen derecho */}
       <div className="admin-right">
         <div className="list-container">
-        <h3>CÁLCULOS</h3>
+        <label>CÁLCULOS</label>
           <div className="scrollable-list">
           {calculatedData.filter(cData=>cData.id===game.id)[0]?.data.map((cData, index) => (
               <div
@@ -215,22 +362,34 @@ function Admin() {
             ))}
           {newCDataActivated.filter(p=>p.id===game.id)[0]?.value===1?
           <>
+            <div className={`list-item`}>
+              <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
+              <button className="button-admin-cancel" onClick={deactivateNewCalculatedDataPanel(game.id)}> Cancelar </button>
+              <button className="button-admin-new" onClick={addCData(game.id)}> Añadir </button>
               <div className={`list-item`}>
-                <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
-                <button className="button-admin-cancel" onClick={deactivateNewCalculatedDataPanel(game.id)}> Cancelar </button>
-                <button className="button-admin-new" onClick={addParameter(game.id, addValue)}> Añadir </button>
-                <div className={`list-item`}>
-                  <select id="dropdown" className='date-input' value={game}>
-                    <option value="">Selecciona una operación</option>
-                    {games?.map((option, index) => (
-                      <option key={index} value={option.id}>
-                        {option.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <select id="dropdown" className='date-input' value={selectedOperation} onChange={handleOperationChanged}> 
+                  <option value="">Selecciona una operación</option>
+                  {operations?.map((option, index) => (
+                    <option key={index} value={option.id}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-              </>
+              {cDataParameters?.map((parameter, index) =>
+                <div className={`list-item`}>
+                  <select id="dropdown" className='date-input' value={parameter} onChange={handleParameterChanged(index)}> 
+                  <option value="">{"Parámetro "+index}</option>
+                  {parameters.filter(p=>p.id===game.id)[0]?.data.map((parameter, index2) => (
+                    <option key={index2} value={parameter.id}>
+                      {parameter.name}
+                    </option>
+                  ))}
+                </select>
+                </div>
+              )}
+              </div>
+            </>
             :""}
           </div>
         <button className="button-admin-add" onClick={activateNewCalculatedDataPanel(game.id)}>+</button>
@@ -239,6 +398,14 @@ function Admin() {
     </div>
     </>
     ))}
+    <button className="button-admin-game" onClick={activateNewGamePanel}>Nuevo juego</button>
+    {newGameActivated===1?
+      <div class="rectangle">
+        <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
+        <button className="button-admin-cancel" onClick={deactivateNewGamePanel}> Cancelar </button>
+        <button className="button-admin-new" onClick={addGame(addValue)}> Añadir </button>
+      </div>
+    :""}
     </div>
     </>
   );

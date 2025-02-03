@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,9 +22,12 @@ import com.riah.dao.GameDAO;
 import com.riah.dao.SessionDAO;
 import com.riah.model.CalculatedData;
 import com.riah.model.CalculatedDataDTO;
+import com.riah.model.CalculatedDataParameter;
 import com.riah.model.CalculatedDataParameterDTO;
 import com.riah.model.Game;
 import com.riah.model.GameDTO;
+import com.riah.model.Parameter;
+import com.riah.model.ParameterDTO;
 import com.riah.model.Session;
 import com.riah.model.SessionDTO;
 
@@ -53,6 +58,24 @@ public class CalculatedDataService {
 		List<CalculatedDataDTO> parsedCalculatedData= mapCalculatedData(calculatedData,parameters);
 		return parsedCalculatedData;
 	}
+	
+	public CalculatedDataDTO insertCalculatedData(String cData) {
+		JSONObject json = new JSONObject(cData);
+		UUID gameId=UUID.fromString(json.getString("game"));
+		String name=json.getString("name");
+		UUID operation=UUID.fromString(json.getString("operation"));
+		CalculatedData cDataToInsert=new CalculatedData(name,new Game(gameId),operation);
+		CalculatedData savedCData=calculatedDataDAO.save(cDataToInsert);
+		JSONArray parameters=json.getJSONArray("parameters");
+		for(int i=0;i<parameters.length();i++) {
+			CalculatedDataParameter cDataParam=new CalculatedDataParameter(new Parameter(UUID.fromString(parameters.getString(i))),new CalculatedData(savedCData.getId()),i);
+			cdpDAO.save(cDataParam);
+		}
+		List<CalculatedData> cDataToParse=new ArrayList<>();
+		cDataToParse.add(savedCData);
+		List<CalculatedDataDTO> parsedCData=mapCalculatedData(cDataToParse);
+		return parsedCData.getFirst();
+	}
 
 	private List<CalculatedDataDTO> mapCalculatedData(List<CalculatedData> calculatedData, List<List<String[]>> parameters) {
 		List<CalculatedDataDTO> result= new ArrayList<>();
@@ -66,6 +89,20 @@ public class CalculatedDataService {
 	            CalculatedDataParameterDTO cdpDTO = new CalculatedDataParameterDTO(parameter[0].trim(),parameter[1].trim(),Integer.parseInt(parameter[2]));
 	            return cdpDTO;
 	        }).collect(Collectors.toList()));
+			calculatedDataDTO.setSessions(sessionService.getSessionsByGame(calculatedData.get(i).getGame().getId()));
+			calculatedDataDTO.setSessionDates(sessionService.getSessionDatesByGame(calculatedData.get(i).getGame().getId()));
+            result.add(calculatedDataDTO);
+		}  
+            return result;
+	}
+	private List<CalculatedDataDTO> mapCalculatedData(List<CalculatedData> calculatedData) {
+		List<CalculatedDataDTO> result= new ArrayList<>();
+		for(int i=0;i<calculatedData.size();i++) {
+			CalculatedDataDTO calculatedDataDTO = new CalculatedDataDTO();
+			calculatedDataDTO.setId(calculatedData.get(i).getId());
+			calculatedDataDTO.setName(calculatedData.get(i).getName());
+			calculatedDataDTO.setGameId(calculatedData.get(i).getGame().getId());
+			calculatedDataDTO.setOperation(calculatedData.get(i).getOperation());
 			calculatedDataDTO.setSessions(sessionService.getSessionsByGame(calculatedData.get(i).getGame().getId()));
 			calculatedDataDTO.setSessionDates(sessionService.getSessionDatesByGame(calculatedData.get(i).getGame().getId()));
             result.add(calculatedDataDTO);

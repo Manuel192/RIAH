@@ -8,6 +8,7 @@
     "@headlessui/react": "^2.2.0",
     "@headlessui/tailwindcss": "^0.2.1",
     "@mui/material": "^6.1.5",
+    "@mui/x-charts": "^7.25.0",
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@remixicon/react": "^4.5.0",
     "@testing-library/jest-dom": "^5.17.0",

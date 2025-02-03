@@ -10,7 +10,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Operation {
 	private String ID;
     private List<String> lines;
-	public String getID() {
+	
+    public String getID() {
 		return ID;
 	}
 	public void setID(String iD) {
@@ -24,6 +25,9 @@ public class Operation {
 	}
 	public Operation() {
 	}
-
-    
+	
+	public Operation(String iD, List<String> lines) {
+		ID = iD;
+		this.lines = lines;
+	}
 }

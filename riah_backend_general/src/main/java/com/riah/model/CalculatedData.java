@@ -30,32 +30,29 @@ import jakarta.persistence.Table;
 	    private Game game;
 	     
 	    @Column(name = "operation", nullable = false)
-	    private String operation;
+	    private UUID operation;
 	    
-	    @PrePersist
+		@PrePersist
 	    public void prePersist() {
 	      id = UUID.randomUUID();
 	    } 
-	    /*
-	    public double result(List<Double> parameter1, List<Double> parameter2) {
-	    	switch(operation) {
-	    	case MEAN:
-	    		return mean(parameter1);
-	    	case DIFFERENCE:
-	    		return Math.abs(mean(parameter2)-mean(parameter1));
-	    	default:
-	    		return 0;
-	    	}
-	    }
-	    
-	    private double mean(List<Double> values) {
-	    	return values
-	                .stream()
-	                .mapToDouble(a -> a)
-	                .average().getAsDouble();
-	    }
-	    */
-	    public UUID getId() {
+		
+	    public CalculatedData(String name, Game game, UUID operation) {
+			super();
+			this.name = name;
+			this.game = game;
+			this.operation = operation;
+		}
+
+		public CalculatedData() {
+			super();
+		}
+
+		public CalculatedData(UUID id) {
+			this.id=id;
+		}
+
+		public UUID getId() {
 			return id;
 		} 
 
@@ -79,11 +76,11 @@ import jakarta.persistence.Table;
 			this.game = game;
 		}
 
-		public String getOperation() {
+		public UUID getOperation() {
 			return operation;
 		}
 
-		public void setOperation(String operation) {
+		public void setOperation(UUID operation) {
 			this.operation = operation;
 		}
 	}

@@ -289,9 +289,8 @@ function Raw_data() {
                   className={`list-item ${selectedSessions.includes(session.id) ? "selected" : ""}`}
                   onClick={() => toggleSelection(session, "sessions")}
                 >
-                  {session.id}
-                  <label className="secondary-txt">{session.date}</label>
-                  <label className="secondary-txt">{session.game}</label>
+                  {session.game+ ", "+session.date}
+                  <label className="secondary-txt">{session.id}</label>
                 </div>
                 ))}
             </div>
@@ -341,7 +340,7 @@ function Raw_data() {
         </div>
         :null}
 
-    <div class="graphs">
+    <div>
         {/* Sección Superior */}
         {selectedDataItems.map((dataItem, index) => (
           <Card className="tremor-Card">
@@ -365,7 +364,7 @@ function Raw_data() {
       </div>
     {selectedSessions?.length>0?
     <div className="button-bar">
-      <button className="btn red" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>
+      {/*<button className="btn red" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>*/}
       <button className="btn green" onClick={exportDataToCsv}>EXPORTAR</button>
     </div>
     :null}

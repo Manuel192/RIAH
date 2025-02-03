@@ -7,29 +7,27 @@ import { Tooltip } from "@mui/material";
 import LoadingScreen from "./loadingScreen"; // Importamos el componente de carga
 import "../App.css"; // Archivo CSS separado
 
+const getRandomColors = (numColors, index) => {
+  const tremorColors = [
+    "blue", "sky", "cyan", "teal", "green", "lime",
+    "yellow", "amber", "orange", "red", "rose", "pink",
+    "fuchsia", "purple", "violet", "indigo", "gray", "stone"
+  ];
+  return Array.from({ length: numColors }, () =>
+    tremorColors[index]
+  );
+};
+
 const Evolution = () => {
   const navigate=useNavigate();
-  const [graphs, setGraphs]=useState(["bar","area","bar","bar"]);
+  const [graphs, setGraphs]=useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
   const [games, setGames] = useState([]);
   const [dataOptions, setDataOptions] = useState([[],[],[],[]]);
   const [recordID,setRecordID] = useState({});
-  const [graphData, setGraphData] = useState([
-    { index:0, session: "1", date: "Ene", value: 10 },
-    { index:0, session: "2", date: "Feb", value: 20 },
-    { index:0, session: "3", date: "Mar", value: 30 },
-    { index:1, session: "1", date: "Ene", value: 30 },
-    { index:1, session: "2", date: "Feb", value: 20 },
-    { index:1, session: "3", date: "Mar", value: 10 },
-    { index:2, session: "1", date: "Ene", value: 10 },
-    { index:2, session: "2", date: "Feb", value: 20 },
-    { index:2, session: "3", date: "Mar", value: 50 },
-    { index:3, session: "1", date: "Ene", value: 50 },
-    { index:3, session: "2", date: "Feb", value: 20 },
-    { index:3, session: "3", date: "Mar", value: 30 },
-  ]);
+  const [graphData, setGraphData] = useState([]);
 
   const CustomTooltip = ({ index }) => {
     const dataPoint = graphData[index];
@@ -66,13 +64,16 @@ const Evolution = () => {
         // convert data to json
         const responseData = await response.json();
         setRecordID(responseData.id);
-        const graphs=responseData.graphs;
-        for(var i=0;i<graphs.length;i++)
-          selectedGame.push(graphs[i].game);
-        const obtainedDataOptions=await fetchAll(graphs);
-        for(var i=0;i<graphs.length;i++)
-          selectedData.push(graphs[i].calculatedData);
-        const newGraphData=await calculateAll(graphs, obtainedDataOptions);
+        const obtainedGraphs=responseData.graphs;
+        console.log(responseData.graphs);
+        for(var i=0;i<obtainedGraphs.length;i++)
+          selectedGame.push(obtainedGraphs[i].game);
+        for(var i=0;i<obtainedGraphs.length;i++)
+          graphs.push("area");
+        const obtainedDataOptions=await fetchAll(obtainedGraphs);
+        for(var i=0;i<obtainedGraphs.length;i++)
+          selectedData.push(obtainedGraphs[i].calculatedData);
+        const newGraphData=await calculateAll(obtainedGraphs, obtainedDataOptions);
         setGraphData(newGraphData);
         setIsLoading(false);
     }
@@ -81,11 +82,17 @@ const Evolution = () => {
     fetchGames()
   }, []);
 
-  const fetchAll = async (graphs) => {
+  const addGraph = () => {
+    setSelectedData([... selectedData, ""]);
+    setSelectedGame([... selectedGame, ""]);
+    setGraphs([... graphs, "area"]);
+  }
+
+  const fetchAll = async (obtainedGraphs) => {
     try{
       const newDataOptions=[...dataOptions];
-      for(var i=0;i<graphs.length;i++){
-        const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/loadCalculatedData?gameId="+graphs[i].game);
+      for(var i=0;i<obtainedGraphs.length;i++){
+        const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/loadCalculatedData?gameId="+obtainedGraphs[i].game);
         if(!response.ok){
           newDataOptions[i]=[];
           setDataOptions(newDataOptions);
@@ -128,10 +135,10 @@ const Evolution = () => {
     }
   }
 
-  const calculateAll = async (graphs, obtainedDataOptions) => {
+  const calculateAll = async (obtainedGraphs, obtainedDataOptions) => {
     var newGraphData = [];
-    for(var i=0;i<graphs.length;i++){
-      const obtainedGraphData=await obtainDynamicCalculus(graphs[i].calculatedData,i,obtainedDataOptions);
+    for(var i=0;i<obtainedGraphs.length;i++){
+      const obtainedGraphData=await obtainDynamicCalculus(obtainedGraphs[i].calculatedData,i,obtainedDataOptions);
       if(obtainedGraphData.length>0) newGraphData=[... newGraphData, ... obtainedGraphData];
       else newGraphData.push({"index":i,"session":"","value":0, "date":""});
     }
@@ -139,10 +146,8 @@ const Evolution = () => {
   }
 
   const obtainDynamicCalculus = async (dataId,index,obtainedDataOptions) => {
-    console.log(obtainedDataOptions);
     const optionToObtain=obtainedDataOptions[index].filter(data=>data.id===dataId).at(0);
     try{ 
-      console.log(obtainedDataOptions);
       const response = await fetch(process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/calculateData?operation="+optionToObtain.operation, {
           method: 'PUT',
           headers: {
@@ -157,7 +162,8 @@ const Evolution = () => {
       const responseData = await response.json();
       const newGraphData = [];
       for(var i=0;i<optionToObtain.sessions.length;i++){
-        await newGraphData.push({"index":index,"session":optionToObtain.sessions[i],"value":Math.round(responseData[optionToObtain.sessions[i]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
+        await newGraphData.push({"index":index,"session":optionToObtain.sessions[i],
+        "value":Math.round(responseData[optionToObtain.sessions[i]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
       }
       return newGraphData;
     }catch(error){
@@ -209,7 +215,6 @@ const Evolution = () => {
     }
 
     const obtainedGraphData=await obtainDynamicCalculus(event.target.value,index,dataOptions);
-    console.log(obtainedGraphData);
     var newGraphData=graphData.filter(graph => graph.index!=index);
     newGraphData=[... newGraphData, ...obtainedGraphData];
     setGraphData(newGraphData);
@@ -267,7 +272,7 @@ return (
     <h1>Evolución - Juan Pérez</h1>
     <div class="graphs">
       {/* Sección Superior */}
-      {graphs.map((graph, index) => (
+      {graphs?.map((graph, index) => (
         <Card className="tremor-Card">
         <div className="seccion-inferior">
         <div className="campo">
@@ -316,7 +321,7 @@ return (
           xLabel="Time"
           valueFormatter={(value, index) => `${value}m/s`}
           yLabel="Velocity"
-          fill="solid"
+          colors={getRandomColors(1,index)}
           showLegend={false}
           showXAxis={true}
           tooltip={({ index }) => <CustomTooltip index={index} />}
@@ -330,6 +335,7 @@ return (
               xLabel="Time"
               yLabel="Velocity"
               categories={['value']}
+              colors={getRandomColors(1,index)}
               valueFormatter={(value, index) => `${value}m/s`}
               showLegend={false}
               showXAxis={true}
@@ -341,6 +347,7 @@ return (
       </Card>
       ))}       
     </div>
+    <button className="button-admin-game" onClick={addGraph}>Nueva gráfica</button>
     </div>
     </div>
   </>

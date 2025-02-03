@@ -159,8 +159,8 @@ h3{
 }
 
 .scrollable-list {
-  min-height: 200px;
-  max-height: 200px;
+  min-height: 300px;
+  max-height: 300px;
   overflow-y: auto;
   border: 1px solid #dddddd;
   border-radius: 5px;
@@ -222,7 +222,7 @@ h3{
 
 .table-container {
   overflow-x: auto;
-  max-height: 600px;
+  max-height: 400px;
   margin-bottom: 20px;
 }
 
@@ -231,6 +231,10 @@ table {
   width: 100%;
   background-color: white;
   border-collapse: collapse;
+}
+
+.table-body{
+  overflow-y: auto;
 }
 
 .btn-add{
@@ -251,6 +255,8 @@ th, td {
 }
 
 th, .table-header {
+  position: sticky;
+  top:-1px;
   background-color: hsl(199, 82%, 40%);
   color: white;
 }
@@ -529,6 +535,7 @@ select:focus {
 .preview-text{
   font-size: 20px;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
+  text-align: center;
 }
 
 

@@ -32,4 +32,8 @@ public class OperationDAO {
 		Query query = new Query(Criteria.where("ID").is(operation));
 		return mongoTemplate.findOne(query, Operation.class, operationsCollection);
 	}
+	
+	public void insertOperation(Operation operationToInsert) {
+		mongoTemplate.save(operationToInsert, operationsCollection);
+	}
 }

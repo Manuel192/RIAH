@@ -25,6 +25,10 @@ import jakarta.persistence.Table;
 		public Parameter() {
 		}
 
+		public Parameter(UUID id) {
+			this.id=id;
+		}
+
 		@Id
 		@GeneratedValue(strategy = GenerationType.AUTO)
 		@Column(name = "id", updatable = false, nullable = false)

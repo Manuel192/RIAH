@@ -19,7 +19,7 @@ public class CalculatedDataDTO{
 	private UUID gameId;
 	
 	@JsonProperty("operation")
-    private String operation;
+    private UUID operation;
 
 	@JsonProperty("parameters")
     private List<CalculatedDataParameterDTO> parameters;
@@ -38,11 +38,11 @@ public class CalculatedDataDTO{
 		this.gameId = gameId;
 	}
 
-	public String getOperation() {
+	public UUID getOperation() {
 		return operation;
 	}
 
-	public void setOperation(String operation) {
+	public void setOperation(UUID operation) {
 		this.operation = operation;
 	}
 
