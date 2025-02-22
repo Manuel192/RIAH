@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
+import '../css/Create_session_component.css';
 import "../App.css";
-import { width } from "@mui/system";
 
 function Create_session() {
     const location=useLocation();
@@ -71,7 +71,6 @@ function Create_session() {
           });
           return obj;
         });
-        console.log(result);
         return result;
       };
 
@@ -95,7 +94,7 @@ function Create_session() {
         }
 
         try {
-            const response = await fetch(process.env.REACT_APP_GENERAL_URL+'session/insertSession', {
+            const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/session/insertSession', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -105,7 +104,7 @@ function Create_session() {
 
             const sessionId = await response.text();
 
-            const responseMongo = await fetch(process.env.REACT_APP_SESSIONS_URL+'rawDataSession/insertSession', {
+            const responseMongo = await fetch(process.env.REACT_APP_SESSIONS_URL+'/rawDataSession/insertSession', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -118,7 +117,7 @@ function Create_session() {
 
 
         } catch (error) {
-            alert("No se ha podido realizar la inserción. Inténtelo más tarde.")
+            alert(error)
         }
     }
   
@@ -147,7 +146,7 @@ function Create_session() {
             Nueva sesión - Juan Pérez
         </div>
         <div class="app">
-            <h1 className="titulo">Nueva sesión - Juan Pérez</h1>
+            <h1 class="main-title" className="title">Nueva sesión - Juan Pérez</h1>
             <div class="rectangle create-session">
                 <h3>Juego</h3>
                 <h3>Fecha</h3>
@@ -166,9 +165,9 @@ function Create_session() {
                     onChange={(e) => handleSetselectedDate(e.target.value)} 
                     className="date-input create-session-field" 
                 />
-                <label className="boton-importar" htmlFor="import-json-csv">
+                <label className="button-import" htmlFor="import-json-csv">
                     +
-                    {importedFileName && <p className="nombre-archivo">{importedFileName}</p>}
+                    {importedFileName && <p className="filename">{importedFileName}</p>}
                     </label>
                     <input
                     type="file"
@@ -178,7 +177,7 @@ function Create_session() {
                     style={{ display: "none" }}
                     />
                 </div>
-            <button className="boton-crear-sesion" onClick={handleCreateSession}>CREAR SESIÓN</button>
+            <button className="button-create-session" onClick={handleCreateSession}>CREAR SESIÓN</button>
             </div>
         </>
     );

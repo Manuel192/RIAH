@@ -1,7 +1,7 @@
 import React, { act, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import '../css/User_panel_component.css';
 import '../App.css';
-import { height } from '@mui/system';
 
 function User_panel() {
   // Estado para la búsqueda y la selección
@@ -19,7 +19,7 @@ function User_panel() {
       Mi panel
     </div>
     <div class='app'>
-        <h1>Mi panel</h1>
+        <h1 class="main-title">Mi panel</h1>
             <div class="preview-text">
             ¡Hola, bienvenid@ a la versión preliminar de RIAH! Este es el panel temporal que simulará lo que un usuario ve cuando
             <br/>

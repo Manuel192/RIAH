@@ -2,6 +2,7 @@ import React, { act, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AreaChart, BarChart, Card, Title } from "@tremor/react";
 import Tabs from './Tabs_component';
+import '../css/Raw_data_component.css';
 import '../App.css';
 
 function Modal({ onClose, onConfirm }) {
@@ -10,13 +11,24 @@ function Modal({ onClose, onConfirm }) {
       <div className="modal">
         <p>¿Estás seguro?</p>
         <div className="modal-buttons">
-          <button onClick={onConfirm} className="confirm-button">Sí</button>
-          <button onClick={onClose} className="cancel-button">No</button>
+          <button onClick={onConfirm} className="button-confirm">Sí</button>
+          <button onClick={onClose} className="button-cancel">No</button>
         </div>
       </div>
     </div>
   );
 }
+
+const getRandomColors = (numColors, index) => {
+  const tremorColors = [
+    "blue", "sky", "cyan", "teal", "green", "lime",
+    "yellow", "amber", "orange", "red", "rose", "pink",
+    "fuchsia", "purple", "violet", "indigo", "gray", "stone"
+  ];
+  return Array.from({ length: numColors }, () =>
+    tremorColors[index%tremorColors.length]
+  );
+};
 
 function Raw_data() {
 
@@ -242,8 +254,8 @@ function Raw_data() {
       Gestión de sesiones - Juan Pérez
     </div>
     <div className="app">
-    <h1>Gestión de sesiones - Juan Pérez</h1>
-    <h3>FILTROS</h3>
+    <h1 class="main-title">Gestión de sesiones - Juan Pérez</h1>
+    <h3 class="title">FILTROS</h3>
     <div class="rectangle">
       <div className="filters">
         <div className="date-field">
@@ -275,7 +287,7 @@ function Raw_data() {
             ))}
           </select>
         </div>
-        <button className="btn search " onClick={loadSessions}>Buscar</button>
+        <button className="button-search" onClick={loadSessions}>Buscar</button>
       </div>
     </div>
         {sessions.length>0?
@@ -354,7 +366,7 @@ function Raw_data() {
             minValue={Number(selectedDataItemsValues[dataItem].min)}
             xLabel="Frame"
             yLabel="Value"
-            fill="solid"
+            colors={getRandomColors(1,index)}
             showLegend={false}
             showXAxis={true}
           >
@@ -364,8 +376,8 @@ function Raw_data() {
       </div>
     {selectedSessions?.length>0?
     <div className="button-bar">
-      {/*<button className="btn red" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>*/}
-      <button className="btn green" onClick={exportDataToCsv}>EXPORTAR</button>
+      {/*<button className="button-clean" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>*/}
+      <button className="button-export" onClick={exportDataToCsv}>EXPORTAR</button>
     </div>
     :null}
     </div>

@@ -32,7 +32,9 @@ public class RecordService {
 			JSONObject json = new JSONObject(data.get(i));
 			String game=json.getString("game");
 			String calculatedData=json.getString("calculatedData");
-			Graph g= new Graph(game,calculatedData);
+			String initDate=json.getString("initDate");
+			String endDate=json.getString("endDate");
+			Graph g= new Graph(game,calculatedData,initDate,endDate);
 			parsedRecord.addGraph(g);
 		}
 		return parsedRecord;
@@ -40,7 +42,6 @@ public class RecordService {
 
 	public boolean updateRecord(String record) {
 		JSONObject json = new JSONObject(record);
-		ArrayList<String> parsedFrames=new ArrayList<>();
 		JSONArray graphs=json.getJSONArray("data");
 		RecordInsert recordToUpdate=new RecordInsert(json.getString("id"),graphs.toList());
 		recordDAO.updateRecord(recordToUpdate);

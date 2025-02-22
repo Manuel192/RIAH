@@ -1,0 +1,53 @@
+  .create-session{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    justify-items:center;
+    grid-template-rows: repeat(2, 1fr);
+    text-align: center;
+  }
+  
+  .create-session-field{
+    width:300px;
+    height:40px;
+  }
+
+  .button-import {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    font-size: 1.5rem;
+    padding-left: 15px;
+    padding-right: 15px;
+    text-align: center;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .filename {
+    font-size: 0.9rem;
+    color: #ffffff;
+    word-break: break-all;
+  }
+
+  .date-input {
+    padding: 8px 12px;
+    font-size: 1em;
+    border-radius: 5px;
+    border: 1px solid #cccccc;
+    background-color: #ffffff;
+  }
+
+  .button-create-session {
+    padding: 15px 30px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  .button-create-session:hover {
+    background-color: #218838;
+  }

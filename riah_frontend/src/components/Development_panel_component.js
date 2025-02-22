@@ -42,27 +42,6 @@ function Admin() {
   const [importedFileName, setImportedFileName] = useState("");
   const [importedData, setImportedData] = useState(null);
 
-  const [treeData,setTreeData] = useState({
-    data: [
-      {
-        name: "",
-        level: 0,
-        type: "Operation",
-        children: [
-          {
-            name: "Addition",
-            level: 1,
-            type: "Operation",
-            children: [
-              { name: "Param1", level:2, type: "Parametro"},
-              { name: "Param2",level:2, type: "Operation"},
-            ],
-          },
-        ],
-      },
-    ],
-  });
-
   // Lista de pacientes (solo incluye "Juan Pérez" como se indicó)
   const pacientes = ["Juan Pérez"];
 
@@ -126,8 +105,29 @@ function Admin() {
     fetchGames()
   }, []);
 
+  const handleImportPython = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const content=e.target.result;
+          setImportedData(content);
+          setImportedFileName(file.name);
+        } catch (error) {
+          alert("Error al importar el archivo Python.", error);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
   const activateNewGamePanel = () =>{
     setNewGameActivated(1);
+  }
+
+  const activateNewOperationPanel = () =>{
+    setNewOperationActivated(1);
   }
 
   const activateNewParameterPanel = gameId => () => {
@@ -234,6 +234,40 @@ function Admin() {
     setNewGameActivated(0);
   }
 
+  const addOperation = async () => {
+    if(addValue==="" || addNoParameters==="" || importedData===null){
+      alert("No se puede insertar la nueva operación. Asegúrese de haber rellenado todos los campos correctamente.");
+      return;
+    }
+    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/insertOperation", {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name: addValue, noParameters: addNoParameters }),
+    });
+    if(!response.ok){
+      alert("No se pudo insertar la nueva operación. Asegúrese de haber rellenado todos los campos correctamente.");
+      return;
+    }
+    const responseData = await response.json();
+
+    const responseRaw = await fetch(process.env.REACT_APP_SESSIONS_URL+"/rawDataOperation/insertOperation", {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ python: importedData, id: responseData.id }),
+    });
+    if(!responseRaw.ok){
+      alert("No se pudo insertar la nueva operación. El código importado no es válido. Inténtelo más tarde.");
+      return;
+    }
+    setOperations([... operations, responseData]);
+    setAddValue("");
+    setNewOperationActivated(0);
+  }
+
   const deactivateNewGamePanel = () => {
     setNewGameActivated(0);
   }
@@ -256,72 +290,58 @@ function Admin() {
     setCDataParameters(newCDataParameters);
   }
 
-  const addChilds = (node) => {
-    const updateTree = (currentNode) => {
-      if (currentNode === node) {
-        return {
-          ...currentNode,
-          children: [...(currentNode.children || []), { name: "Nuevo Nodo" }],
-        };
-      }
-      if (currentNode.children) {
-        return {
-          ...currentNode,
-          children: currentNode.children.map(updateTree),
-        };
-      }
-      return currentNode;
-    };
-    setTreeData(updateTree(treeData));
-  };
-  
-  const TreeNode = ({ node, game }) => {
-      return (
-        <div>
-          <select id="dropdown" className='input-parameter'>
-            {node.type==="Operation"?
-            <>
-            <option value="">Selecciona una operación</option>
-            {operations?.map((option, index) => (
-              <option key={index} value={option.id}>
-                {option.name}
-              </option>
-            ))}
-            </>
-            :
-            <>
-            <option value="">{"Parámetro 1"}</option>
-            {parameters.filter(p=>p.id===game.id)[0]?.data.map((parameter, index) => (
-              <option key={index} value={parameter.id}>
-                {parameter.name}
-              </option>
-            ))}
-            </>}
-          </select>
-          {node.level!==0?
-            <>
-              {node.type==="Operation"?
-                <button className="button-admin-change-parameter"> Parámetro </button>
-              :
-                <button className="button-admin-change-parameter"> Operación </button>
-              }
-            </>
-          :""}
-          {node.children && (
-            <div class={node.level%2===1?"gray-rectangle":"rectangle"}>
-              {node.children.map((child, index) => (
-                <TreeNode key={index} node={child} game={game} />
-              ))}
-            </div>
-          )}
-        </div>
-      );
-    };
+  const handleParameterChanged = index => async (event,value) => {
+    const newCDataParameters=[...cDataParameters];
+    newCDataParameters[index]=event.target.value;
+    setCDataParameters(newCDataParameters);
+  }
+
+  const updateNoParameters = (event) => {
+    if((event.target.value<10 && event.target.value>0)||event.target.value===""){
+      setAddNoParameters(event.target.value);
+    }
+  }
 
   return (
   <>
   <div class="app">
     <h1 class="main-title">Panel de administración</h1> 
+    <div className="list-container">
+      <h3 style={{marginTop: "40px", fontSize: "30px"}}>OPERACIONES</h3>
+      <div className="scrollable-list" id="scrollable-list">
+        {operations.map((o, index) => (
+          <div
+            key={index}
+            className={`list-item`}>
+            {o.name}
+          </div>
+        ))}
+        {newOperationActivated===1?
+          <div class="list-item">
+            <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
+            <button className="button-admin-cancel" onClick={deactivateNewOperationPanel}> Cancelar </button>
+            <button className="button-admin-new" onClick={addOperation}> Añadir </button>
+            <div className={`list-item`}>
+              <input type='number' onChange={updateNoParameters} placeholder="No. Parámetros (1-9)" value={addNoParameters}/>
+            </div>
+            <div class="list-item">
+              <label className="button-import-python" htmlFor="import-python">
+              +º
+              {importedFileName && <p className="filename">{importedFileName}</p>}
+              </label>
+              <input
+              type="file"
+              id="import-python"
+              accept=".py"
+              onChange={handleImportPython}
+              style={{ display: "none" }}
+              />
+          </div>
+          </div>
+        :""}
+      </div>
+      <button className="button-admin-add" onClick={activateNewOperationPanel}>+</button>
+    </div>
     <h3 style={{marginTop: "40px", fontSize: "30px", fontWeight: "bold"}}>JUEGOS</h3>
     {games.map((game) => (
     <div class="rectangle">
@@ -366,13 +386,32 @@ function Admin() {
           {newCDataActivated.filter(p=>p.id===game.id)[0]?.value===1?
           <>
             <div className={`list-item`}>
-            <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
-                <button className="button-admin-cancel" onClick={deactivateNewParameterPanel(game.id)}> Cancelar </button>
-                <button className="button-admin-new" onClick={addParameter(game.id, addValue)}> Añadir </button>
-              {treeData.data.map((child, index) => (
-                <TreeNode key={index} node={child} game={game} />
-              ))}
-            </div>
+              <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
+              <button className="button-admin-cancel" onClick={deactivateNewCalculatedDataPanel(game.id)}> Cancelar </button>
+              <button className="button-admin-new" onClick={addCData(game.id)}> Añadir </button>
+              <div className={`list-item`}>
+                <select id="dropdown" className='date-input' value={selectedOperation} onChange={handleOperationChanged}> 
+                  <option value="">Selecciona una operación</option>
+                  {operations?.map((option, index) => (
+                    <option key={index} value={option.id}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {cDataParameters?.map((parameter, index) =>
+                <div className={`list-item`}>
+                  <select id="dropdown" className='date-input' value={parameter} onChange={handleParameterChanged(index)}> 
+                  <option value="">{"Parámetro "+index}</option>
+                  {parameters.filter(p=>p.id===game.id)[0]?.data.map((parameter, index2) => (
+                    <option key={index2} value={parameter.id}>
+                      {parameter.name}
+                    </option>
+                  ))}
+                </select>
+                </div>
+              )}
+              </div>
             </>
             :""}
           </div>

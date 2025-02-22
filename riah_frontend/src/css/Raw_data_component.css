@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.modal p {
+  font-size: 1.2em;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.tremor-Card{
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 45%;
+    transition: "transform 0.3s ease-in-out";
+    display: inline-block;
+    margin-left: 20px;
+    margin-bottom: 20px;
+  }
+
+  .secondary-txt {
+    color:#c0c0c0;
+    padding-left: 10px;
+  }
+
+  .filters {
+    display: flex;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    max-height: 400px;
+    margin-bottom: 20px;
+  }
+  
+  table {
+    justify-content: left;
+    width: 100%;
+    background-color: white;
+    border-collapse: collapse;
+  }
+  
+  .table-body{
+    overflow-y: auto;
+  }
+
+  th, td {
+    flex-direction: row;
+    padding: 10px;
+    border: 1px solid #8edbff;
+    text-align: center;
+  }
+  
+  th, .table-header {
+    position: sticky;
+    top:-1px;
+    background-color: hsl(199, 82%, 40%);
+    color: white;
+  }
+
+  .button-bar {
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .button-confirm, .button-cancel {
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px 16px;
+    font-size: 1em;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .button-confirm {
+    background-color: #4CAF50;
+    color: #fff;
+  }
+  
+  .button-cancel {
+    background-color: #f44336;
+    color: #fff;
+  }
+
+  .button-search {
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 20px;
+    cursor: pointer;
+    background-color: #8de7f7;
+    padding-left: 20px;
+    padding-right: 20px;
+    height: 50px;
+    margin-top: 10px;
+    margin-left: 20px;
+  }
+
+  .button-clean {
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 20px;
+    cursor: pointer;
+    background-color: #d94f4f;
+    padding: 20px 30px;
+  }
+  
+  .button-clean:hover {
+    background-color: #c92c2c;
+  }
+  
+  .button-export {
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 20px;
+    cursor: pointer;
+    background-color: #5cb85c;
+    padding: 20px 30px;
+  }
+  
+  .button-export:hover {
+    background-color: #4cae4c;
+  }

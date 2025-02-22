@@ -1,7 +1,7 @@
 import React, { act, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import '../css/Patients_list_component.css';
 import '../App.css';
-import { height } from '@mui/system';
 
 function Patients_list() {
   // Estado para la búsqueda y la selección
@@ -49,41 +49,39 @@ function Patients_list() {
       Listado de pacientes
     </div>
     <div class="app">
-    <h1>Listado de pacientes</h1>
-    <div className="listado-pacientes-container">
-      {/* Margen izquierdo */}
-      <div className="list-container">
-        <div className="scrollable-list-patients">
-          <input
-            type="text"
-            placeholder="Buscar paciente..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-bar"
-          />
-          {filteredPatients.map((patient, index) => (
-            <div
-              key={index}
-              onClick={() => handleSelectPatient(patient)}
-              className={`list-item ${selectedPatient === patient ?"selected" : ""}`}>
-              {patient}
+      <div>
+      <h1 class="main-title">Listado de pacientes</h1>
+        <div className="list-container">
+          <div className="scrollable-list-patients">
+            <input
+              type="text"
+              placeholder="Buscar paciente..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-bar"
+            />
+            {filteredPatients.map((patient, index) => (
+              <div
+                key={index}
+                onClick={() => handleSelectPatient(patient)}
+                className={`list-item ${selectedPatient === patient ?"selected" : ""}`}>
+                {patient}
+              </div>
+            ))}
             </div>
-          ))}
+            </div>
           </div>
-          </div>
-        </div>
 
-      {/* Margen derecho */}
-      {selectedPatient ? (
-        <div className="patient-info rectangle">
-          <h3>{selectedPatient}</h3>
-          <button className="button-aniadir-sesion" onClick={handleCreateSession}>Añadir sesión</button>
-          <button className="button-evolucion" onClick={handleEvolution}>Evolución</button>
-          <button className="button-gestionar-datos" onClick={handleRawData}>Gestionar sesiones</button>
-        </div>
-        ) : (
-          ""
-        )}
+        {selectedPatient ? (
+          <div class="patient-info rectangle">
+            <h3>{selectedPatient}</h3>
+            <button class="button-create-session-access" onClick={handleCreateSession}>Añadir sesión</button>
+            <button class="button-evolution" onClick={handleEvolution}>Evolución</button>
+            <button class="button-raw-data" onClick={handleRawData}>Gestionar sesiones</button>
+          </div>
+          ) : (
+            ""
+          )}
       </div>
     </>
   );

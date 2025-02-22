@@ -12,17 +12,17 @@ public class CalculatedDataParameterDTO{
 	@JsonProperty("id")
 	private String id;
 
-	public CalculatedDataParameterDTO(String id, String name, int parameter_order) {
-		this.id = id;
-		this.name = name;
-		this.parameter_order = parameter_order;
-	}
-
 	@JsonProperty("name")
     private String name;
 	
 	@JsonProperty("parameter_order")
 	private int parameter_order;
+	
+	public CalculatedDataParameterDTO(String id, String name, int parameter_order) {
+		this.id = id;
+		this.name = name;
+		this.parameter_order = parameter_order;
+	}
 
 	public String getId() {
 		return id;

@@ -16,9 +16,6 @@ import jakarta.persistence.Table;
 	@Entity
 	@Table(name = "CalculatedDataParameters")
 	public class CalculatedDataParameter {
-		
-		public CalculatedDataParameter() {
-		}
 
 		@Id
 		@GeneratedValue(strategy = GenerationType.AUTO)
@@ -28,13 +25,6 @@ import jakarta.persistence.Table;
 	    @ManyToOne
 	    @JoinColumn(name = "parameter_id", nullable = false)
 	    private Parameter parameter;
-	    
-	    public CalculatedDataParameter(Parameter parameter, CalculatedData calculatedData, int parameter_order) {
-			super();
-			this.parameter = parameter;
-			this.calculatedData = calculatedData;
-			this.parameter_order = parameter_order;
-		}
 
 		@ManyToOne
 	    @JoinColumn(name = "calculatedData_id", nullable = false)
@@ -46,7 +36,17 @@ import jakarta.persistence.Table;
 		@PrePersist
 	    public void prePersist() {
 	      id = UUID.randomUUID();
-	    } 
+	    }
+		
+		public CalculatedDataParameter() {
+		}
+		
+		public CalculatedDataParameter(Parameter parameter, CalculatedData calculatedData, int parameter_order) {
+			super();
+			this.parameter = parameter;
+			this.calculatedData = calculatedData;
+			this.parameter_order = parameter_order;
+		}
 		
 		public int getOrder() {
 			return parameter_order;
