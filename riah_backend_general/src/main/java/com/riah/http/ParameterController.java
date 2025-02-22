@@ -17,33 +17,37 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.riah.dao.SessionDAO;
+import com.riah.model.CalculatedDataDTO;
 import com.riah.model.GameDTO;
+import com.riah.model.ParameterDTO;
 import com.riah.model.Session;
+import com.riah.services.CalculatedDataService;
 import com.riah.services.GameService;
+import com.riah.services.ParameterService;
 import com.riah.services.SessionService;
 import com.riah.model.SessionDTO;
 
 @RestController
-@RequestMapping("/game")
-public class GameController {
+@RequestMapping("/parameter")
+public class ParameterController {
 	
 	@Autowired
-	private GameService gameService;
+	private ParameterService parameterService;
 	
 	@CrossOrigin(origins = "http://localhost:3000")
-	@GetMapping("/loadGames")
-    public ResponseEntity<List<GameDTO>> loadGames() throws ParseException{
-		List<GameDTO> games=gameService.loadGames();
-    	if(!games.isEmpty())
-			return ResponseEntity.ok(games);
+	@GetMapping("/loadParameters")
+    public ResponseEntity<List<ParameterDTO>> loadParameters(@RequestParam String gameId) throws ParseException{
+		List<ParameterDTO> parameters=parameterService.loadParameters(gameId);
+    	if(!parameters.isEmpty())
+			return ResponseEntity.ok(parameters);
     	else
     		return ResponseEntity.ofNullable(null);
     }
 	
 	@CrossOrigin(origins = "http://localhost:3000")
-	@PostMapping("/insertGame")
-	public ResponseEntity<GameDTO> insertGame(@RequestBody String name){
-		GameDTO game=gameService.insertGame(name);
-		return ResponseEntity.ok(game); 
+	@PostMapping("/insertParameter")
+	public ResponseEntity<ParameterDTO> insertSession(@RequestBody String parameter){
+		ParameterDTO result=parameterService.insertParameter(parameter);
+		return ResponseEntity.ok(result); 
 	}
 }

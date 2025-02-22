@@ -1,11 +1,19 @@
 import './App.css';
+import User_panel from './components/User_panel_component';
 import Create_session from './components/Create_session_component';
 import Evolution from './components/Evolution_component';
 import Patients_list from './components/Patients_list_component';
 import Raw_data from "./components/Raw_data_component"
+import { useLocation, useNavigate } from 'react-router-dom';
 import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import Admin from './components/Admin_component';
 
 function App() {
+  const navigate=useNavigate();
+
+  const handlePanel = () => {
+    navigate('/');
+  }
   
   return (
     <div className="App">
@@ -17,23 +25,23 @@ function App() {
         <div className="right-section">
           <button className="nav-button">Home</button>
           <button className="nav-button">Sobre RIAH</button>
-          <button className="nav-button">Mi portal</button>
+          <button className="nav-button" onClick={handlePanel}>Mi panel</button>
           <img src={require('./media/RIAH_profile.png')} alt="Profile" className="profile-pic" />
         </div>
       </header>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Patients_list />} />
-          <Route path="/raw-data" element={<Raw_data />} />
-          <Route path="/evolution" element={<Evolution />} />
-          <Route path="/create-session" element={<Create_session />} />
-        </Routes>
-      </Router>
+      <Routes>
+        <Route path="/" element={<User_panel />} />
+        <Route path="/patients-list" element={<Patients_list />} />
+        <Route path="/raw-data" element={<Raw_data />} />
+        <Route path="/evolution" element={<Evolution />} />
+        <Route path="/create-session" element={<Create_session />} />
+        <Route path={process.env.REACT_APP_ADMIN_URL} element={<Admin />} />
+      </Routes>
       <footer className="footer">
         <div className="footer-nav">
           <button className="footer-button">Sobre nosotros</button>
-          <button className="footer-button">Política de privacidad</button>
-          <button className="footer-button">Contáctanos</button>
+          {/*<button className="footer-button">Política de privacidad</button>
+          <button className="footer-button">Contáctanos</button>*/}
         </div>
       </footer>
       <div className="rights-sub-banner">

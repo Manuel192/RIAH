@@ -18,21 +18,17 @@ import com.riah.sessions.dao.SessionDAO;
 import com.riah.sessions.model.Frame;
 import com.riah.sessions.model.Session;
 import com.riah.sessions.model.SessionInsert;
+import com.riah.sessions.so.PythonExecutor;
 import com.riah.sessions.model.SessionDTO;
 
 @Service
 public class SessionService {
 	
 	@Autowired
+	private OperationService operationService;
+	
+	@Autowired
 	private SessionDAO sessionDAO;
-
-	public List<String> example() {
-		Session session=sessionDAO.example().getFirst();
-		String frame=session.getData().getFirst();
-		frame=frame.replace("\"", "").replace("{","").replace("}","");
-		List<String> data=List.of(frame.split(", "));
-		return data;
-	}
 
 	public SessionDTO loadSessionRawData(UUID id) throws ParseException {
 		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
@@ -53,6 +49,12 @@ public class SessionService {
 		}
 		return parsedSession;
 	}
+	
+	public void checkJSON(String session) {
+		JSONObject json = new JSONObject(session);
+		JSONArray frames=json.getJSONArray("frames");
+		return;
+	}
 
 	public boolean insertSession(String session) {
 		JSONObject json = new JSONObject(session);
@@ -63,40 +65,31 @@ public class SessionService {
 		return true;
 	}
 
-	public Map<UUID, Double> calculateMeans(String parameter1, List<String> sessions) throws ParseException {
-		Map<UUID, Double> means=new HashMap<>();
-		for(int i=0;i<sessions.size();i++) {
-			List<Double> values= new ArrayList<>();
-			SessionDTO session=loadSessionRawData(UUID.fromString(sessions.get(i)));
-			List<Frame> sessionFrames=session.getFrames();
-			for(int j=0;j<sessionFrames.size();j++) {
-				values.add(Math.abs(Double.parseDouble(sessionFrames.get(j).getDataValues().get(parameter1))));
-			}
-			Double mean=values.stream()
-	                .mapToDouble(a -> a)
-	                .average().getAsDouble();
-			means.put(UUID.fromString(sessions.get(i)), mean);
+	public Map<UUID, String> calculateData(String sessionsParameters, String operation) throws ParseException {
+		Map<UUID, String> results=new HashMap<>();
+		JSONObject json = new JSONObject(sessionsParameters);
+		JSONArray sessions=json.getJSONArray("sessions");
+		List<String> parameters=new ArrayList<>();
+		int parametersSize=json.getJSONArray("parameters").length();
+		for(int k=0;k<parametersSize;k++) {
+			parameters.add(json.getJSONArray("parameters").getJSONObject(k).getString("name"));
 		}
-		return means;
-	}
-
-	public Map<UUID, Double> calculateDifferences(String parameter1, String parameter2, List<String> sessions) throws ParseException {
-		Map<UUID, Double> differences=new HashMap<>();
-		for(int i=0;i<sessions.size();i++) {
-			List<Double> values= new ArrayList<>();
-			SessionDTO session=loadSessionRawData(UUID.fromString(sessions.get(i)));
-			List<Frame> sessionFrames=session.getFrames();
+		String code=operationService.loadOperation(operation);
+		for(int i=0;i<sessions.length();i++) {
+			String[] values= new String[parametersSize];
+			for(int j=0;j<parametersSize;j++) values[j]="";
+			List<Frame> sessionFrames=loadSessionRawData(UUID.fromString(sessions.get(i).toString())).getFrames();
 			for(int j=0;j<sessionFrames.size();j++) {
-				Double param1=Double.parseDouble(sessionFrames.get(j).getDataValues().get(parameter1));
-				Double param2=Double.parseDouble(sessionFrames.get(j).getDataValues().get(parameter2));
-				values.add(Math.abs(param1-param2));
+				Map<String,String> dataValues=sessionFrames.get(j).getDataValues();
+				for(int k=0;k<parametersSize;k++) {
+					String value=dataValues.get(parameters.get(k));
+					values[k]+=value.trim()+",";
+				}
 			}
-			Double difference=values.stream()
-	                .mapToDouble(a -> a)
-	                .average().getAsDouble();
-			differences.put(UUID.fromString(sessions.get(i)), difference);
+			for(int j=0;j<parametersSize;j++) values[j]=values[j].substring(0,values[j].length()-2);
+			results.put(UUID.fromString(sessions.get(i).toString()), PythonExecutor.execute(code, values));
 		}
-		return differences;
+		return results;
 	}
 	
 }

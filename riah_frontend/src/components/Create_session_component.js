@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import "../App.css";
+import { width } from "@mui/system";
 
 function Create_session() {
     const location=useLocation();
@@ -17,7 +18,7 @@ function Create_session() {
     useEffect(() => {
         const fetchGames = async () => {
             try{
-                const response = await fetch('http://localhost:8081/game/loadGames');
+                const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
                 if(!response.ok){
                     setGames([]);
                     alert("No pudieron cargarse los juegos para filtrar.");
@@ -41,25 +42,60 @@ function Create_session() {
         const reader = new FileReader();
         reader.onload = async (e) => {
           try {
-            const jsonData = await JSON.parse(e.target.result);
-            setImportedData(jsonData);
-            console.log(jsonData);
+            const content=e.target.result;
             setImportedFileName(file.name);
+            const fileExtension = file.name.split(".").pop().toLowerCase();
+            if(fileExtension==="json"){
+                const jsonData = await JSON.parse(content);
+                setImportedData(jsonData);
+            }else if(fileExtension === "csv"){
+                const jsonData = parseCSVtoJSON(content);
+                setImportedData(jsonData);
+            }
           } catch (error) {
-            console.error("Error parsing JSON file", error);
+            alert("Error parsing JSON file", error);
           }
         };
         reader.readAsText(file);
       }
     };
 
+    const parseCSVtoJSON = (csvString) => {
+        const lines = csvString.trim().split("\n");
+        const headers = lines[0].split(";").map(header => header.trim());
+        const result = lines.slice(1).map(line => {
+          const values = line.split(";").map(value => value.trim());
+          let obj = {};
+          headers.forEach((header, index) => {
+            obj[header] = values[index] || ""; // Asigna valores a las claves correctas
+          });
+          return obj;
+        });
+        console.log(result);
+        return result;
+      };
+
     const handleCreateSession = async () => {
+        if(!user || !selectedDate || !selectedGame || !importedData){
+            alert("Asegúrese de rellenar todos los campos e importar sus datos antes de crear una sesión.")
+            return;
+        }
+
+        const responseCheck = await fetch(process.env.REACT_APP_SESSIONS_URL+'/rawDataSession/checkJson', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ frames: importedData }),
+        });
+
+        if(!responseCheck.ok){
+            alert("Formato de JSON o CSV inválido. Asegúrese de que se trata del fichero correcto.");
+            return;
+        }
+
         try {
-            if(!user || !selectedDate || !selectedGame || !importedData){
-                alert("Asegúrese de rellenar todos los campos e importar sus datos antes de crear una sesión.")
-                return;
-            }
-            const response = await fetch('http://localhost:8081/session/insertSession', {
+            const response = await fetch(process.env.REACT_APP_GENERAL_URL+'session/insertSession', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,7 +105,7 @@ function Create_session() {
 
             const sessionId = await response.text();
 
-            const responseMongo = await fetch('http://localhost:9000/rawDataSession/insertSession', {
+            const responseMongo = await fetch(process.env.REACT_APP_SESSIONS_URL+'rawDataSession/insertSession', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -95,55 +131,53 @@ function Create_session() {
     }   
 
     const handlePatientList = () => {
-        navigate('/')
-      }
+        navigate('/patients-list')
+    }
+
+    const handleUserPanel = () => {
+    navigate('/')
+    }
 
     return (
     <>
         <div className="sub-banner">
             <button className="nav-button">Home</button> &gt; 
-            <button className="nav-button">Mi portal</button> &gt; 
+            <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
             <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
             Nueva sesión - Juan Pérez
         </div>
         <div class="app">
             <h1 className="titulo">Nueva sesión - Juan Pérez</h1>
-    
-            <hr className="linea-delimitadora" />
-            <div>
-                <div class="importar">
-                    <h3>Importar Datos</h3>
-                    <label className="boton-importar" htmlFor="import-json">
-                        +
-                        </label>
-                        <input
-                        type="file"
-                        id="import-json"
-                        accept="application/json"
-                        onChange={handleImportJson}
-                        style={{ display: "none" }}
-                        />
-                    {importedFileName && <p className="nombre-archivo">{importedFileName}</p>}
-                </div>
+            <div class="rectangle create-session">
                 <h3>Juego</h3>
-                <select id="dropdown" value={selectedGame} className="date-input" onChange={handleGameChanged}>
-                <option value="">Ninguno</option>
+                <h3>Fecha</h3>
+                <h3>Importar Datos</h3>
+                <select id="dropdown" value={selectedGame} className="date-input create-session-field" onChange={handleGameChanged}>
+                <option value="">Selecciona un juego</option>
                     {games?.map((option, index) => (
                         <option key={index} value={option.id}>
                         {option.name}
                         </option>
                     ))}
                 </select>
-                <h3>Fecha</h3>
                 <input 
-                type="date" 
-                value={selectedDate} 
-                onChange={(e) => handleSetselectedDate(e.target.value)} 
-                className="date-input" 
+                    type="date" 
+                    value={selectedDate} 
+                    onChange={(e) => handleSetselectedDate(e.target.value)} 
+                    className="date-input create-session-field" 
                 />
-            </div>
-            <hr className="linea-delimitadora" />
-    
+                <label className="boton-importar" htmlFor="import-json-csv">
+                    +
+                    {importedFileName && <p className="nombre-archivo">{importedFileName}</p>}
+                    </label>
+                    <input
+                    type="file"
+                    id="import-json-csv"
+                    accept=".json,.csv"
+                    onChange={handleImportJson}
+                    style={{ display: "none" }}
+                    />
+                </div>
             <button className="boton-crear-sesion" onClick={handleCreateSession}>CREAR SESIÓN</button>
             </div>
         </>

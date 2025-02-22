@@ -14,8 +14,20 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 	@Entity
-	@Table(name = "CalculatedData")
-	public class CalculatedData {
+	@Table(name = "Parameters")
+	public class Parameter {
+
+		public Parameter(String name, Game game) {
+			this.name = name;
+			this.game = game;
+		}
+		
+		public Parameter() {
+		}
+
+		public Parameter(UUID id) {
+			this.id=id;
+		}
 
 		@Id
 		@GeneratedValue(strategy = GenerationType.AUTO)
@@ -28,31 +40,13 @@ import jakarta.persistence.Table;
 	    @ManyToOne
 	    @JoinColumn(name = "game_id", nullable = false)
 	    private Game game;
-	     
-	    @Column(name = "operation", nullable = false)
-	    private UUID operation;
 	    
-		@PrePersist
+	    @PrePersist
 	    public void prePersist() {
 	      id = UUID.randomUUID();
 	    } 
-		
-	    public CalculatedData(String name, Game game, UUID operation) {
-			super();
-			this.name = name;
-			this.game = game;
-			this.operation = operation;
-		}
-
-		public CalculatedData() {
-			super();
-		}
-
-		public CalculatedData(UUID id) {
-			this.id=id;
-		}
-
-		public UUID getId() {
+	    
+	    public UUID getId() {
 			return id;
 		} 
 
@@ -74,13 +68,5 @@ import jakarta.persistence.Table;
 
 		public void setGame(Game game) {
 			this.game = game;
-		}
-
-		public UUID getOperation() {
-			return operation;
-		}
-
-		public void setOperation(UUID operation) {
-			this.operation = operation;
 		}
 	}
