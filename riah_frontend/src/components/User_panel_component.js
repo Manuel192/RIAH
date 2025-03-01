@@ -6,8 +6,6 @@ import '../App.css';
 function User_panel() {
   // Estado para la búsqueda y la selección
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
-
   const handlePatientList = () => {
     navigate('/patients-list', { state: {user:"cb7c8009-b7c0-11ef-bbaf-e4e749429566"}})
   }

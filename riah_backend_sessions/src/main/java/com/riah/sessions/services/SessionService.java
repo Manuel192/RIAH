@@ -30,12 +30,12 @@ public class SessionService {
 	@Autowired
 	private SessionDAO sessionDAO;
 
-	public SessionDTO loadSessionRawData(UUID id) throws ParseException {
+	public SessionDTO loadSessionRawData(String id) throws ParseException {
 		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
 		Session session= sessionDAO.loadSessionRawData(id);
 		if(session==null) return null;
 		
-		SessionDTO parsedSession=new SessionDTO(session.getId());
+		SessionDTO parsedSession=new SessionDTO();
 		for(int j=0;j<session.getData().size();j++) {
 			String dataFrame=session.getData().get(j);
 			dataFrame=dataFrame.replace("\"", "").replace("{","").replace("}","");
@@ -56,13 +56,13 @@ public class SessionService {
 		return;
 	}
 
-	public boolean insertSession(String session) {
+	public String insertSession(String session) {
 		JSONObject json = new JSONObject(session);
 		ArrayList<String> parsedFrames=new ArrayList<>();
 		JSONArray frames=json.getJSONArray("frames");
-		SessionInsert sessionToInsert=new SessionInsert(json.getString("id"),frames.toList());
-		sessionDAO.insertSession(sessionToInsert);
-		return true;
+		SessionInsert sessionToInsert=new SessionInsert(frames.toList());
+		SessionInsert savedSession=sessionDAO.insertSession(sessionToInsert);
+		return savedSession.get_id().toString();
 	}
 
 	public Map<UUID, String> calculateData(String sessionsParameters, String operation) throws ParseException {
@@ -78,7 +78,7 @@ public class SessionService {
 		for(int i=0;i<sessions.length();i++) {
 			String[] values= new String[parametersSize];
 			for(int j=0;j<parametersSize;j++) values[j]="";
-			List<Frame> sessionFrames=loadSessionRawData(UUID.fromString(sessions.get(i).toString())).getFrames();
+			List<Frame> sessionFrames=loadSessionRawData(sessions.get(i).toString()).getFrames();
 			for(int j=0;j<sessionFrames.size();j++) {
 				Map<String,String> dataValues=sessionFrames.get(j).getDataValues();
 				for(int k=0;k<parametersSize;k++) {

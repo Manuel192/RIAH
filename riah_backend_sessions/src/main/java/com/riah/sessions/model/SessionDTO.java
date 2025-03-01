@@ -6,17 +6,12 @@ import java.util.Set;
 import java.util.UUID;
 
 public class SessionDTO{
-	private String ID;
 	private Set<String> dataTypes;
     private ArrayList<Frame> frames;
     
-    public SessionDTO(String id) {
-    	this.ID=id;
+    public SessionDTO() {
     	this.frames= new ArrayList<Frame>();
     	this.dataTypes=new HashSet<String>();
-    }
-    
-    public SessionDTO() {
 	}
     
     public ArrayList<Frame> getFrames() {
@@ -30,10 +25,6 @@ public class SessionDTO{
     
     public void addFrame(Frame frame) {
     	frames.add(frame);
-    }
-    
-    public String getId() {
-        return ID;
     }
     
 	public Set<String> getDataTypes() {

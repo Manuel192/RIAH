@@ -1,6 +1,7 @@
 import React, { act, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AreaChart, BarChart, Card, Title } from "@tremor/react";
+import VideoPlayer from './video_player';
 import Tabs from './Tabs_component';
 import '../css/Raw_data_component.css';
 import '../App.css';
@@ -49,9 +50,13 @@ function Raw_data() {
   // Data items names
   const [dataItems,setDataItems] = useState([]);
 
-  // Selected session data
+  // Video data
+  const [videoSource, setVideoSource] = useState();
+
+  // Selected session properties (video, data reference, others).
   const [activeSession, setactiveSession] = useState([]);
-  // Seleted data items names
+  
+  // Selected session data types and frames
   const [activeSessionData, setactiveSessionData] = useState([[]]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -131,6 +136,7 @@ function Raw_data() {
       }
       const sessionData = await response.json();
       setSessions(sessionData);
+      console.log(sessionData);
     }catch(error){
       alert("La web no funciona por el momento. Inténtelo más tarde.")
     }
@@ -152,11 +158,12 @@ function Raw_data() {
 
   const toggleSelection = async (item, listType) => {
     if (listType === "sessions") {
-      if(activeSessionData?.id===item.id){
+      if(activeSession?.id===item.id){
         setDataItems([]);
         setSelectedDataItems([]);
         setactiveSession();
         setactiveSessionData();
+        setVideoSource();
       }else if(selectedSessions.length===0){
         const sessionData=await obtainRawData(item);
         if(!sessionData){
@@ -167,6 +174,9 @@ function Raw_data() {
         setSelectedDataItems([]);
         setactiveSession(item);
         setactiveSessionData(sessionData);
+        setVideoSource(process.env.REACT_APP_SESSIONS_URL+"/video/loadVideo?id="+item.video_id);
+        const sessionVideo=document.getElementById("sessionVideo");
+        sessionVideo.load();
       }
       
       setSelectedSessions(prev =>
@@ -184,37 +194,46 @@ function Raw_data() {
         return;
       }else{
         setSelectedDataItems([...selectedDataItems, item].sort());
-        const newDataItemValues=[];
-        var maxValue=null;
-        var minValue=null;
-        for(var i=0;i<activeSessionData.frames.length;i++){
-          if(activeSessionData.frames[i].dataValues[item]==="") continue;
-          if(activeSessionData.frames[i].dataValues[item]===" True"||activeSessionData.frames[i].dataValues[item]===" False"){
-            if(maxValue===null){
-              maxValue=1;
-              minValue=0;
-            }
-            newDataItemValues.push({"frame":activeSessionData.frames[i].dataValues.frame,"value":activeSessionData.frames[i].dataValues[item]===" True"?1:0});
-          }else{
-            newDataItemValues.push({"frame":activeSessionData.frames[i].dataValues.frame,"value":activeSessionData.frames[i].dataValues[item]});
-            if(maxValue===null || Number(maxValue)<Number(activeSessionData.frames[i].dataValues[item]))
-              maxValue=activeSessionData.frames[i].dataValues[item];
-            if(minValue===null || Number(minValue)>Number(activeSessionData.frames[i].dataValues[item]))
-              minValue=activeSessionData.frames[i].dataValues[item];
-          }
-        }
-        setSelectedDataItemsValues({...selectedDataItemsValues, [item]:{"values":newDataItemValues, "min":minValue, "max":maxValue}});
+        obtainFrames([item], activeSessionData);
       };
     }
   };
 
+  const obtainFrames = (items, sessionData) => {
+    var newSelectedDataItemsValues=selectedDataItemsValues;
+    for(var j=0;j<items.length;j++){
+      const newDataItemValues=[];
+      var maxValue=null;
+      var minValue=null;
+      for(var i=0;i<sessionData.frames.length;i++){
+        if(sessionData.frames[i].dataValues[items[j]]==="") continue;
+        if(sessionData.frames[i].dataValues[items[j]].trim()==="True"||sessionData.frames[i].dataValues[items[j]].trim()==="False"){
+          if(maxValue===null){
+            maxValue=1;
+            minValue=0;
+          }
+          newDataItemValues.push({"frame":sessionData.frames[i].dataValues.frame,"value":sessionData.frames[i].dataValues[items[j]]===" True"?1:0});
+        }else{
+          newDataItemValues.push({"frame":sessionData.frames[i].dataValues.frame,"value":sessionData.frames[i].dataValues[items[j]]});
+          if(maxValue===null || Number(maxValue)<Number(sessionData.frames[i].dataValues[items[j]]))
+            maxValue=sessionData.frames[i].dataValues[items[j]];
+          if(minValue===null || Number(minValue)>Number(sessionData.frames[i].dataValues[items[j]]))
+            minValue=sessionData.frames[i].dataValues[items[j]];
+        }
+      }
+      newSelectedDataItemsValues={...newSelectedDataItemsValues, [items[j]]:{"values":newDataItemValues, "min":minValue, "max":maxValue}};
+    }
+    setSelectedDataItemsValues(newSelectedDataItemsValues);
+  }
+
   const obtainRawData = async (item) => {
-    const url=process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/loadSessionRawData?id="+item.id;
+    const url=process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/loadSessionRawData?id="+item.data_id;
       const response = await fetch(url);
       if(!response.ok){
         return null;
       }
       const sessionData = await response.json();
+      console.log(sessionData);
       return sessionData;
   }
 
@@ -227,9 +246,13 @@ function Raw_data() {
         return;
       }
       setDataItems(sessionData.dataTypes);
-      setSelectedDataItems([]);
       setactiveSession(item);
       setactiveSessionData(sessionData);
+      obtainFrames(selectedDataItems,sessionData);
+      const newVideo=process.env.REACT_APP_SESSIONS_URL+"/video/loadVideo?id="+item.video_id;
+      setVideoSource(newVideo);
+      const sessionVideo=document.getElementById("sessionVideo");
+      sessionVideo.load();
     }
   };
 
@@ -264,7 +287,7 @@ function Raw_data() {
             type="date" 
             value={startDate} 
             onChange={(e) => handleSetStartDate(e.target.value)} 
-            className="date-input" 
+            className="raw-data-input" 
           />
         </div>
         <div className="date-field">
@@ -273,12 +296,12 @@ function Raw_data() {
             type="date" 
             value={endDate} 
             onChange={(e) => handleSetEndDate(e.target.value)} 
-            className="date-input" 
+            className="raw-data-input" 
           />
         </div>
         <div className="date-field">
           <span>JUEGO</span>
-          <select id="dropdown" className='date-input' value={game} onChange={handleGameChanged}>
+          <select id="dropdown" className="raw-data-input" value={game} onChange={handleGameChanged}>
             <option value="">Ninguno</option>
             {games?.map((option, index) => (
               <option key={index} value={option.id}>
@@ -293,7 +316,7 @@ function Raw_data() {
         {sessions.length>0?
         <div className="list-sections">
           <div className="list-container">
-            <h3>SESIONES</h3>
+            <h3 class="title">SESIONES</h3>
             <div className="scrollable-list">
               {sessions?.map((session, index) => (
                 <div
@@ -301,18 +324,18 @@ function Raw_data() {
                   className={`list-item ${selectedSessions.includes(session.id) ? "selected" : ""}`}
                   onClick={() => toggleSelection(session, "sessions")}
                 >
-                  {session.game+ ", "+session.date}
+                  {session.game+ ", "+session.date.substring(0,10)+" "+session.date.substring(11,19)}
                   <label className="secondary-txt">{session.id}</label>
                 </div>
                 ))}
             </div>
           </div>
           <div className="list-container">
-            <h3>DATOS</h3>
+            <h3 class="title">DATOS</h3>
             <div className="scrollable-list">
-              {dataItems?.length>0?dataItems.sort().map((data, index) => (
+              {dataItems.length>0?dataItems.sort().map((data, index) => (
                 <div
-                key={index}
+                  key={index}
                   className={`list-item ${selectedDataItems.includes(data) ? "selected" : ""}`}
                   onClick={() => toggleSelection(data, "dataItems")}
                 >
@@ -326,7 +349,7 @@ function Raw_data() {
 
       {/* Modal para confirmar */}
       {isModalOpen && <Modal onClose={handleCloseModal} onConfirm={handleConfirm} />}
-
+      
       <Tabs tabs={tabs} onTabChange={handleTabChange} />
       {selectedSessions?.length>0?
         <div className="table-container">
@@ -354,9 +377,9 @@ function Raw_data() {
 
     <div>
         {/* Sección Superior */}
-        {selectedDataItems.map((dataItem, index) => (
+        {selectedDataItems?.map((dataItem, index) => (
           <Card className="tremor-Card">
-            <h3>{dataItem}</h3>
+            <h3 class="title">{dataItem}</h3>
             <AreaChart
             data={selectedDataItemsValues[dataItem].values}
             index="frame"
@@ -374,6 +397,14 @@ function Raw_data() {
         </Card>
         ))}       
       </div>
+
+    {videoSource && (
+    <div style={{justifyItems: "center"}}>
+      <video id="sessionVideo" width="900" height="500" controls>
+        <source src={videoSource} type="video/mp4" />
+      </video>
+    </div>)}
+
     {selectedSessions?.length>0?
     <div className="button-bar">
       {/*<button className="button-clean" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>*/}

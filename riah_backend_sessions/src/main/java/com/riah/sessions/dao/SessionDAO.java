@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bson.types.Binary;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -26,12 +27,12 @@ public class SessionDAO {
 		return mongoTemplate.findAll(Session.class, sessionsCollection);
 	}
 
-	public Session loadSessionRawData(UUID id) {
-		Query query = new Query(Criteria.where("ID").is(id.toString()));
+	public Session loadSessionRawData(String id) {
+		Query query = new Query(Criteria.where("_id").is(new ObjectId(id)));
 		return mongoTemplate.findOne(query, Session.class, sessionsCollection);
 	}
 
-	public void insertSession(SessionInsert sessionToInsert) {
-		mongoTemplate.save(sessionToInsert, sessionsCollection);
+	public SessionInsert insertSession(SessionInsert sessionToInsert) {
+		return mongoTemplate.save(sessionToInsert, sessionsCollection);
 	}
 }

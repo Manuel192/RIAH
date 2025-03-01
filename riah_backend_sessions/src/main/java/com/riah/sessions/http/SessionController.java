@@ -38,7 +38,7 @@ public class SessionController {
 	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@GetMapping("/loadSessionRawData")
-    public ResponseEntity<SessionDTO> loadSessionRawData(@RequestParam UUID id) throws ParseException{
+    public ResponseEntity<SessionDTO> loadSessionRawData(@RequestParam String id) throws ParseException{
 		SessionDTO session=sessionService.loadSessionRawData(id);
     	if(!(session==null))
 			return ResponseEntity.ok(session);
@@ -49,8 +49,8 @@ public class SessionController {
 	@CrossOrigin(origins = "http://localhost:3000")
 	@PostMapping("/insertSession")
 	public ResponseEntity<String> insertSession (@RequestBody String session){
-		sessionService.insertSession(session);
-		return ResponseEntity.ok("Session created successfully!");
+		String id=sessionService.insertSession(session);
+		return ResponseEntity.ok(id);
 	}
 	
 	@CrossOrigin(origins = "http://localhost:3000")

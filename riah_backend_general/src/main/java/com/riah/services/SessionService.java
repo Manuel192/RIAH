@@ -50,6 +50,8 @@ public class SessionService {
             sessionDTO.setDate(session.getDate());
             sessionDTO.setPatient(session.getPatient().getName());
             sessionDTO.setGame(session.getGame().getName());
+            sessionDTO.setVideoID(session.getVideoID());
+            sessionDTO.setDataID(session.getDataID());
             return sessionDTO;
         }).collect(Collectors.toList());
 	}
@@ -77,7 +79,15 @@ public class SessionService {
 		JSONObject json = new JSONObject(session);
 		UUID gameId=UUID.fromString(json.getString("game"));
 		UUID patientId=UUID.fromString(json.getString("patient"));
-		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
+		String videoId="";
+		boolean videoAvailable=true;
+		try {
+			videoId=json.getString("video_id");
+		}catch(JSONException jsone) {
+			videoAvailable=false;
+		}
+		String dataId=json.getString("data_id");
+		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		System.out.print(session);
 		String dateString=json.getString("date");
 		Date date=null;
@@ -87,7 +97,7 @@ public class SessionService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Session sessionToInsert=new Session(gameId,patientId,date);
+		Session sessionToInsert=new Session(gameId,patientId,date,videoId,dataId);
 		Session savedSession=sessionDAO.save(sessionToInsert);
 		return savedSession.getId().toString();
 	}

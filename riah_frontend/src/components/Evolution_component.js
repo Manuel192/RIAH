@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect } from "react";
-import { AreaChart, BarChart, Card, Title } from "@tremor/react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { AreaChart, BarChart, Card} from "@tremor/react";
+import { useNavigate} from "react-router-dom";
 import LoadingScreen from "./loading_screen";
 import '../css/Evolution_component.css';
 import "../App.css";
@@ -87,11 +87,11 @@ const Evolution = () => {
   }, []);
 
   const addGraph = () => {
-    setSelectedData([... selectedData, ""]);
-    setSelectedGame([... selectedGame, ""]);
-    setSelectedInitDate([... selectedInitDate, ""]);
-    setSelectedEndDate([... selectedEndDate, ""]);
-    setGraphs([... graphs, "area"]);
+    setSelectedData([...selectedData, ""]);
+    setSelectedGame([...selectedGame, ""]);
+    setSelectedInitDate([...selectedInitDate, ""]);
+    setSelectedEndDate([...selectedEndDate, ""]);
+    setGraphs([...graphs, "area"]);
   }
 
   const fetchAll = async (obtainedGraphs) => {
@@ -137,7 +137,7 @@ const Evolution = () => {
     var newGraphData = [];
     for(var i=0;i<obtainedGraphs.length;i++){
       const obtainedGraphData=await obtainDynamicCalculus(obtainedGraphs[i].calculatedData,i,obtainedDataOptions);
-      if(obtainedGraphData.length>0) newGraphData=[... newGraphData, ... obtainedGraphData];
+      if(obtainedGraphData.length>0) newGraphData=[...newGraphData, ...obtainedGraphData];
       else newGraphData.push({"index":i,"session":"","value":0, "date":""});
     }
     return newGraphData;
@@ -218,7 +218,7 @@ const Evolution = () => {
   const updateRecord = async (newValue, newData, newInitDate, newEndDate, index) => {
     var data=[];
     for(var i=0;i<selectedGame.length;i++){
-      if(i==index)
+      if(i===index)
         data.push({"game":selectedGame[i] || "","calculatedData":newData || "","initDate":newInitDate || "","endDate":newEndDate || ""});
       else
         data.push({"game":selectedGame[i] || "","calculatedData":selectedData[i] || "","initDate":selectedInitDate[i] || "","endDate":selectedEndDate[i] || ""});
@@ -324,7 +324,7 @@ return (
         </div>
         {graph==="area"?(
           <AreaChart
-          data={graphData.filter(graph=>graph.index==index&&(selectedInitDate[index].length<1 || selectedInitDate[index]<=graph.date)&&(selectedEndDate[index].length<1 || selectedEndDate[index]>=graph.date))}
+          data={graphData.filter(graph=>graph.index===index&&(selectedInitDate[index].length<1 || selectedInitDate[index]<=graph.date)&&(selectedEndDate[index].length<1 || selectedEndDate[index]>=graph.date))}
           index="date"
           categories={["value"]}
           onValueChange={(v) => console.log(v)}
@@ -338,7 +338,7 @@ return (
         ):""}
         {graph==="bar"?(
           <BarChart
-          data={graphData.filter(graph=>graph.index==index&&(selectedInitDate[index]==="")&&(selectedEndDate[index]===""))}
+          data={graphData.filter(graph=>graph.index===index&&(selectedInitDate[index]==="")&&(selectedEndDate[index]===""))}
           index="date"
           categories={['value']}
           colors={getRandomColors(1,index)}
