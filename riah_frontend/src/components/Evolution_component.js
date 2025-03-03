@@ -356,7 +356,7 @@ return (
               type="date" 
               value={selectedInitDate[index]}
               onChange={handleInitDate(index)}
-              className="date-input" 
+              className="raw-data-input" 
             />
           </div>
           <div className="date-field">
@@ -365,7 +365,7 @@ return (
               type="date" 
               value={selectedEndDate[index]}
               onChange={handleEndDate(index)}
-              className="date-input" 
+              className="raw-data-input" 
             />
           </div>
         </div>

@@ -62,8 +62,8 @@ public class SessionController {
 	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@PutMapping("/calculateData")
-	public ResponseEntity<Map<UUID, String>> calculateData (@RequestParam String operation, @RequestBody String sessionsParameters) throws ParseException{
-		Map<UUID,String> sessionsMeans=sessionService.calculateData(sessionsParameters, operation);
-		return ResponseEntity.ok(sessionsMeans);
+	public ResponseEntity<Map<String, String>> calculateData (@RequestParam String operation, @RequestBody String sessionsParameters) throws ParseException{
+		Map<String,String> sessionData=sessionService.calculateData(sessionsParameters, operation);
+		return ResponseEntity.ok(sessionData);
 	}
 } 

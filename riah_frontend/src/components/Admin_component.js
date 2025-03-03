@@ -43,25 +43,24 @@ function Admin() {
   const [importedData, setImportedData] = useState(null);
 
   const [treeData,setTreeData] = useState({
-    data: [
-      {
-        name: "",
+        name: "a_0",
         level: 0,
         type: "Operation",
+        value:"",
         children: [
-          {
-            name: "Addition",
+          /*{
+            name: "a_1",
             level: 1,
             type: "Operation",
+            value:"Mean",
             children: [
-              { name: "Param1", level:2, type: "Parametro"},
-              { name: "Param2",level:2, type: "Operation"},
+              { name: "a_2", level:2, type: "Parameter",value:"",children:[]},
+              { name: "b_2",level:2, type: "Operation",value:"",children:[]},
             ],
-          },
+          },*/
         ],
       },
-    ],
-  });
+  );
 
   // Lista de pacientes (solo incluye "Juan Pérez" como se indicó)
   const pacientes = ["Juan Pérez"];
@@ -242,73 +241,87 @@ function Admin() {
     setNewOperationActivated(0);
   }
 
-  const handleOperationChanged = (event) => {
-    setSelectedOperation(event.target.value);
-    if(event.target.value===""){
-      setCDataParameters([]);
-      return;
-    }
-    const noParameters=operations.filter(op=>op.id===event.target.value)[0].no_parameters;
-    const newCDataParameters=[];
-    for(var i=0;i<noParameters;i++){
-      newCDataParameters.push("");
-    }
-    setCDataParameters(newCDataParameters);
+  const handleOperationChanged = (event,node) => {
+    modifyChilds(treeData, node, event.target.value, "Operation", operations.filter(o=>(o.id===event.target.value))[0].no_parameters);
   }
 
-  const addChilds = (node) => {
-    const updateTree = (currentNode) => {
-      if (currentNode === node) {
-        return {
-          ...currentNode,
-          children: [...(currentNode.children || []), { name: "Nuevo Nodo" }],
-        };
+  const handleParameterChanged = (event,node) =>{
+    modifyChilds(treeData, node, event.target.value, "Parameter", 0);
+  }
+
+  const handleFieldChanged = (event,node,newType) => {
+    modifyChilds(treeData, node, "", newType, 0);
+  }
+
+  const modifyChilds = (currentNode, node, childValue, childType, noChilds) => {
+    console.log(operations);
+    if(currentNode===node && currentNode.level===0){
+      var children=[];
+      for(var i=0;i<noChilds;i++){
+        children.push({name: "c_"+i+"_"+(node.level+1), level: node.level+1, type: "Operation", children:[]})
       }
-      if (currentNode.children) {
-        return {
-          ...currentNode,
-          children: currentNode.children.map(updateTree),
-        };
+      setTreeData( {
+        ...node, value: childValue, type: childType, children:children
+      })
+    }
+    if(currentNode===node){
+      var children=[];
+      for(var i=0;i<noChilds;i++){
+        children.push({name: "c_"+i+"_"+(node.level+1), level: node.level+1, type: "Parameter", children:[]})
       }
-      return currentNode;
-    };
-    setTreeData(updateTree(treeData));
-  };
-  
+      console.log({...node, value: childValue, type: childType, children:children});
+      return {
+        ...node, value: childValue, type: childType, children:children
+      }
+    }
+    else if(currentNode.children){
+      const children=currentNode.children;
+      for(var i=0;i<children.length;i++){
+        const nonExploredNodes=children.filter(c=>c!==children[i]);
+        const nodeFound=modifyChilds(children[i], node, childValue, childType, noChilds);
+        if(nodeFound!==null && currentNode.level===0){
+          setTreeData({...treeData,children:[...nonExploredNodes, nodeFound]});
+          console.log({...treeData,children:[...nonExploredNodes, nodeFound]});
+          return;
+        }
+        if(nodeFound!==null){
+          return({
+          ...currentNode,
+          children: [...nonExploredNodes, nodeFound]});
+        }
+      }
+    } return null;
+  };  
+
   const TreeNode = ({ node, game }) => {
       return (
         <div>
-          <select id="dropdown" className='input-parameter'>
-            {node.type==="Operation"?
-            <>
+          {node.type && (node.type==="Operation"?
+          <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleOperationChanged(e,node)}>
             <option value="">Selecciona una operación</option>
             {operations?.map((option, index) => (
               <option key={index} value={option.id}>
                 {option.name}
               </option>
             ))}
-            </>
+            </select>
             :
-            <>
-            <option value="">{"Parámetro 1"}</option>
-            {parameters.filter(p=>p.id===game.id)[0]?.data.map((parameter, index) => (
-              <option key={index} value={parameter.id}>
-                {parameter.name}
-              </option>
-            ))}
-            </>}
-          </select>
-          {node.level!==0?
-            <>
-              {node.type==="Operation"?
-                <button className="button-admin-change-parameter"> Parámetro </button>
+            <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleParameterChanged(e,node)}>
+              <option value="">{"Parámetro 1"}</option>
+              {parameters.filter(p=>p.id===game.id)[0]?.data.map((parameter, index) => (
+                <option key={index} value={parameter.id}>
+                  {parameter.name}
+                </option>
+              ))}
+            </select>)}
+          {node.type && node.level>0 && (
+              node.type==="Operation"?
+                <button className="button-admin-change-parameter" onClick={(e)=>handleFieldChanged(e,node,"Parameter")}> Parámetro </button>
               :
-                <button className="button-admin-change-parameter"> Operación </button>
-              }
-            </>
-          :""}
-          {node.children && (
-            <div class={node.level%2===1?"gray-rectangle":"rectangle"}>
+                <button className="button-admin-change-parameter" onClick={(e)=>handleFieldChanged(e,node,"Operation")}> Operación </button>
+          )}
+          {node.children && node.children.length>0 && (
+            <div class={node.level%2===0?"gray-rectangle":"rectangle"}>
               {node.children.map((child, index) => (
                 <TreeNode key={index} node={child} game={game} />
               ))}
@@ -369,9 +382,7 @@ function Admin() {
             <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
                 <button className="button-admin-cancel" onClick={deactivateNewParameterPanel(game.id)}> Cancelar </button>
                 <button className="button-admin-new" onClick={addParameter(game.id, addValue)}> Añadir </button>
-              {treeData.data.map((child, index) => (
-                <TreeNode key={index} node={child} game={game} />
-              ))}
+                <TreeNode node={treeData} game={game} />
             </div>
             </>
             :""}
@@ -393,6 +404,6 @@ function Admin() {
     </div>
     </>
   );
- }
+};
 
 export default Admin;

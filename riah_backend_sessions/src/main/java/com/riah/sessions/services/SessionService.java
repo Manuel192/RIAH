@@ -65,8 +65,8 @@ public class SessionService {
 		return savedSession.get_id().toString();
 	}
 
-	public Map<UUID, String> calculateData(String sessionsParameters, String operation) throws ParseException {
-		Map<UUID, String> results=new HashMap<>();
+	public Map<String, String> calculateData(String sessionsParameters, String operation) throws ParseException {
+		Map<String, String> results=new HashMap<>();
 		JSONObject json = new JSONObject(sessionsParameters);
 		JSONArray sessions=json.getJSONArray("sessions");
 		List<String> parameters=new ArrayList<>();
@@ -87,7 +87,7 @@ public class SessionService {
 				}
 			}
 			for(int j=0;j<parametersSize;j++) values[j]=values[j].substring(0,values[j].length()-2);
-			results.put(UUID.fromString(sessions.get(i).toString()), PythonExecutor.execute(code, values));
+			results.put(sessions.get(i).toString(), PythonExecutor.execute(code, values));
 		}
 		return results;
 	}

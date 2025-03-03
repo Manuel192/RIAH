@@ -108,7 +108,7 @@ public class SessionService {
 		Map<String,Date> result=new HashMap<>();
 		for(int i=0;i<sessions.size();i++) {
 			Session session=sessions.get(i);
-			result.put(session.getId().toString(), session.getDate());
+			result.put(session.getDataID().toString(), session.getDate());
 		}
 		return result;
 	}
@@ -124,7 +124,7 @@ public class SessionService {
 		});
 		List<String> result=new ArrayList<>();
 		for(int i=0;i<sessions.size();i++) {
-			result.add(sessions.get(i).getId().toString());
+			result.add(sessions.get(i).getDataID());
 		}
 		return result;
 	}
