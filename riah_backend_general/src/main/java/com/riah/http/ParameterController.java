@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.riah.dao.SessionDAO;
-import com.riah.model.CalculatedDataDTO;
+import com.riah.model.OperationDTO;
 import com.riah.model.GameDTO;
 import com.riah.model.ParameterDTO;
 import com.riah.model.Session;
-import com.riah.services.CalculatedDataService;
+import com.riah.services.OperationService;
 import com.riah.services.GameService;
 import com.riah.services.ParameterService;
 import com.riah.services.SessionService;

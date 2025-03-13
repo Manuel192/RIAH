@@ -39,12 +39,11 @@
   font-weight: bold;
 }
 
-.gray-rectangle {
-  border: 1px solid #dddddd;
+.non-bg-rectangle {
+  border: 3px solid #000000;
   border-radius: 5px;
   padding: 10px;
   margin-bottom: 10px;
-  background-color: #e8e8e8;
   font-weight: bold;
 }
 
@@ -154,6 +153,16 @@ h3{
 .scrollable-list {
   min-height: 300px;
   max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: #ffffff;
+}
+
+.long-scrollable-list {
+  min-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
   border: 1px solid #dddddd;
   border-radius: 5px;

@@ -13,7 +13,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import com.riah.sessions.model.Session;
-import com.riah.sessions.model.SessionInsert;
+import com.riah.sessions.model.SessionDB;
 
 @Repository
 public class SessionDAO {
@@ -22,17 +22,18 @@ public class SessionDAO {
 	MongoTemplate mongoTemplate;
     
 	String sessionsCollection="Sessions";
-	
-	public List<Session> example(){
-		return mongoTemplate.findAll(Session.class, sessionsCollection);
-	}
 
-	public Session loadSessionRawData(String id) {
+	public SessionDB loadSessionParameters(String id) {
 		Query query = new Query(Criteria.where("_id").is(new ObjectId(id)));
-		return mongoTemplate.findOne(query, Session.class, sessionsCollection);
+		return mongoTemplate.findOne(query, SessionDB.class, sessionsCollection);
 	}
+	
+	public Session loadSessionRawData(String id) {
+			Query query = new Query(Criteria.where("_id").is(new ObjectId(id)));
+			return mongoTemplate.findOne(query, Session.class, sessionsCollection);
+		}
 
-	public SessionInsert insertSession(SessionInsert sessionToInsert) {
+	public SessionDB insertSession(SessionDB sessionToInsert) {
 		return mongoTemplate.save(sessionToInsert, sessionsCollection);
 	}
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bson.types.Binary;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -15,10 +16,11 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.riah.sessions.model.Operation;
+import com.riah.sessions.model.OperationDB;
 import com.riah.sessions.model.RecordInsert;
 import com.riah.sessions.model.Recordd;
 import com.riah.sessions.model.Session;
-import com.riah.sessions.model.SessionInsert;
+import com.riah.sessions.model.SessionDB;
 
 @Repository
 public class OperationDAO {
@@ -28,12 +30,12 @@ public class OperationDAO {
     
 	String operationsCollection="Operations";
 
-	public Operation loadOperation(String operation) {
-		Query query = new Query(Criteria.where("ID").is(operation));
-		return mongoTemplate.findOne(query, Operation.class, operationsCollection);
+	public OperationDB loadOperation(String operation) {
+		Query query = new Query(Criteria.where("_id").is(new ObjectId(operation)));
+		return mongoTemplate.findOne(query, OperationDB.class, operationsCollection);
 	}
 	
-	public void insertOperation(Operation operationToInsert) {
-		mongoTemplate.save(operationToInsert, operationsCollection);
+	public OperationDB insertOperation(OperationDB operationToInsert) {
+		return mongoTemplate.save(operationToInsert, operationsCollection);
 	}
 }

@@ -22,7 +22,7 @@ import com.riah.sessions.dao.VideoDAO;
 import com.riah.sessions.model.RecordDTO;
 import com.riah.sessions.model.RecordInsert;
 import com.riah.sessions.model.Recordd;
-import com.riah.sessions.model.SessionInsert;
+import com.riah.sessions.model.SessionDB;
 
 import jakarta.servlet.http.HttpServletResponse;
 

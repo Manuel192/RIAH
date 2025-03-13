@@ -62,6 +62,7 @@ const Evolution = () => {
           setSelectedGame([""]);
           setSelectedInitDate([""]);
           setSelectedEndDate([""]);
+          setIsLoading(false);
           return;
         }
         // convert data to json
@@ -97,7 +98,7 @@ const Evolution = () => {
   const fetchAll = async (obtainedGraphs) => {
     const newDataOptions=[...dataOptions];
     for(var i=0;i<obtainedGraphs.length;i++){
-      const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/loadCalculatedData?gameId="+obtainedGraphs[i].game);
+      const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations?gameId="+obtainedGraphs[i].game);
       if(!response.ok){
         newDataOptions[i]=[];
         setDataOptions(newDataOptions);
@@ -115,7 +116,7 @@ const Evolution = () => {
   }
 
   const fetchCalculatedData = async (gameId, index) => {
-    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/loadCalculatedData?gameId="+gameId);
+    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations?gameId="+gameId);
     if(!response.ok){
       const newDataOptions=[...dataOptions];
       newDataOptions[index]=[];
@@ -151,7 +152,7 @@ const Evolution = () => {
           headers: {
               'Content-Type': 'application/json',
           },
-          body: JSON.stringify({"sessions":optionToObtain.sessions,"parameters":optionToObtain.parameters}),
+          body: JSON.stringify({"sessions":optionToObtain.sessions}),
       });
       if(!response.ok){
         alert("No existen datos calculables para este juego o no cargaron correctamente.");

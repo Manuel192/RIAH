@@ -25,7 +25,7 @@ import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.riah.sessions.model.RecordInsert;
 import com.riah.sessions.model.Recordd;
 import com.riah.sessions.model.Session;
-import com.riah.sessions.model.SessionInsert;
+import com.riah.sessions.model.SessionDB;
 
 import jakarta.servlet.http.HttpServletResponse;
 

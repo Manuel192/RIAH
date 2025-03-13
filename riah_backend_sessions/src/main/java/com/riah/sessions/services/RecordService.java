@@ -13,7 +13,7 @@ import com.riah.sessions.dao.RecordDAO;
 import com.riah.sessions.model.RecordDTO;
 import com.riah.sessions.model.RecordInsert;
 import com.riah.sessions.model.Recordd;
-import com.riah.sessions.model.SessionInsert;
+import com.riah.sessions.model.SessionDB;
 import com.riah.sessions.model.Graph;
 
 @Service
@@ -31,10 +31,10 @@ public class RecordService {
 		for(int i=0;i<data.size();i++) {
 			JSONObject json = new JSONObject(data.get(i));
 			String game=json.getString("game");
-			String calculatedData=json.getString("calculatedData");
+			String operation=json.getString("operation");
 			String initDate=json.getString("initDate");
 			String endDate=json.getString("endDate");
-			Graph g= new Graph(game,calculatedData,initDate,endDate);
+			Graph g= new Graph(game,operation,initDate,endDate);
 			parsedRecord.addGraph(g);
 		}
 		return parsedRecord;

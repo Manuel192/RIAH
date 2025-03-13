@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class Graph {
     private String game;
-    private String calculatedData;
+    private String operation;
     private String initDate;
     private String endDate;
     
@@ -28,15 +28,15 @@ public class Graph {
 	public void setGame(String game) {
 		this.game = game;
 	}
-	public String getCalculatedData() {
-		return calculatedData;
+	public String getOperation() {
+		return operation;
 	}
-	public void setCalculatedData(String calculatedData) {
-		this.calculatedData = calculatedData;
+	public void setOperation(String operation) {
+		this.operation = operation;
 	}
-	public Graph(String game, String calculatedData, String idate, String edate) {
+	public Graph(String game, String operation, String idate, String edate) {
 		this.game = game;
-		this.calculatedData = calculatedData;
+		this.operation = operation;
 		this.initDate = idate;
 		this.endDate = edate;
 	}

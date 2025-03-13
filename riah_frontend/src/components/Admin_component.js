@@ -3,50 +3,32 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../css/Admin_component.css';
 import '../App.css';
 
-function Modal_Python({ onClose, onConfirm }) {
-  return (
-    <div className="modal-overlay">
-      <div className="modal modal-python">
-        <h3>FORMATO PYTHON</h3>
-        <p>El fichero Python recibe una o varias listas como input que representan los datos de los parámetros de una operación. Aparecen en el siguiente formato:</p>
-        <br></br>
-        <p>A,B,C,D,E,F,G</p>
-        <br></br>
-        <p>H,I,J,K,L,M,N</p>
-        <br></br>
-        <p>El código debe retornar un valor numérico resultado de tratar los datos enviados. Aquí tienes un ejemplo de referencia para calcular la media de la resta de dos parámetros:</p>
-        <br></br>
-        <img src={require('../media/RIAH_Python.png')} alt="Profile"/>
-
-      </div>
-    </div>
-  );
-}
-
 function Admin() {    
   // Estado para la búsqueda y la selección
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
   const [parameters, setParameters] = useState([]); 
-  const [calculatedData, setCalculatedData] = useState([]);
+  const [operation, setOperation] = useState([]);
   const [newParameterActivated, setNewParameterActivated] = useState([]);
-  const [newCDataActivated, setNewCDataActivated] = useState([]);
+  const [newOperationActivated, setNewOperationActivated] = useState([]);
   const [newGameActivated, setNewGameActivated] = useState(0);
-  const [newOperationActivated, setNewOperationActivated] = useState(0);
+  const [newSimpleOperationActivated, setNewsimpleOperationActivated] = useState(0);
   const [addValue, setAddValue] = useState("");
 
-  const [operations, setOperations] = useState([]);
-  const [selectedOperation, setSelectedOperation] = useState();
-  const [cDataParameters, setCDataParameters] = useState ([]);
-  const [addNoParameters, setAddNoParameters] = useState();
-  const [importedFileName, setImportedFileName] = useState("");
-  const [importedData, setImportedData] = useState(null);
+  const [simpleOperations, setsimpleOperations] = useState([]);
+  const [selectedsimpleOperation, setSelectedsimpleOperation] = useState();
+  const [operationParameters, setoperationParameters] = useState ([]);
+
+  const operationColors = [
+    "#fcbdbd","#fcdebd","#fcfbbd","#d3fcbd","#bdfce1","#bde0fc","#c0bdfc","#eebdfc","#fcbde4"
+  ];
 
   const [treeData,setTreeData] = useState({
         name: "a_0",
         level: 0,
         type: "Operation",
         value:"",
+        valueName:"",
         children: [
           /*{
             name: "a_1",
@@ -71,7 +53,7 @@ function Admin() {
     if (listContainer) {
       listContainer.scrollTop = listContainer.scrollHeight;
     }
-  }, [newParameterActivated, newCDataActivated]);
+  }, [newParameterActivated, newSimpleOperationActivated]);
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -85,25 +67,26 @@ function Admin() {
         // convert data to json
         const gamesParsed = await responseGames.json();
         setGames(gamesParsed);
-        const responseOperations = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations");
-        if(!responseOperations.ok){
-          setOperations([]);
+        const responsesimpleOperations = await fetch(process.env.REACT_APP_SESSIONS_URL+"/operation/loadSimpleOperations");
+        if(!responsesimpleOperations.ok){
+          setsimpleOperations([]);
           alert("No pudieron cargarse las operaciones.");
           return;
         }
         // convert data to json
-        const operationsParsed = await responseOperations.json();
-        setOperations(operationsParsed);
+        const simpleOperationsParsed = await responsesimpleOperations.json();
+        console.log(simpleOperationsParsed);
+        setsimpleOperations(simpleOperationsParsed);
 
         var newActivatedTemp=[];
-        var calculatedDataTemp=[];
+        var OperationTemp=[];
         var parametersTemp=[];
         for(var i=0;i<gamesParsed?.length;i++){
           newActivatedTemp.push({"id":gamesParsed[i].id,"value":0});
-          const responseCalculatedData = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/loadCalculatedData?gameId="+gamesParsed[i].id);
-          if(responseCalculatedData.ok){
-            const calculatedDataParse=await responseCalculatedData.json();
-            calculatedDataTemp.push({"id":gamesParsed[i].id,"data":calculatedDataParse});
+          const responseOperation = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations?gameId="+gamesParsed[i].id);
+          if(responseOperation.ok){
+            const OperationParse=await responseOperation.json();
+            OperationTemp.push({"id":gamesParsed[i].id,"data":OperationParse});
           }
 
           const responseParameters = await fetch(process.env.REACT_APP_GENERAL_URL+"/parameter/loadParameters?gameId="+gamesParsed[i].id);
@@ -112,10 +95,11 @@ function Admin() {
             parametersTemp.push({"id":gamesParsed[i].id,"data":parameterParse});
           }
         }
-        setCalculatedData(calculatedDataTemp);
+        setOperation(OperationTemp);
         setParameters(parametersTemp);
         setNewParameterActivated(newActivatedTemp);
-        setNewCDataActivated(newActivatedTemp);
+        setNewsimpleOperationActivated(newActivatedTemp);
+        console.log(OperationTemp.filter(o=>o.id===gamesParsed[0].id));
       }catch(error){
         alert("La web no funciona por el momento. Inténtelo más tarde.")
       }
@@ -135,10 +119,10 @@ function Admin() {
     setNewParameterActivated(newParameterActivatedTemp);
   }
 
-  const activateNewCalculatedDataPanel = gameId => () =>{
-    var newCDataActivatedTemp=newParameterActivated.filter(p=>(p.id!==gameId));
-    newCDataActivatedTemp.push({"id":gameId,"value":1});
-    setNewCDataActivated(newCDataActivatedTemp);
+  const activateNewOperationPanel = gameId => () =>{
+    var operationActivatedTemp=newOperationActivated.filter(p=>(p.id!==gameId));
+    operationActivatedTemp.push({"id":gameId,"value":1});
+    setNewOperationActivated(operationActivatedTemp);
   }
 
   const deactivateNewParameterPanel = gameId => () => {
@@ -147,39 +131,60 @@ function Admin() {
     setNewParameterActivated(newParameterActivatedTemp);
   }
 
-  const deactivateNewCalculatedDataPanel = gameId => () => {
-    var newCDataActivatedTemp=newParameterActivated.filter(p=>(p.id!==gameId));
-    newCDataActivatedTemp.push({"id":gameId,"value":0});
-    setNewCDataActivated(newCDataActivatedTemp);
+  const deactivateNewOperationPanel = gameId => () => {
+    var operationActivatedTemp=newOperationActivated.filter(p=>(p.id!==gameId));
+    operationActivatedTemp.push({"id":gameId,"value":0});
+    setNewOperationActivated(operationActivatedTemp);
   }
 
-  const addCData = (gameId) => async () => {
-    const cDataTemp=calculatedData;
-    if(addValue==="" || selectedOperation ==="" || cDataParameters.length<1 || cDataParameters.filter(param => param === "").length>0){
-      alert("No se puede insertar el nuevo cálculo. Asegúrese de haber rellenado los campos correctamente.");
+  const addOperation = (gameId) => async () => {
+    if(!addValue){
+      alert("Asegúrese de rellenar todos los campos antes de crear una operación.")
       return;
     }
-    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/insertCalculatedData", {
+    const OperationTemp=operation;
+    console.log(operation);
+    
+    const responseMongo = await fetch(process.env.REACT_APP_SESSIONS_URL+"/operation/insertOperation", {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ game: gameId, name: addValue, operation: selectedOperation, parameters: cDataParameters }),
+      body: JSON.stringify({ value: treeData.value.split("#")[0], children: treeData.children }),
     });
  
+    if(!responseMongo.ok){
+      alert("No se pudo insertar el nuevo cálculo. Asegúrese de haber rellenado los campos correctamente.");
+      return;
+    }
+
+    const operationId=await responseMongo.text();
+
+    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/insertOperation", {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ operationId:operationId, name: addValue, game: gameId, id: "" }),
+    });
+
     if(!response.ok){
       alert("No se pudo insertar el nuevo cálculo. Asegúrese de haber rellenado los campos correctamente.");
       return;
     }
+
     const responseData = await response.json();
-    console.log(cDataTemp);
-    const newGameCalculatedData=cDataTemp.filter(p=>p.id===gameId)[0] || {id: gameId, data: []};
-    console.log(newGameCalculatedData);
-    const newCData=cDataTemp.filter(p=>p.id!==gameId);
-    newGameCalculatedData.data.push(responseData);
-    newCData.push(newGameCalculatedData);
+    const newGameOperation=OperationTemp.filter(p=>p.id===gameId)[0] || {id: gameId, data: []};
+    const newOperation=OperationTemp.filter(p=>p.id!==gameId);
+    newGameOperation.data.push(responseData);
+    newOperation.push(newGameOperation);
     setAddValue("");
-    setCalculatedData(newCData);
+    setOperation(newOperation);
+    setTreeData({
+      ...treeData, children:[], value:""
+    });
+    const newOperationActivatedTmp=newOperationActivated.filter(o=>(o.id!==gameId));
+    setNewOperationActivated([...newOperationActivatedTmp, {id:gameId,value:0}]);
   }
 
     const addParameter = (gameId, name) => async () => {
@@ -212,6 +217,8 @@ function Admin() {
     newParameters.push(newGameParameters);
     setAddValue("");
     setParameters(newParameters);
+    const newParameterActivatedTmp=newParameterActivated.filter(p=>(p.id!==gameId));
+    setNewParameterActivated([...newParameterActivatedTmp, {id:gameId,value:0}])
   }
 
   const addGame = name => async () => {
@@ -237,31 +244,33 @@ function Admin() {
     setNewGameActivated(0);
   }
 
-  const deactivateNewOperationPanel = () => {
-    setNewOperationActivated(0);
-  }
-
   const handleOperationChanged = (event,node) => {
-    modifyChilds(treeData, node, event.target.value, "Operation", operations.filter(o=>(o.id===event.target.value))[0].no_parameters);
+    console.log(event.target.value.split("#")[0]);
+    if(event.target.value!=="")
+      modifyChilds(treeData, node,  event.target.value, event.target.value.split("#")[1], "Operation", simpleOperations.filter(o=>(o.id===event.target.value.split("#")[0]))[0].no_parameters);
+    else{
+      removeChilds(treeData, node);
+      modifyChilds(treeData, node, "","", "Operation", 0);
+    }
   }
 
   const handleParameterChanged = (event,node) =>{
-    modifyChilds(treeData, node, event.target.value, "Parameter", 0);
+    modifyChilds(treeData, node, event.target.value, event.target.value.split("#")[1], "Parameter", 0);
   }
 
   const handleFieldChanged = (event,node,newType) => {
-    modifyChilds(treeData, node, "", newType, 0);
+    removeChilds(treeData, node);
+    modifyChilds(treeData, node, "","", newType, 0);
   }
 
-  const modifyChilds = (currentNode, node, childValue, childType, noChilds) => {
-    console.log(operations);
+  const modifyChilds = (currentNode, node, childValue, childName, childType, noChilds) => {
     if(currentNode===node && currentNode.level===0){
       var children=[];
       for(var i=0;i<noChilds;i++){
         children.push({name: "c_"+i+"_"+(node.level+1), level: node.level+1, type: "Operation", children:[]})
       }
       setTreeData( {
-        ...node, value: childValue, type: childType, children:children
+        ...node, value: childValue, valueName: childName, type: childType, children:children
       })
     }
     if(currentNode===node){
@@ -269,19 +278,46 @@ function Admin() {
       for(var i=0;i<noChilds;i++){
         children.push({name: "c_"+i+"_"+(node.level+1), level: node.level+1, type: "Parameter", children:[]})
       }
-      console.log({...node, value: childValue, type: childType, children:children});
       return {
-        ...node, value: childValue, type: childType, children:children
+        ...node, value: childValue, valueName: childName, type: childType, children:children
       }
     }
     else if(currentNode.children){
       const children=currentNode.children;
       for(var i=0;i<children.length;i++){
         const nonExploredNodes=children.filter(c=>c!==children[i]);
-        const nodeFound=modifyChilds(children[i], node, childValue, childType, noChilds);
+        const nodeFound=modifyChilds(children[i], node, childValue,childName, childType, noChilds);
         if(nodeFound!==null && currentNode.level===0){
           setTreeData({...treeData,children:[...nonExploredNodes, nodeFound]});
-          console.log({...treeData,children:[...nonExploredNodes, nodeFound]});
+          return;
+        }
+        if(nodeFound!==null){
+          return({
+          ...currentNode,
+          children: [...nonExploredNodes, nodeFound]});
+        }
+      }
+    } return null;
+  }; 
+
+  const removeChilds = (currentNode, node) => {
+    if(currentNode===node && currentNode.level===0){
+      setTreeData( {
+        ...node, children:[], value:""
+      })
+    }
+    if(currentNode===node){
+      return {
+        ...node, children:[], value:""
+      }
+    }
+    else if(currentNode.children){
+      const children=currentNode.children;
+      for(var i=0;i<children.length;i++){
+        const nonExploredNodes=children.filter(c=>c!==children[i]);
+        const nodeFound=modifyChilds(children[i], node);
+        if(nodeFound!==null && currentNode.level===0){
+          setTreeData({...treeData,children:[...nonExploredNodes, nodeFound]});
           return;
         }
         if(nodeFound!==null){
@@ -299,17 +335,17 @@ function Admin() {
           {node.type && (node.type==="Operation"?
           <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleOperationChanged(e,node)}>
             <option value="">Selecciona una operación</option>
-            {operations?.map((option, index) => (
-              <option key={index} value={option.id}>
+            {simpleOperations?.map((option, index) => (
+              <option key={index} value={option.id+"#"+option.name}>
                 {option.name}
               </option>
             ))}
             </select>
             :
             <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleParameterChanged(e,node)}>
-              <option value="">{"Parámetro 1"}</option>
+              <option value="">{"Selecciona un parámetro"}</option>
               {parameters.filter(p=>p.id===game.id)[0]?.data.map((parameter, index) => (
-                <option key={index} value={parameter.id}>
+                <option key={index} value={parameter.id+"#"+parameter.name}>
                   {parameter.name}
                 </option>
               ))}
@@ -321,7 +357,7 @@ function Admin() {
                 <button className="button-admin-change-parameter" onClick={(e)=>handleFieldChanged(e,node,"Operation")}> Operación </button>
           )}
           {node.children && node.children.length>0 && (
-            <div class={node.level%2===0?"gray-rectangle":"rectangle"}>
+            <div class="non-bg-rectangle" style={{backgroundColor: operationColors[node.level%operationColors.length]}}>
               {node.children.map((child, index) => (
                 <TreeNode key={index} node={child} game={game} />
               ))}
@@ -344,7 +380,7 @@ function Admin() {
       <div className="admin-left">
           <div className="list-container">
             <label>PARÁMETROS</label>
-            <div className="scrollable-list" id="scrollable-list">
+            <div className="long-scrollable-list" id="scrollable-list">
             {parameters.filter(p=>p.id===game.id)[0]?.data.map((p, index) => (
               <div
                 key={index}
@@ -367,27 +403,27 @@ function Admin() {
       {/* Margen derecho */}
       <div className="admin-right">
         <div className="list-container">
-          <label>CÁLCULOS</label>
-          <div className="scrollable-list">
-          {calculatedData.filter(cData=>cData.id===game.id)[0]?.data.map((cData, index) => (
+          <label>OPERACIONES</label>
+          <div className="long-scrollable-list" id="scrollable-list">
+          {operation.filter(Operation=>Operation.id===game.id)[0]?.data.map((Operation, index) => (
               <div
                 key={index}
                 className={`list-item`}>
-                {cData.name}
+                {Operation.name}
               </div>
             ))}
-          {newCDataActivated.filter(p=>p.id===game.id)[0]?.value===1?
+          {newOperationActivated.filter(p=>p.id===game.id)[0]?.value===1?
           <>
             <div className={`list-item`}>
             <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
-                <button className="button-admin-cancel" onClick={deactivateNewParameterPanel(game.id)}> Cancelar </button>
-                <button className="button-admin-new" onClick={addParameter(game.id, addValue)}> Añadir </button>
+                <button className="button-admin-cancel" onClick={deactivateNewOperationPanel(game.id)}> Cancelar </button>
+                <button className="button-admin-new" onClick={addOperation(game.id, addValue)}> Añadir </button>
                 <TreeNode node={treeData} game={game} />
             </div>
             </>
             :""}
           </div>
-        <button className="button-admin-add" onClick={activateNewCalculatedDataPanel(game.id)}>+</button>
+        <button className="button-admin-add" onClick={activateNewOperationPanel(game.id)}>+</button>
         </div>
       </div>
     </div>

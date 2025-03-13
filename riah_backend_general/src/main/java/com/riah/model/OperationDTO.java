@@ -15,19 +15,52 @@ public class OperationDTO{
 	@JsonProperty("name")
     private String name;
 	
-	@JsonProperty("no_parameters")
-	private int noParameters;
+	@JsonProperty("game_id")
+	private UUID gameId;
+	
+	@JsonProperty("operation")
+    private String operation;
+	
+	@JsonProperty("sessions")
+	private List<String> sessions;
+	
+	@JsonProperty("session_dates")
+    private Map<String,Date> sessionDates;
+    
+	public UUID getGameId() {
+		return gameId;
+	}
+
+	public void setGameId(UUID gameId) {
+		this.gameId = gameId;
+	}
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+
+	public Map<String, Date> getSessionDates() {
+		return sessionDates;
+	}
+
+	public void setSessionDates(Map<String, Date> sessionDates) {
+		this.sessionDates = sessionDates;
+	}
 
 	public UUID getId() {
 		return id;
 	}
 	
-	public int getNoParameters() {
-		return noParameters;
+	public List<String> getSessions() {
+		return sessions;
 	}
 
-	public void setNoParameters(int noParameters) {
-		this.noParameters = noParameters;
+	public void setSessions(List<String> sessions) {
+		this.sessions = sessions;
 	}
 
 	public void setId(UUID id) {
