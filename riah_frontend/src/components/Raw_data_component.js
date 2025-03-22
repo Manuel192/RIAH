@@ -5,6 +5,7 @@ import VideoPlayer from './video_player';
 import Tabs from './Tabs_component';
 import '../css/Raw_data_component.css';
 import '../App.css';
+import { colors } from '@mui/material';
 
 function Modal({ onClose, onConfirm }) {
   return (
@@ -32,17 +33,26 @@ const getRandomColors = (numColors, index) => {
 };
 
 function Raw_data() {
+  const tremorColors = [
+    "blue", "sky", "cyan", "teal", "green", "lime",
+    "yellow", "amber", "orange", "red", "rose", "pink",
+    "fuchsia", "purple", "violet", "indigo", "gray", "stone"
+  ];
 
   const navigate=useNavigate();
-  const location=useLocation();
-  const {user}=location.state;
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [games, setGames] = useState([]);
   const [game, setGame] = useState("");
   const [selectedSessions, setSelectedSessions] = useState([]);
+
   const [selectedDataItems, setSelectedDataItems] = useState([]);
-  const [selectedDataItemsValues, setSelectedDataItemsValues] = useState({});
+  const [selectedDataItemsValues, setSelectedDataItemsValues] = useState([]);
+
+  const [commonGraphDataItems, setCommonGraphDataItems] = useState([]);
+  const [commonGraphMax, setCommonGraphMax] = useState([]);
+  const [commonGraphMin, setCommonGraphMin] = useState([]);
+
   const [tabs, setTabs] = useState([]);
 
   // Whole sessions data
@@ -136,7 +146,6 @@ function Raw_data() {
       }
       const sessionData = await response.json();
       setSessions(sessionData);
-      console.log(sessionData);
     }catch(error){
       alert("La web no funciona por el momento. Inténtelo más tarde.")
     }
@@ -212,12 +221,12 @@ function Raw_data() {
             maxValue=1;
             minValue=0;
           }
-          newDataItemValues.push({"frame":sessionData.frames[i].dataValues.frame,"value":sessionData.frames[i].dataValues[items[j]]===" True"?1:0});
+          newDataItemValues.push({"value":sessionData.frames[i].dataValues[items[j]].trim()==="True"?1:0});
         }else{
-          newDataItemValues.push({"frame":sessionData.frames[i].dataValues.frame,"value":sessionData.frames[i].dataValues[items[j]]});
-          if(maxValue===null || Number(maxValue)<Number(sessionData.frames[i].dataValues[items[j]]))
+          newDataItemValues.push({"value":sessionData.frames[i].dataValues[items[j]]});
+          if(!maxValue || Number(maxValue)<Number(sessionData.frames[i].dataValues[items[j]]))
             maxValue=sessionData.frames[i].dataValues[items[j]];
-          if(minValue===null || Number(minValue)>Number(sessionData.frames[i].dataValues[items[j]]))
+          if(!minValue || Number(minValue)>Number(sessionData.frames[i].dataValues[items[j]]))
             minValue=sessionData.frames[i].dataValues[items[j]];
         }
       }
@@ -233,7 +242,6 @@ function Raw_data() {
         return null;
       }
       const sessionData = await response.json();
-      console.log(sessionData);
       return sessionData;
   }
 
@@ -265,7 +273,37 @@ function Raw_data() {
   }
 
   const handleUserPanel = () => {
-  navigate('/')
+    navigate('/')
+  }
+
+  const loadThreeDView = () => {
+    navigate('/3d-view', {state:{dataItems: dataItems, activeSessionData: activeSessionData}});
+  }
+
+  const handleCommonGraphChanged = (event,index) => {
+    var newDataItems=[...commonGraphDataItems];
+    if(event.target.value===""){
+      newDataItems=commonGraphDataItems.filter(i=>i!==commonGraphDataItems[index]);
+      setCommonGraphDataItems([...newDataItems]);
+    }else{
+      newDataItems[index]=event.target.value;
+      setCommonGraphDataItems([...newDataItems]);
+    }
+    var currentMax=null;
+    var currentMin=null;
+    for(var i=0;i<newDataItems.length;i++){
+      if(!selectedDataItemsValues[newDataItems[i]]) continue;
+      if(!currentMax || Number(selectedDataItemsValues[newDataItems[i]].max)>Number(currentMax))
+          currentMax=selectedDataItemsValues[newDataItems[i]].max;
+      if(!currentMin || Number(selectedDataItemsValues[newDataItems[i]].min)<Number(currentMin))
+        currentMin=selectedDataItemsValues[newDataItems[i]].min;
+    }
+    setCommonGraphMax(currentMax);
+    setCommonGraphMin(currentMin);
+  }
+
+  const addCommonGraphDataItem = () => {
+    setCommonGraphDataItems([...commonGraphDataItems, ""]);
   }
 
   return (
@@ -375,6 +413,43 @@ function Raw_data() {
         </div>
         :null}
 
+      {selectedDataItems.length>0 && (
+      <div className="tremor-card-full-width">
+        <h3 class="title">Comparación</h3>
+        <div class="add-parameters-section">
+          {commonGraphDataItems.map((c,index)=>(
+            <select id="dropdown" value={c} className='input-parameter' onChange={(e)=>handleCommonGraphChanged(e,index)}>
+              <option value="">{"Parámetro "+(index+1)}</option>
+              {selectedDataItems.filter(d=>!commonGraphDataItems.includes(d) || d==c).map((dataItem, index) => (
+                <option key={index} value={dataItem}>
+                  {dataItem}
+                </option>
+              ))}
+            </select>
+          ))}
+          <button class="button-search" onClick={()=>addCommonGraphDataItem()}>
+            + Añadir parámetro
+          </button>
+        </div>
+        <Card>
+          <AreaChart
+          data={activeSessionData.frames.map(frame=>(frame.dataValues))}
+          index="frame"
+          categories={commonGraphDataItems}
+          onValueChange={(v) => console.log(v)}
+          xLabel="Frame"
+          yLabel="Value"
+          maxValue={Number(commonGraphMax)}
+          minValue={Number(commonGraphMin)}
+          colors={tremorColors}
+          showLegend={false}
+          showXAxis={true}
+        >
+        </AreaChart>
+      </Card>
+    </div>
+      )}
+
     <div>
         {/* Sección Superior */}
         {selectedDataItems?.map((dataItem, index) => (
@@ -395,8 +470,8 @@ function Raw_data() {
           >
           </AreaChart>
         </Card>
-        ))}       
-      </div>
+      ))}       
+    </div>
 
     {videoSource && (
     <div style={{justifyItems: "center"}}>
@@ -407,6 +482,7 @@ function Raw_data() {
 
     {selectedSessions?.length>0?
     <div className="button-bar">
+      <button className="button-export" onClick={loadThreeDView}>3D VIEW</button>
       {/*<button className="button-clean" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>*/}
       <button className="button-export" onClick={exportDataToCsv}>EXPORTAR</button>
     </div>

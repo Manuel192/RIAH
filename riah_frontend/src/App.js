@@ -4,6 +4,7 @@ import Create_session from './components/Create_session_component';
 import Evolution from './components/Evolution_component';
 import Patients_list from './components/Patients_list_component';
 import Raw_data from "./components/Raw_data_component"
+import Scene from './components/Scene';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Admin from './components/Admin_component';
@@ -31,6 +32,7 @@ function App() {
       </header>
       <Routes>
         <Route path="/" element={<User_panel />} />
+        <Route path="/3d-view" element={<Scene />} />
         <Route path="/patients-list" element={<Patients_list />} />
         <Route path="/raw-data" element={<Raw_data />} />
         <Route path="/evolution" element={<Evolution />} />

@@ -343,7 +343,7 @@ function Admin() {
             </select>
             :
             <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleParameterChanged(e,node)}>
-              <option value="">{"Selecciona un parámetro"}</option>
+              <option value="">Selecciona un parámetro</option>
               {parameters.filter(p=>p.id===game.id)[0]?.data.map((parameter, index) => (
                 <option key={index} value={parameter.id+"#"+parameter.name}>
                   {parameter.name}
