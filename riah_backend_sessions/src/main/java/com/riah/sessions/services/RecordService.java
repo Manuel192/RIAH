@@ -5,9 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import org.bson.types.ObjectId;
 
 import com.riah.sessions.dao.RecordDAO;
 import com.riah.sessions.model.RecordDTO;
@@ -43,8 +46,15 @@ public class RecordService {
 	public boolean updateRecord(String record) {
 		JSONObject json = new JSONObject(record);
 		JSONArray graphs=json.getJSONArray("data");
-		RecordInsert recordToUpdate=new RecordInsert(json.getString("id"),graphs.toList());
-		recordDAO.updateRecord(recordToUpdate);
+		try{
+			String id=json.getString("id");
+			RecordInsert recordToUpdate=new RecordInsert(id,graphs.toList());
+			recordDAO.updateRecord(recordToUpdate);
+		}catch (JSONException jsone) {
+			RecordInsert recordToUpdate=new RecordInsert(graphs.toList());
+			recordDAO.updateRecord(recordToUpdate);
+		}
+		
 		return true;
 	}
 }

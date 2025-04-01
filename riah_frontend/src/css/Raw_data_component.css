@@ -19,11 +19,9 @@
     border-radius: 5px;
     background-color: #fff;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 45%;
+    width: 48%;
     transition: "transform 0.3s ease-in-out";
     display: inline-block;
-    margin-left: 20px;
-    margin-bottom: 20px;
   }
 
   .secondary-txt {
@@ -33,13 +31,14 @@
 
   .filters {
     display: flex;
-    text-align: center;
+    align-items: center;
+    justify-content: center;
     gap: 20px;
   }
 
   .table-container {
     overflow-x: auto;
-    max-height: 400px;
+    max-height: 200px;
     margin-bottom: 20px;
   }
   
@@ -156,4 +155,12 @@
     display:grid;
     grid-template-columns: repeat(5, 1fr);
     text-align: center;
+  }
+
+  .sticky-data {
+    position: fixed;
+    bottom: 0px;
+    height: 20%;
+    width: 95%;
+    z-index: 3;
   }

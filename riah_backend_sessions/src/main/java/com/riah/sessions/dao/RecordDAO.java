@@ -28,8 +28,15 @@ public class RecordDAO {
 	String recordsCollection="Records";
 	
 	public void updateRecord(RecordInsert record){
-		AggregationUpdate update=Aggregation.newUpdate().set("data").toValue(record.getData());
-		mongoTemplate.update(RecordInsert.class).apply(update).all();
+		try {
+			Query query=new Query(Criteria.where("_id").is(record.getId()));
+			Update update = new Update().set("data", record.getData());
+			long updates=mongoTemplate.updateFirst(query, update, recordsCollection).getModifiedCount();
+		}
+		catch(NullPointerException noId) {
+			mongoTemplate.save(record, recordsCollection);
+			return;
+		}
 	}
 
 	public Recordd loadRecord() {

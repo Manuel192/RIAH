@@ -1,7 +1,9 @@
 .tabs {
+    position: fixed;
+    bottom: 20.5%;
     display: flex;
     width: 100%;
-    justify-content: left;
+    z-index: 3;
 }
 
 .tab-button {

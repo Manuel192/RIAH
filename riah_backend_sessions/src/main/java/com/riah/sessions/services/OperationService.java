@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class OperationService {
 	public SimpleOperationDTO loadSimpleOperation(String operationID) throws ParseException {
 		SimpleOperation operation=soperationDAO.loadSimpleOperation(operationID);
 		if(operation==null) return null;
-		return new SimpleOperationDTO(operation.get_id().toString(),operation.getImports(),operation.getMethod(),operation.getMethod_name(),operation.getNo_parameters(),operation.getName());
+		return new SimpleOperationDTO(operation.get_id().toString(),operation.getImports(),operation.getMethod(),operation.getMethod_name(),operation.getParameters(),operation.getName(),operation.getReturn_type());
 	}
 	
 	public List<SimpleOperationDTO> loadSimpleOperations() throws ParseException {
@@ -95,8 +96,12 @@ public class OperationService {
     			variables.addAll(soc.getVariables());
     			method_call+=soc.getMethod_call();
     		}else if(type.matches("Parameter")) {
-    			variables.add(children.getJSONObject(i).getString("valueName").trim());
-    			method_call+=children.getJSONObject(i).getString("valueName").trim();
+    			try {
+    				variables.add(children.getJSONObject(i).getString("valueName").trim());
+    				method_call+=children.getJSONObject(i).getString("valueName").trim();
+    			}catch(JSONException jsone) {
+    				method_call+=children.getJSONObject(i).getString("value").trim();
+    			}
     		}
     	}
     	method_call+=")";
@@ -111,8 +116,9 @@ public class OperationService {
 			newOp.setImports(op.getImports());
 			newOp.setMethod(op.getMethod());
 			newOp.setMethod_name(op.getMethod_name());
-            newOp.setNo_parameters(op.getNo_parameters());
+            newOp.setParameters(op.getParameters());
             newOp.setName(op.getName());
+            newOp.setReturn_type(op.getReturn_type());
             return newOp;
         }).collect(Collectors.toList());
 	}

@@ -72,7 +72,7 @@ const Evolution = () => {
         console.log(responseData.graphs);
         for(var i=0;i<obtainedGraphs.length;i++){
           selectedGame.push(obtainedGraphs[i].game || "");
-          selectedData.push(obtainedGraphs[i].calculatedData || "");
+          selectedData.push(obtainedGraphs[i].operation || "");
           selectedInitDate.push(obtainedGraphs[i].initDate || "");
           selectedEndDate.push(obtainedGraphs[i].endDate || "");
           graphs.push("area");
@@ -124,7 +124,6 @@ const Evolution = () => {
       const newSelectedData=[...selectedData];
       newSelectedData[index]="";
       setSelectedData(newSelectedData);
-      alert("No existen datos calculables para este juego o no cargaron correctamente.");
       return;
     }
     // convert data to json
@@ -137,7 +136,7 @@ const Evolution = () => {
   const calculateAll = async (obtainedGraphs, obtainedDataOptions) => {
     var newGraphData = [];
     for(var i=0;i<obtainedGraphs.length;i++){
-      const obtainedGraphData=await obtainDynamicCalculus(obtainedGraphs[i].calculatedData,i,obtainedDataOptions);
+      const obtainedGraphData=await obtainDynamicCalculus(obtainedGraphs[i].operation,i,obtainedDataOptions);
       if(obtainedGraphData.length>0) newGraphData=[...newGraphData, ...obtainedGraphData];
       else newGraphData.push({"index":i,"session":"","value":0, "date":""});
     }
@@ -155,7 +154,6 @@ const Evolution = () => {
           body: JSON.stringify({"sessions":optionToObtain.sessions}),
       });
       if(!response.ok){
-        alert("No existen datos calculables para este juego o no cargaron correctamente.");
         return;
       }
       const responseData = await response.json();
@@ -220,9 +218,9 @@ const Evolution = () => {
     var data=[];
     for(var i=0;i<selectedGame.length;i++){
       if(i===index)
-        data.push({"game":selectedGame[i] || "","calculatedData":newData || "","initDate":newInitDate || "","endDate":newEndDate || ""});
+        data.push({"game":selectedGame[i] || "","operation":newData || "","initDate":newInitDate || "","endDate":newEndDate || ""});
       else
-        data.push({"game":selectedGame[i] || "","calculatedData":selectedData[i] || "","initDate":selectedInitDate[i] || "","endDate":selectedEndDate[i] || ""});
+        data.push({"game":selectedGame[i] || "","operation":selectedData[i] || "","initDate":selectedInitDate[i] || "","endDate":selectedEndDate[i] || ""});
     }
 
     if(newData===""){
@@ -244,11 +242,11 @@ const Evolution = () => {
   }
 
   const handlePatientList = () => {
-    navigate('/patients-list')
+    navigate('/user/patients-list')
   }
 
   const handleUserPanel = () => {
-  navigate('/')
+  navigate('/user')
   }
 
   const exportDataToCsv = (index) => {
@@ -280,21 +278,21 @@ return (
       <button className="nav-button">Home</button> &gt; 
       <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
       <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
-    Evolución - Juan Pérez
+    Evolución - John Doe
   </div>
   <div div class="app">
   <div className="evolution-container">
-    <h1 class="main-title">Evolución - Juan Pérez</h1>
+    <h1 class="main-title">Evolución - John Doe</h1>
     <div class="graphs">
       {graphs?.map((graph, index) => (
         <Card className="tremor-Card">
         <div className="inferior-container">
         <div className="field">
         <LoadingScreen isLoading={isLoading} />
-          <h3 class="title">{dataOptions[index]?.filter(option=>option.id===selectedData[index])[0]?.name}</h3>
+          <h3 class="title">{dataOptions[index]?.filter(option=>option.id===selectedData[index])[0]?.name || "Sin nombre"}</h3>
           <label style={{fontWeight: "bold"}}>JUEGO</label>
           <select id="dropdown" value={selectedGame[index]} className="dropdown" onChange={handleGameChanged(index)}>
-            <option value="">Ninguno</option>
+            <option value="" disabled="true">Ninguno</option>
               {games?.map((option, index) => (
                 <option key={index} value={option.id}>
                 {option.name}
@@ -306,7 +304,7 @@ return (
         <div className="field">
         <label style={{fontWeight: "bold"}}>DATO</label>
           <select id="dropdown" value={selectedData[index]} className="dropdown" onChange={handleDataOptionChanged(index)} disabled={selectedGame[index]===""}>
-              <option value="">Ninguno</option>
+              <option value="" disabled="true">Ninguno</option>
                   {dataOptions[index]?.map((option, index) => (
                       <option key={index} value={option.id}>
                       {option.name}
@@ -329,24 +327,22 @@ return (
           index="date"
           categories={["value"]}
           onValueChange={(v) => console.log(v)}
-          valueFormatter={(value, index) => `${value}m/s`}
+          valueFormatter={(value, index) => `${value}`}
           colors={getRandomColors(1,index)}
           showLegend={false}
           showXAxis={true}
-          tooltip={({ index }) => <CustomTooltip index={index} />}
         >
         </AreaChart>
         ):""}
         {graph==="bar"?(
           <BarChart
-          data={graphData.filter(graph=>graph.index===index&&(selectedInitDate[index]==="")&&(selectedEndDate[index]===""))}
+          data={graphData.filter(graph=>graph.index===index&&(selectedInitDate[index].length<1 || selectedInitDate[index]<=graph.date)&&(selectedEndDate[index].length<1 || selectedEndDate[index]>=graph.date))}
           index="date"
           categories={['value']}
           colors={getRandomColors(1,index)}
-          valueFormatter={(value, index) => `${value}m/s`}
+          valueFormatter={(value, index) => `${value}`}
           showLegend={false}
           showXAxis={true}
-          tooltip={({ index }) => <CustomTooltip index={index} />}
           >
         </BarChart>
         ):""}
@@ -370,7 +366,7 @@ return (
             />
           </div>
         </div>
-          <button className='button-export-evolution' onClick={()=>exportDataToCsv(index)}>Exportar</button>
+          <button className='button-export-evolution' onClick={()=>exportDataToCsv(index)}>Exportar datos</button>
       </Card>
       ))}       
     </div>

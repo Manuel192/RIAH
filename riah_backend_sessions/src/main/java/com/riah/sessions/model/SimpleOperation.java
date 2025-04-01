@@ -17,17 +17,19 @@ import com.riah.sessions.dao.SimpleOperationDAO;
 @Document(collection = "SimpleOperations")
 public class SimpleOperation extends Operation {
 
-	private int no_parameters;
+	private String[] parameters;
 	private String name;
+	private String return_type;
 	
 	public SimpleOperation() {}
 	
-	public SimpleOperation(List<String> imports,List<String> method,String method_name,int no_parameters, String name) {
+	public SimpleOperation(List<String> imports,List<String> method,String method_name, String[] parameters, String name, String return_type) {
 		this.imports=imports;
 		this.method=method;
 		this.method_name=method_name;
-		this.no_parameters=no_parameters;
+		this.parameters=parameters;
 		this.name=name;
+		this.return_type=return_type;
 	}
 
 	public List<String> getImports() {
@@ -54,12 +56,12 @@ public class SimpleOperation extends Operation {
 		this.method_name = method_name;
 	}
 
-	public int getNo_parameters() {
-		return this.no_parameters;
+	public String[] getParameters() {
+		return this.parameters;
 	}
 
-	public void setNo_parameters(int no_parameters) {
-		this.no_parameters = no_parameters;
+	public void setParameters(String[] parameters) {
+		this.parameters = parameters;
 	}
 	
 	public String getName() {
@@ -72,6 +74,14 @@ public class SimpleOperation extends Operation {
 
 	public ObjectId get_id() {
 		return _id;
+	}
+
+	public String getReturn_type() {
+		return return_type;
+	}
+
+	public void setReturn_type(String return_type) {
+		this.return_type = return_type;
 	}
 
 	public void set_id(ObjectId _id) {

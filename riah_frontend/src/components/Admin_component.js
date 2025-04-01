@@ -29,6 +29,7 @@ function Admin() {
         type: "Operation",
         value:"",
         valueName:"",
+        returnType:"value",
         children: [
           /*{
             name: "a_1",
@@ -44,8 +45,7 @@ function Admin() {
       },
   );
 
-  // Lista de pacientes (solo incluye "Juan Pérez" como se indicó)
-  const pacientes = ["Juan Pérez"];
+  const pacientes = ["John Doe"];
 
   useEffect(() => {
     // Encuentra el contenedor de la lista por su id y desplázalo al final
@@ -61,7 +61,6 @@ function Admin() {
         const responseGames = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames");
         if(!responseGames.ok){
           setGames([]);
-          alert("No pudieron cargarse los juegos.");
           return;
         }
         // convert data to json
@@ -70,12 +69,10 @@ function Admin() {
         const responsesimpleOperations = await fetch(process.env.REACT_APP_SESSIONS_URL+"/operation/loadSimpleOperations");
         if(!responsesimpleOperations.ok){
           setsimpleOperations([]);
-          alert("No pudieron cargarse las operaciones.");
           return;
         }
         // convert data to json
         const simpleOperationsParsed = await responsesimpleOperations.json();
-        console.log(simpleOperationsParsed);
         setsimpleOperations(simpleOperationsParsed);
 
         var newActivatedTemp=[];
@@ -99,7 +96,6 @@ function Admin() {
         setParameters(parametersTemp);
         setNewParameterActivated(newActivatedTemp);
         setNewsimpleOperationActivated(newActivatedTemp);
-        console.log(OperationTemp.filter(o=>o.id===gamesParsed[0].id));
       }catch(error){
         alert("La web no funciona por el momento. Inténtelo más tarde.")
       }
@@ -143,8 +139,7 @@ function Admin() {
       return;
     }
     const OperationTemp=operation;
-    console.log(operation);
-    
+
     const responseMongo = await fetch(process.env.REACT_APP_SESSIONS_URL+"/operation/insertOperation", {
       method: 'POST',
       headers: {
@@ -152,7 +147,7 @@ function Admin() {
       },
       body: JSON.stringify({ value: treeData.value.split("#")[0], children: treeData.children }),
     });
- 
+
     if(!responseMongo.ok){
       alert("No se pudo insertar el nuevo cálculo. Asegúrese de haber rellenado los campos correctamente.");
       return;
@@ -217,8 +212,6 @@ function Admin() {
     newParameters.push(newGameParameters);
     setAddValue("");
     setParameters(newParameters);
-    const newParameterActivatedTmp=newParameterActivated.filter(p=>(p.id!==gameId));
-    setNewParameterActivated([...newParameterActivatedTmp, {id:gameId,value:0}])
   }
 
   const addGame = name => async () => {
@@ -245,48 +238,54 @@ function Admin() {
   }
 
   const handleOperationChanged = (event,node) => {
-    console.log(event.target.value.split("#")[0]);
-    if(event.target.value!=="")
-      modifyChilds(treeData, node,  event.target.value, event.target.value.split("#")[1], "Operation", simpleOperations.filter(o=>(o.id===event.target.value.split("#")[0]))[0].no_parameters);
+    if(event.target.value!==""){
+      modifychildren(treeData, node,  event.target.value, event.target.value.split("#")[1], 
+    "Operation",simpleOperations.filter(o=>(o.id===event.target.value.split("#")[0]))[0].return_type, simpleOperations.filter(o=>(o.id===event.target.value.split("#")[0]))[0].parameters);
+    }
     else{
-      removeChilds(treeData, node);
-      modifyChilds(treeData, node, "","", "Operation", 0);
+      removechildren(treeData, node);
+      modifychildren(treeData, node, "","", "Operation", "", []);
     }
   }
 
   const handleParameterChanged = (event,node) =>{
-    modifyChilds(treeData, node, event.target.value, event.target.value.split("#")[1], "Parameter", 0);
+    modifychildren(treeData, node, event.target.value, event.target.value.split("#")[1], "Parameter", node.returnType, []);
+    console.log(treeData);
   }
 
   const handleFieldChanged = (event,node,newType) => {
-    removeChilds(treeData, node);
-    modifyChilds(treeData, node, "","", newType, 0);
+    removechildren(treeData, node);
+    modifychildren(treeData, node, "","", newType, node.returnType, []);
   }
 
-  const modifyChilds = (currentNode, node, childValue, childName, childType, noChilds) => {
+  const modifychildren = (currentNode, node, childValue, childName, childType, childReturnType, children) => {
     if(currentNode===node && currentNode.level===0){
-      var children=[];
-      for(var i=0;i<noChilds;i++){
-        children.push({name: "c_"+i+"_"+(node.level+1), level: node.level+1, type: "Operation", children:[]})
+      var newChildren=[];
+      if(children){
+        for(var i=0;i<children.length;i++){
+          newChildren.push({name: "c_"+i+"_"+(node.level+1), level: node.level+1, type: "Operation", returnType:children[i], children:[]})
+        }
       }
-      setTreeData( {
-        ...node, value: childValue, valueName: childName, type: childType, children:children
+      setTreeData({
+        ...node, value: childValue, valueName: childName, type: childType, returnType:childReturnType, children:newChildren
       })
     }
     if(currentNode===node){
-      var children=[];
-      for(var i=0;i<noChilds;i++){
-        children.push({name: "c_"+i+"_"+(node.level+1), level: node.level+1, type: "Parameter", children:[]})
+      var newChildren=[];
+      if(children){
+        for(var i=0;i<children.length;i++){
+          newChildren.push({name: "c_"+i+"_"+(node.level+1), level: node.level+1, type: "Parameter", returnType:children[i], children:[]})
+        }
       }
       return {
-        ...node, value: childValue, valueName: childName, type: childType, children:children
+        ...node, value:childValue, valueName:childName, type:childType, returnType:childReturnType, children:newChildren
       }
     }
     else if(currentNode.children){
-      const children=currentNode.children;
-      for(var i=0;i<children.length;i++){
-        const nonExploredNodes=children.filter(c=>c!==children[i]);
-        const nodeFound=modifyChilds(children[i], node, childValue,childName, childType, noChilds);
+      const newChildren=currentNode.children;
+      for(var i=0;i<newChildren.length;i++){
+        const nonExploredNodes=newChildren.filter(c=>c!==newChildren[i]);
+        const nodeFound=modifychildren(newChildren[i], node, childValue,childName, childType, childReturnType, children);
         if(nodeFound!==null && currentNode.level===0){
           setTreeData({...treeData,children:[...nonExploredNodes, nodeFound]});
           return;
@@ -300,7 +299,7 @@ function Admin() {
     } return null;
   }; 
 
-  const removeChilds = (currentNode, node) => {
+  const removechildren = (currentNode, node) => {
     if(currentNode===node && currentNode.level===0){
       setTreeData( {
         ...node, children:[], value:""
@@ -315,7 +314,7 @@ function Admin() {
       const children=currentNode.children;
       for(var i=0;i<children.length;i++){
         const nonExploredNodes=children.filter(c=>c!==children[i]);
-        const nodeFound=modifyChilds(children[i], node);
+        const nodeFound=modifychildren(children[i], node);
         if(nodeFound!==null && currentNode.level===0){
           setTreeData({...treeData,children:[...nonExploredNodes, nodeFound]});
           return;
@@ -332,24 +331,51 @@ function Admin() {
   const TreeNode = ({ node, game }) => {
       return (
         <div>
-          {node.type && (node.type==="Operation"?
-          <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleOperationChanged(e,node)}>
-            <option value="">Selecciona una operación</option>
-            {simpleOperations?.map((option, index) => (
-              <option key={index} value={option.id+"#"+option.name}>
-                {option.name}
-              </option>
-            ))}
+          {node.type && node.returnType==="list" && node.type==="Operation" &&
+            <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleOperationChanged(e,node)}>
+              <option value="">Selecciona una operación</option>
+              {simpleOperations?.filter(o=>o.return_type==="list").sort(function(a, b) {
+                  if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                }).map((option, index) =>
+                <option key={index} value={option.id+"#"+option.name}>
+                  {option.name}
+                </option>
+              )}
             </select>
-            :
+          }
+          {node.type && node.returnType==="list" && node.type==="Parameter" &&
             <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleParameterChanged(e,node)}>
               <option value="">Selecciona un parámetro</option>
-              {parameters.filter(p=>p.id===game.id)[0]?.data.map((parameter, index) => (
+              {parameters.filter(p=>p.id===game.id)[0]?.data.sort(function(a, b) {
+                  if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                }).map((parameter, index) => (
                 <option key={index} value={parameter.id+"#"+parameter.name}>
                   {parameter.name}
                 </option>
               ))}
-            </select>)}
+            </select>
+          }
+          {node.type && node.returnType==="value" && node.type==="Operation" &&
+            <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleOperationChanged(e,node)}>
+              <option value="">Selecciona una operación</option>
+              {simpleOperations?.filter(o=>o.return_type==="value").sort(function(a, b) {
+                  if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                }).map((option, index) =>
+                <option key={index} value={option.id+"#"+option.name}>
+                  {option.name}
+                </option>
+              )}
+            </select>
+          }
+          {node.type && node.returnType==="value" && node.type==="Parameter" &&
+            <input value={node.value} className='input-parameter' placeholder="Escribe un valor" onChange={(e)=>handleParameterChanged(e,node)}/>
+          }
           {node.type && node.level>0 && (
               node.type==="Operation"?
                 <button className="button-admin-change-parameter" onClick={(e)=>handleFieldChanged(e,node,"Parameter")}> Parámetro </button>
@@ -358,7 +384,11 @@ function Admin() {
           )}
           {node.children && node.children.length>0 && (
             <div class="non-bg-rectangle" style={{backgroundColor: operationColors[node.level%operationColors.length]}}>
-              {node.children.map((child, index) => (
+              {node.children.sort(function(a, b) {
+                  if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                }).map((child, index) => (
                 <TreeNode key={index} node={child} game={game} />
               ))}
             </div>
@@ -370,7 +400,11 @@ function Admin() {
   return (
   <>
   <div class="app">
-    <h1 class="main-title">Panel de administración</h1> 
+    <h1 class="main-title">¡Bienvenido Administrador!</h1>
+    <div class="preview-text">
+      ¡Bienvenid@ a una versión temprana de RIAH. Esta plataforma le permitirá administrar la información de sus minijuegos, parámetros y operaciones a consultar a partir dela información obtenida de la plataforma Rehab-Immersive.
+    </div>
+    <br></br>
     <h3 style={{marginTop: "40px", fontSize: "30px", fontWeight: "bold"}}>JUEGOS</h3>
     {games.map((game) => (
     <div class="rectangle">
@@ -381,7 +415,11 @@ function Admin() {
           <div className="list-container">
             <label>PARÁMETROS</label>
             <div className="long-scrollable-list" id="scrollable-list">
-            {parameters.filter(p=>p.id===game.id)[0]?.data.map((p, index) => (
+            {parameters.filter(p=>p.id===game.id)[0]?.data.sort(function(a, b) {
+                  if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                }).map((p, index) => (
               <div
                 key={index}
                 className={`list-item`}>
@@ -406,22 +444,22 @@ function Admin() {
           <label>OPERACIONES</label>
           <div className="long-scrollable-list" id="scrollable-list">
           {operation.filter(Operation=>Operation.id===game.id)[0]?.data.map((Operation, index) => (
-              <div
-                key={index}
-                className={`list-item`}>
-                {Operation.name}
-              </div>
-            ))}
+            <div
+              key={index}
+              className={`list-item`}>
+              {Operation.name}
+            </div>
+          ))}
           {newOperationActivated.filter(p=>p.id===game.id)[0]?.value===1?
           <>
-            <div className={`list-item`}>
-            <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
-                <button className="button-admin-cancel" onClick={deactivateNewOperationPanel(game.id)}> Cancelar </button>
-                <button className="button-admin-new" onClick={addOperation(game.id, addValue)}> Añadir </button>
-                <TreeNode node={treeData} game={game} />
-            </div>
-            </>
-            :""}
+          <div className={`list-item`}>
+          <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
+              <button className="button-admin-cancel" onClick={deactivateNewOperationPanel(game.id)}> Cancelar </button>
+              <button className="button-admin-new" onClick={addOperation(game.id, addValue)}> Añadir </button>
+              <TreeNode node={treeData} game={game} />
+          </div>
+          </>
+          :""}
           </div>
         <button className="button-admin-add" onClick={activateNewOperationPanel(game.id)}>+</button>
         </div>

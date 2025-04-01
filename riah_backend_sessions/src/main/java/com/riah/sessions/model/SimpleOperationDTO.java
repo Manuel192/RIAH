@@ -13,19 +13,21 @@ public class SimpleOperationDTO {
     private String name;
     private List<String> method;
     private String method_name;
-    private int no_parameters;
+    private String[] parameters;
+    private String return_type;
 	
 	public SimpleOperationDTO() {
 		
 	}
 	
-	public SimpleOperationDTO(String id,List<String> imports,List<String> method,String methodName,int no_parameters, String name) {
+	public SimpleOperationDTO(String id,List<String> imports,List<String> method,String methodName, String[] parameters, String name, String return_type) {
 		this.id=id;
 		this.imports=imports;
 		this.method=method;
 		this.method_name=method_name;
-		this.no_parameters=no_parameters;
+		this.parameters=parameters;
 		this.name=name;
+		this.return_type=return_type;
 	}
 
 	public List<String> getImports() {
@@ -52,12 +54,12 @@ public class SimpleOperationDTO {
 		this.method_name = method_name;
 	}
 
-	public int getNo_parameters() {
-		return no_parameters;
+	public String[] getParameters() {
+		return parameters;
 	}
 
-	public void setNo_parameters(int no_parameters) {
-		this.no_parameters = no_parameters;
+	public void setParameters(String[] parameters) {
+		this.parameters = parameters;
 	}
 
 	public String getName() {
@@ -70,6 +72,14 @@ public class SimpleOperationDTO {
 
 	public String getId() {
 		return id;
+	}
+
+	public String getReturn_type() {
+		return return_type;
+	}
+
+	public void setReturn_type(String return_type) {
+		this.return_type = return_type;
 	}
 
 	public void setId(String id) {

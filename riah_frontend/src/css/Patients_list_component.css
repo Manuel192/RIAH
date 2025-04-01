@@ -1,5 +1,5 @@
 .scrollable-list-patients {
-    max-height: 200px;
+    height: 600px;
     overflow-y: auto;
     border: 1px solid #dddddd;
     border-radius: 5px;
@@ -16,41 +16,32 @@
     font-weight: bold;
   }
 
-  .button-evolution {
-    padding: 10px 20px;
-    margin: 10px 5px;
-    border: none;
-    border-radius: 4px;
-    font-size: 20px;
-    cursor: pointer;
-    color: white;
-    background-color: #007bff;
+  .button-patient-option {
+    width: 150px;
+    height: 150px;
   }
-  
-  .button-raw-data {
-    padding: 10px 20px;
-    margin: 10px 5px;
-    border: none;
-    border-radius: 4px;
-    font-size: 20px;
-    cursor: pointer;
-    color: white;
-    background-color: #28a745;
+
+  .patients-menu {
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
   }
-  
-  .button-create-session-access{
-    padding: 10px 20px;
-    margin: 10px 5px;
-    border: none;
-    border-radius: 4px;
-    font-size: 20px;
-    cursor: pointer;
-    color: white;
-    background-color: #e0b336;
+
+  .patient-name {
+    text-align: center;
+    font-size: 40px;
+  }
+
+  .patient-name.unselected {
+    color:#ffffff;
+  }
+
+  .rectangle.unselected {
+    background-color:gray;
   }
 
   .patient-info {
-    display:flexbox;
+    display:flex;
+    gap: 50px;
     text-align: center;
   }
 

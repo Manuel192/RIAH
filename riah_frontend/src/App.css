@@ -5,7 +5,7 @@
 .app {
   font-family: Arial, sans-serif;
   padding: 40px;
-  min-height: 750px;
+  min-height: 800px;
 }
 
 .main-title{
@@ -144,7 +144,6 @@ h3{
 }
 
 .list-container {
-  width: 100%;
   margin-bottom: 10px;
   font-size: 1.2em;
   font-weight: bold;
@@ -152,7 +151,6 @@ h3{
 }
 
 .scrollable-list {
-  min-height: 300px;
   max-height: 300px;
   overflow-y: auto;
   border: 1px solid #dddddd;

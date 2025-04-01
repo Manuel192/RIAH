@@ -20,12 +20,14 @@ const Scene = () => {
 
   const [hideBodyPanel,setHideBodyPanel]=useState([true,false,false,false,false,false]);
 
-  const [headPos, setHeadPos]=useState(["","",""]);
-  const [headRot, setHeadRot]=useState(["","",""]);
+  const [headPos, setHeadPos]=useState(["HeadPosition_x","HeadPosition_y","HeadPosition_z"]);
+  const [headRot, setHeadRot]=useState(["HeadRotation_x","HeadRotation_y","HeadRotation_z"]);
   const [rHandPos, setRHandPos]=useState(["RHandPosition_x","RHandPosition_y","RHandPosition_z"]);
   const [rHandRot, setRHandRot]=useState(["RHandRotation_x","RHandRotation_y","RHandRotation_z"]);
   const [lHandPos, setLHandPos]=useState(["LHandPosition_x","LHandPosition_y","LHandPosition_z"]);
   const [lHandRot, setLHandRot]=useState(["LHandRotation_x","LHandRotation_y","LHandRotation_z"]);
+  const vrHeadsetRef=useRef(null);
+  const bodyRef=useRef(null);
   const headRef=useRef(null);
   const rHandRef=useRef(null);
   const lHandRef=useRef(null);
@@ -34,6 +36,7 @@ const Scene = () => {
   const [frame, setFrame] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [previewActivated, setPreviewActivated] = useState(false);
   const intervalRef = useRef(null);
 
   useEffect(() => {
@@ -70,27 +73,45 @@ const Scene = () => {
       setFps(value);
   }
 
+  const handlePreview = () => {
+    setPreviewActivated(!previewActivated);
+  }
+
   const VideoScene = () => {
-    const geometries=[{pos:[0,3.0,0],scale:[1, 1, 1],rot:[0,0,0],color:"white"},
-    {pos:[2,-1.5,0], scale:[1,1,1], rot:[0,0,0], color:"yellow"},
-    {pos:[-2,-1.5,0], scale:[1,1,1], rot:[0,0,0], color:"yellow"}];
+    const geometries=[{pos:[0,3,0],scale:[1, 1, 1],rot:[0,0,0],color:"white"},
+    {pos:[2,1,1], scale:[1,1,1], rot:[0,0,Math.PI/2], color:"yellow"},
+    {pos:[-2,1,1], scale:[1,1,1], rot:[0,0,3*Math.PI/2], color:"yellow"}];
 
     const headModel=useLoader(OBJLoader,'/head.obj').children[0].geometry;
+    const vrHeadsetModel=useLoader(OBJLoader,'/vrheadset.obj').children[0].geometry;
+    const bodyModel=useLoader(OBJLoader,'/body.obj').children[0].geometry;
     const rHandModel=useLoader(OBJLoader,'/right_hand.obj').children[0].geometry;
     const lHandModel=useLoader(OBJLoader,'/left_hand.obj').children[0].geometry;
     const camera=useThree();
     
     useFrame(()=>{
+      if(isPlaying){
+        console.log(camera);
+      }
+      if(isPlaying || previewActivated){
         const currentFrameData=activeSessionData.frames[frame];
         if(headRef.current){
           headRef.current.parent.worldToLocal(headRef.current.position);
           headRef.current.position.x=Number(currentFrameData.dataValues[headPos[0]])+Number(geometries[0].pos[0])
           headRef.current.position.y=Number(currentFrameData.dataValues[headPos[1]])+Number(geometries[0].pos[1]);
           headRef.current.position.z=Number(currentFrameData.dataValues[headPos[2]])+Number(geometries[0].pos[2])
-          headRef.current.rotation.x=Number((currentFrameData.dataValues[headRot[0]])*Math.PI/180)+Number(geometries[0].rot[0])||0;
-          headRef.current.rotation.y=Number((currentFrameData.dataValues[headRot[1]]))*Math.PI/180+Number(geometries[0].rot[1])||0;
-          headRef.current.rotation.z=Number((currentFrameData.dataValues[headRot[2]]))*Math.PI/180+Number(geometries[0].rot[2])||0;
-
+          headRef.current.rotation.x=Number(currentFrameData.dataValues[headRot[0]])*Math.PI/180+Number(geometries[0].rot[0])||0;
+          headRef.current.rotation.y=Number(currentFrameData.dataValues[headRot[1]])*Math.PI/180+Number(geometries[0].rot[1])||0;
+          headRef.current.rotation.z=Number(currentFrameData.dataValues[headRot[2]])*Math.PI/180+Number(geometries[0].rot[2])||0;
+          vrHeadsetRef.current.position.x=Number(currentFrameData.dataValues[headPos[0]])+Number(geometries[0].pos[0])
+          vrHeadsetRef.current.position.y=Number(currentFrameData.dataValues[headPos[1]])+Number(geometries[0].pos[1]);
+          vrHeadsetRef.current.position.z=Number(currentFrameData.dataValues[headPos[2]])+Number(geometries[0].pos[2])
+          vrHeadsetRef.current.rotation.x=Number(currentFrameData.dataValues[headRot[0]])*Math.PI/180+Number(geometries[0].rot[0])||0;
+          vrHeadsetRef.current.rotation.y=Number(currentFrameData.dataValues[headRot[1]])*Math.PI/180+Number(geometries[0].rot[1])||0;
+          vrHeadsetRef.current.rotation.z=Number(currentFrameData.dataValues[headRot[2]])*Math.PI/180+Number(geometries[0].rot[2])||0;
+          bodyRef.current.position.x=Number(currentFrameData.dataValues[headPos[0]])+Number(geometries[0].pos[0])
+          bodyRef.current.position.y=Number(currentFrameData.dataValues[headPos[1]])+Number(geometries[0].pos[1]);
+          bodyRef.current.position.z=Number(currentFrameData.dataValues[headPos[2]])+Number(geometries[0].pos[2])
         }
         if(rHandRef.current){
           rHandRef.current.parent.worldToLocal(rHandRef.current.position);
@@ -109,7 +130,9 @@ const Scene = () => {
           lHandRef.current.rotation.y=Number(currentFrameData.dataValues[lHandRot[1]])*-Math.PI/180+Number(geometries[1].rot[1])||0;
           lHandRef.current.rotation.z=Number(currentFrameData.dataValues[headRot[2]])*-Math.PI/180+Number(geometries[1].rot[2])||0;
         }
+      }
     });
+
     return (
       <>
         <ambientLight intensity={0.1} />
@@ -121,6 +144,14 @@ const Scene = () => {
         </OrbitControls>
         <mesh position={geometries[0].pos} ref={headRef} geometry={headModel} rotation={geometries[0].rot} scale={geometries[0].scale}>
           <meshStandardMaterial color={geometries[0].color} />
+        </mesh>
+
+        <mesh position={geometries[0].pos} ref={bodyRef} geometry={bodyModel} scale={geometries[0].scale}>
+          <meshStandardMaterial color={geometries[0].color} />
+        </mesh>
+
+        <mesh position={geometries[0].pos} ref={vrHeadsetRef} geometry={vrHeadsetModel} rotation={geometries[0].rot} scale={geometries[0].scale}>
+          <meshStandardMaterial color={"gray"} />
         </mesh>
 
         <mesh position={geometries[1].pos} ref={lHandRef} geometry={lHandModel} rotation={geometries[1].rot} scale={geometries[1].scale}>
@@ -371,11 +402,12 @@ const Scene = () => {
   return <>
     <h1 class="main-title" style={{position:"fixed", right:"40%"}}>Visualización 3D</h1>
     <Suspense>
-      <Canvas gl={{preserveDrawingBuffer:true}} camera={{zoom:0.5}} style={{height:"70%", top:"0", position:"fixed", marginLeft:"15%", width:"85%",marginTop:"150px", zIndex:"0", borderColor:"#ebf9fc", borderWidth:"10px", backgroundColor:"#e3f9ff"}}>
+      <Canvas gl={{preserveDrawingBuffer:true}} camera={{zoom:0.3}} style={{height:"70%", top:0, position:"fixed", marginLeft:"15%", width:"85%",marginTop:"150px", zIndex:"0", borderColor:"#ebf9fc", borderWidth:"10px", backgroundColor:"#e3f9ff"}}>
         <VideoScene/>
       </Canvas>
     </Suspense>
     <VideoVariables/>
+    <div style={{height:"100px"}}/>
     <div style={{ bottom: "0", width: "100%", textAlign: "center", position: "fixed", backgroundColor:"white", display: "flex", justifyContent: "center" }}>
       <div style={{width:"40%"}}>
         <h1 class="main-title">Reproducir simulación</h1>
@@ -396,20 +428,24 @@ const Scene = () => {
               height: "100%",
               background: "blue",
               borderRadius: "5px",
-              transition: "width 0.2s ease",
+              transition: "width 0.05s ease",
             }}
           ></div>
         </div>
       </div>
-      <div style={{width:"40%"}}>
+      <div style={{width:"20%"}}>
+        <h1 class="main-title">PREVIEW</h1>
+        <input type="checkbox" style={{transform: "scale(2)"}} checked={previewActivated} onChange={handlePreview}></input>
+      </div>
+      <div style={{width:"20%"}}>
         <h1 class="main-title">FPS</h1>
-          <input type="number" style={{textAlign: "center", borderColor: "black", borderWidth: "2px", borderRadius: "5px"}} placeholder="FPS (máx. 60)" value={fps} onChange={(e) => handleFps(e.target.value)}></input>
-        </div>
-        <div>
-          <button onClick={handlePlayPause} style={{ fontSize: "40px", marginTop: "10px" }}>
-            {isPlaying ? "⏸️" : "▶️"}
-          </button>
-        </div>
+        <input type="number" style={{textAlign: "center", borderColor: "black", borderWidth: "2px", borderRadius: "5px"}} placeholder="FPS (máx. 60)" value={fps} onChange={(e) => handleFps(e.target.value)}></input>
+      </div>
+      <div>
+      <button onClick={handlePlayPause} style={{ fontSize: "40px", marginTop: "10px" }}>
+          {isPlaying ? "⏸️" : "▶️"}
+        </button>
+      </div>
       </div>
     </>
 };

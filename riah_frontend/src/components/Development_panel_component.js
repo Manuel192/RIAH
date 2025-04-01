@@ -41,9 +41,7 @@ function Admin() {
   const [addNoParameters, setAddNoParameters] = useState();
   const [importedFileName, setImportedFileName] = useState("");
   const [importedData, setImportedData] = useState(null);
-
-  // Lista de pacientes (solo incluye "Juan Pérez" como se indicó)
-  const pacientes = ["Juan Pérez"];
+  const pacientes = ["John Doe"];
 
   useEffect(() => {
     // Encuentra el contenedor de la lista por su id y desplázalo al final

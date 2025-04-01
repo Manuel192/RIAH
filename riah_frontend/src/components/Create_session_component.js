@@ -10,6 +10,7 @@ function Create_session() {
     const {user}=location.state;
     
     const [importedFileName, setImportedFileName] = useState("");
+    const [importedRawData, setImportedRawData] = useState("");
     const [importedData, setImportedData] = useState(null);
 
     const [videoId, setVideoId] = useState("");
@@ -28,14 +29,12 @@ function Create_session() {
                 const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
                 if(!response.ok){
                     setGames([]);
-                    alert("No pudieron cargarse los juegos para filtrar.");
                     return;
                 }
                 // convert data to json
                 const responseData = await response.json();
                 setGames(responseData);
             }catch(error){
-                alert("La web no funciona por el momento. Inténtelo más tarde.")
             }
         }
       
@@ -50,6 +49,7 @@ function Create_session() {
         reader.onload = async (e) => {
           try {
             const content=e.target.result;
+            setImportedRawData(content);
 
             // Parseo de nombre
             setImportedFileName(file.name);
@@ -102,7 +102,7 @@ function Create_session() {
         if(videoId!==""){
             videoObtained=await handleUpload();
             if(videoObtained===0){
-                alert("El tamaño de vídeo es demasiado extenso. El vídeo no debe superar 1MB de memoria.");
+                alert("El vídeo no debe superar el límite de 20MB de memoria.");
                 return;
             }
         }
@@ -138,11 +138,17 @@ function Create_session() {
                 },
                 body: JSON.stringify({ game: selectedGame, date: selectedDate+" "+selectedHour+":"+selectedMinute+":"+selectedSecond, patient:user, video_id:videoObtained, data_id: dataId }),
             });
-
+            setSelectedGame("");
+            setSelectedDate("");
+            setSelectedHour("");
+            setSelectedMinute("");
+            setselectedSecond("");
+            setImportedData();
+            setImportedRawData();
+            setImportedFileName("");
+            setVideoData();
+            setVideoId("");
             alert("Se ha creado la sesión correctamente");
-            navigate('/')
-
-
         } catch (error) {
             alert(error)
         }
@@ -173,8 +179,12 @@ function Create_session() {
     };
 
     const handlePreview = async (event) => {
-        setVideoId(URL.createObjectURL(event.target.files[0]));
-        setVideoData(event.target.files[0]);
+        if(event.target.files.length>0){
+            await setVideoId("");
+            setVideoData(event.target.files[0]);
+            setVideoId(URL.createObjectURL(event.target.files[0]));
+            console.log(videoData);
+        }
     }
   
     const handleGameChanged = (event) =>{
@@ -213,11 +223,11 @@ function Create_session() {
     }
 
     const handlePatientList = () => {
-        navigate('/patients-list')
+        navigate('/user/patients-list')
     }
 
     const handleUserPanel = () => {
-    navigate('/')
+    navigate('/user')
     }
 
     return (
@@ -226,72 +236,80 @@ function Create_session() {
             <button className="nav-button">Home</button> &gt; 
             <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
             <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
-            Nueva sesión - Juan Pérez
+            Nueva sesión - John Doe
         </div>
         <div class="app">
-            <h1 class="main-title" className="title">Datos importados</h1>
+            <h3 class="main-title">Crear sesiones - John Doe</h3>
             <div class="rectangle create-session">
-                <h3>Juego</h3>
-                <h3>Datos</h3>
-                <h3>Fecha y hora</h3>
+                <h3 class="title">{"Vídeo demostrativo (Límite: 20MB)"}</h3>
+                <h3 class="title">Datos de sesión</h3>
+                <div>
+                    <input className="button-import filename" type="file" accept="video/*" onChange={handlePreview} />
+                    {videoId && <VideoPlayer videoId={videoId} preview={true} />}
+                </div>
+                <div>
+                    <label className="button-import" htmlFor="import-json-csv">
+                        {importedFileName? <p className="filename">{importedFileName}</p>:"+"}
+                    </label>
+                    {importedRawData && (
+                        <p className="imported-raw-data">
+                            {importedRawData}
+                        </p>
+                    )}
+                </div>
+            </div>
+            <div class="rectangle create-session">
+                <h3 class="title">Juego</h3>
+                <h3 class="title">Fecha y hora</h3>
                 <select id="dropdown" value={selectedGame} className="date-input create-session-field" onChange={handleGameChanged}>
-                <option value="">Selecciona un juego</option>
+                <option value="" disabled="true">Selecciona un juego</option>
                     {games?.map((option, index) => (
                         <option key={index} value={option.id}>
                         {option.name}
                         </option>
                     ))}
                 </select>
-                <label className="button-import" htmlFor="import-json-csv">
-                    +
-                    {importedFileName && <p className="filename">{importedFileName}</p>}
-                    </label>
-                    <input
-                    type="file"
-                    id="import-json-csv"
-                    accept=".json,.csv"
-                    onChange={handleImportJson}
-                    style={{ display: "none" }}
-                    />
-                    <div>
-                    <input 
-                        type="date" 
-                        value={selectedDate} 
-                        onChange={(e) => handleSetSelectedDate(e.target.value)} 
-                        className="date-input" 
-                    />
-                    <input 
-                        type="number"
-                        placeholder="HH"
-                        value={selectedHour} 
-                        onChange={(e) => handleSetSelectedHour(e.target.value)} 
-                        className="hour-input" 
-                    />
-                    :
-                    <input 
-                        type="number"
-                        placeholder="MM"
-                        value={selectedMinute} 
-                        onChange={(e) => handleSetselectedMinute(e.target.value)} 
-                        className="hour-input" 
-                    />
-                    :
-                    <input 
-                        type="number"
-                        placeholder="SS"
-                        value={selectedSecond} 
-                        onChange={(e) => handleSetselectedSecond(e.target.value)} 
-                        className="hour-input" 
-                    />
-                </div>
+                <input
+                type="file"
+                id="import-json-csv"
+                accept=".json,.csv"
+                onChange={handleImportJson}
+                style={{ display: "none" }}
+                />
                 <div>
-                    <h1>Subir y Reproducir Video</h1>
-                    <input type="file" accept="video/*" onChange={handlePreview} />
-                    {videoId && <VideoPlayer videoId={videoId} preview={true} />}
+                <input 
+                    type="date" 
+                    value={selectedDate} 
+                    onChange={(e) => handleSetSelectedDate(e.target.value)} 
+                    className="date-input" 
+                />
+                <input 
+                    type="number"
+                    placeholder="HH"
+                    value={selectedHour} 
+                    onChange={(e) => handleSetSelectedHour(e.target.value)} 
+                    className="hour-input" 
+                />
+                :
+                <input 
+                    type="number"
+                    placeholder="MM"
+                    value={selectedMinute} 
+                    onChange={(e) => handleSetselectedMinute(e.target.value)} 
+                    className="hour-input" 
+                />
+                :
+                <input 
+                    type="number"
+                    placeholder="SS"
+                    value={selectedSecond} 
+                    onChange={(e) => handleSetselectedSecond(e.target.value)} 
+                    className="hour-input" 
+                />
                 </div>
-            </div>
+             </div>
             <button className="button-create-session" onClick={handleCreateSession}>CREAR SESIÓN</button>
-            </div>
+        </div>
         </>
     );
 }
