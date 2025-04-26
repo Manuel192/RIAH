@@ -17,6 +17,12 @@ public class SessionDTO{
 	@JsonProperty("date")
 	private Date date;
 	
+	@JsonProperty("video_id")
+	private String videoID;
+	
+	@JsonProperty("data_id")
+	private String dataID;
+	
 	@JsonProperty("game")
 	private String game;
 	
@@ -39,6 +45,14 @@ public class SessionDTO{
 		this.date = date;
 	}
 
+	public String getDataID() {
+		return dataID;
+	}
+
+	public void setDataID(String dataID) {
+		this.dataID = dataID;
+	}
+
 	public String getGame() {
 		return game;
 	}
@@ -49,6 +63,14 @@ public class SessionDTO{
 
 	public String getPatient() {
 		return patient;
+	}
+
+	public String getVideoID() {
+		return videoID;
+	}
+
+	public void setVideoID(String videoID) {
+		this.videoID = videoID;
 	}
 
 	public void setPatient(String patient) {

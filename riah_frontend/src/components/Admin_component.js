@@ -1,5 +1,6 @@
 import React, { act, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import '../css/Admin_component.css';
 import '../App.css';
 
 function Admin() {    
@@ -7,22 +8,44 @@ function Admin() {
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
   const [parameters, setParameters] = useState([]); 
-  const [calculatedData, setCalculatedData] = useState([]);
+  const [operation, setOperation] = useState([]);
   const [newParameterActivated, setNewParameterActivated] = useState([]);
-  const [newCDataActivated, setNewCDataActivated] = useState([]);
+  const [newOperationActivated, setNewOperationActivated] = useState([]);
   const [newGameActivated, setNewGameActivated] = useState(0);
-  const [newOperationActivated, setNewOperationActivated] = useState(0);
+  const [newSimpleOperationActivated, setNewsimpleOperationActivated] = useState(0);
   const [addValue, setAddValue] = useState("");
 
-  const [operations, setOperations] = useState([]);
-  const [selectedOperation, setSelectedOperation] = useState();
-  const [cDataParameters, setCDataParameters] = useState ([]);
-  const [addNoParameters, setAddNoParameters] = useState();
-  const [importedFileName, setImportedFileName] = useState("");
-  const [importedData, setImportedData] = useState(null);
+  const [simpleOperations, setsimpleOperations] = useState([]);
+  const [selectedsimpleOperation, setSelectedsimpleOperation] = useState();
+  const [operationParameters, setoperationParameters] = useState ([]);
 
-  // Lista de pacientes (solo incluye "Juan Pérez" como se indicó)
-  const pacientes = ["Juan Pérez"];
+  const operationColors = [
+    "#fcbdbd","#fcdebd","#fcfbbd","#d3fcbd","#bdfce1","#bde0fc","#c0bdfc","#eebdfc","#fcbde4"
+  ];
+
+  const [treeData,setTreeData] = useState({
+        name: "a_0",
+        level: 0,
+        type: "Operation",
+        value:"",
+        valueName:"",
+        returnType:"value",
+        children: [
+          /*{
+            name: "a_1",
+            level: 1,
+            type: "Operation",
+            value:"Mean",
+            children: [
+              { name: "a_2", level:2, type: "Parameter",value:"",children:[]},
+              { name: "b_2",level:2, type: "Operation",value:"",children:[]},
+            ],
+          },*/
+        ],
+      },
+  );
+
+  const pacientes = ["John Doe"];
 
   useEffect(() => {
     // Encuentra el contenedor de la lista por su id y desplázalo al final
@@ -30,7 +53,7 @@ function Admin() {
     if (listContainer) {
       listContainer.scrollTop = listContainer.scrollHeight;
     }
-  }, [newParameterActivated, newCDataActivated]);
+  }, [newParameterActivated, newSimpleOperationActivated]);
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -38,31 +61,29 @@ function Admin() {
         const responseGames = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames");
         if(!responseGames.ok){
           setGames([]);
-          alert("No pudieron cargarse los juegos.");
           return;
         }
         // convert data to json
         const gamesParsed = await responseGames.json();
         setGames(gamesParsed);
-        const responseOperations = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations");
-        if(!responseOperations.ok){
-          setOperations([]);
-          alert("No pudieron cargarse las operaciones.");
+        const responsesimpleOperations = await fetch(process.env.REACT_APP_SESSIONS_URL+"/operation/loadSimpleOperations");
+        if(!responsesimpleOperations.ok){
+          setsimpleOperations([]);
           return;
         }
         // convert data to json
-        const operationsParsed = await responseOperations.json();
-        setOperations(operationsParsed);
+        const simpleOperationsParsed = await responsesimpleOperations.json();
+        setsimpleOperations(simpleOperationsParsed);
 
         var newActivatedTemp=[];
-        var calculatedDataTemp=[];
+        var OperationTemp=[];
         var parametersTemp=[];
         for(var i=0;i<gamesParsed?.length;i++){
           newActivatedTemp.push({"id":gamesParsed[i].id,"value":0});
-          const responseCalculatedData = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/loadCalculatedData?gameId="+gamesParsed[i].id);
-          if(responseCalculatedData.ok){
-            const calculatedDataParse=await responseCalculatedData.json();
-            calculatedDataTemp.push({"id":gamesParsed[i].id,"data":calculatedDataParse});
+          const responseOperation = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations?gameId="+gamesParsed[i].id);
+          if(responseOperation.ok){
+            const OperationParse=await responseOperation.json();
+            OperationTemp.push({"id":gamesParsed[i].id,"data":OperationParse});
           }
 
           const responseParameters = await fetch(process.env.REACT_APP_GENERAL_URL+"/parameter/loadParameters?gameId="+gamesParsed[i].id);
@@ -71,10 +92,10 @@ function Admin() {
             parametersTemp.push({"id":gamesParsed[i].id,"data":parameterParse});
           }
         }
-        setCalculatedData(calculatedDataTemp);
+        setOperation(OperationTemp);
         setParameters(parametersTemp);
         setNewParameterActivated(newActivatedTemp);
-        setNewCDataActivated(newActivatedTemp);
+        setNewsimpleOperationActivated(newActivatedTemp);
       }catch(error){
         alert("La web no funciona por el momento. Inténtelo más tarde.")
       }
@@ -84,29 +105,8 @@ function Admin() {
     fetchGames()
   }, []);
 
-  const handleImportPython = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const content=e.target.result;
-          setImportedData(content);
-          setImportedFileName(file.name);
-        } catch (error) {
-          alert("Error al importar el archivo Python.", error);
-        }
-      };
-      reader.readAsText(file);
-    }
-  };
-
   const activateNewGamePanel = () =>{
     setNewGameActivated(1);
-  }
-
-  const activateNewOperationPanel = () =>{
-    setNewOperationActivated(1);
   }
 
   const activateNewParameterPanel = gameId => () => {
@@ -115,10 +115,10 @@ function Admin() {
     setNewParameterActivated(newParameterActivatedTemp);
   }
 
-  const activateNewCalculatedDataPanel = gameId => () =>{
-    var newCDataActivatedTemp=newParameterActivated.filter(p=>(p.id!==gameId));
-    newCDataActivatedTemp.push({"id":gameId,"value":1});
-    setNewCDataActivated(newCDataActivatedTemp);
+  const activateNewOperationPanel = gameId => () =>{
+    var operationActivatedTemp=newOperationActivated.filter(p=>(p.id!==gameId));
+    operationActivatedTemp.push({"id":gameId,"value":1});
+    setNewOperationActivated(operationActivatedTemp);
   }
 
   const deactivateNewParameterPanel = gameId => () => {
@@ -127,37 +127,59 @@ function Admin() {
     setNewParameterActivated(newParameterActivatedTemp);
   }
 
-  const deactivateNewCalculatedDataPanel = gameId => () => {
-    var newCDataActivatedTemp=newParameterActivated.filter(p=>(p.id!==gameId));
-    newCDataActivatedTemp.push({"id":gameId,"value":0});
-    setNewCDataActivated(newCDataActivatedTemp);
+  const deactivateNewOperationPanel = gameId => () => {
+    var operationActivatedTemp=newOperationActivated.filter(p=>(p.id!==gameId));
+    operationActivatedTemp.push({"id":gameId,"value":0});
+    setNewOperationActivated(operationActivatedTemp);
   }
 
-  const addCData = (gameId) => async () => {
-    const cDataTemp=calculatedData;
-    if(addValue==="" || selectedOperation ==="" || cDataParameters.length<1 || cDataParameters.filter(param => param === "").length>0){
-      alert("No se puede insertar el nuevo cálculo. Asegúrese de haber rellenado los campos correctamente.");
+  const addOperation = (gameId) => async () => {
+    if(!addValue){
+      alert("Asegúrese de rellenar todos los campos antes de crear una operación.")
       return;
     }
-    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/insertCalculatedData", {
+    const OperationTemp=operation;
+
+    const responseMongo = await fetch(process.env.REACT_APP_SESSIONS_URL+"/operation/insertOperation", {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ game: gameId, name: addValue, operation: selectedOperation, parameters: cDataParameters }),
+      body: JSON.stringify({ value: treeData.value.split("#")[0], children: treeData.children }),
+    });
+
+    if(!responseMongo.ok){
+      alert("No se pudo insertar el nuevo cálculo. Asegúrese de haber rellenado los campos correctamente.");
+      return;
+    }
+
+    const operationId=await responseMongo.text();
+
+    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/insertOperation", {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ operationId:operationId, name: addValue, game: gameId, id: "" }),
     });
 
     if(!response.ok){
       alert("No se pudo insertar el nuevo cálculo. Asegúrese de haber rellenado los campos correctamente.");
       return;
     }
+
     const responseData = await response.json();
-    const newGameCalculatedData=cDataTemp.filter(p=>p.id===gameId)[0];
-    const newCData=cDataTemp.filter(p=>p.id!==gameId);
-    newGameCalculatedData.data.push(responseData);
-    newCData.push(newGameCalculatedData);
+    const newGameOperation=OperationTemp.filter(p=>p.id===gameId)[0] || {id: gameId, data: []};
+    const newOperation=OperationTemp.filter(p=>p.id!==gameId);
+    newGameOperation.data.push(responseData);
+    newOperation.push(newGameOperation);
     setAddValue("");
-    setCalculatedData(newCData);
+    setOperation(newOperation);
+    setTreeData({
+      ...treeData, children:[], value:""
+    });
+    const newOperationActivatedTmp=newOperationActivated.filter(o=>(o.id!==gameId));
+    setNewOperationActivated([...newOperationActivatedTmp, {id:gameId,value:0}]);
   }
 
     const addParameter = (gameId, name) => async () => {
@@ -211,125 +233,193 @@ function Admin() {
     setNewGameActivated(0);
   }
 
-  const addOperation = async () => {
-    if(addValue==="" || addNoParameters==="" || importedData===null){
-      alert("No se puede insertar la nueva operación. Asegúrese de haber rellenado todos los campos correctamente.");
-      return;
-    }
-    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/insertOperation", {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: addValue, noParameters: addNoParameters }),
-    });
-    if(!response.ok){
-      alert("No se pudo insertar la nueva operación. Asegúrese de haber rellenado todos los campos correctamente.");
-      return;
-    }
-    const responseData = await response.json();
-
-    const responseRaw = await fetch(process.env.REACT_APP_SESSIONS_URL+"/rawDataOperation/insertOperation", {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ python: importedData, id: responseData.id }),
-    });
-    if(!responseRaw.ok){
-      alert("No se pudo insertar la nueva operación. El código importado no es válido. Inténtelo más tarde.");
-      return;
-    }
-    setOperations([... operations, responseData]);
-    setAddValue("");
-    setNewOperationActivated(0);
-  }
-
   const deactivateNewGamePanel = () => {
     setNewGameActivated(0);
   }
 
-  const deactivateNewOperationPanel = () => {
-    setNewOperationActivated(0);
-  }
-
-  const handleOperationChanged = (event) => {
-    setSelectedOperation(event.target.value);
-    if(event.target.value===""){
-      setCDataParameters([]);
-      return;
+  const handleOperationChanged = (event,node) => {
+    if(event.target.value!==""){
+      modifychildren(treeData, node,  event.target.value, event.target.value.split("#")[1], 
+    "Operation",simpleOperations.filter(o=>(o.id===event.target.value.split("#")[0]))[0].return_type, simpleOperations.filter(o=>(o.id===event.target.value.split("#")[0]))[0].parameters);
     }
-    const noParameters=operations.filter(op=>op.id===event.target.value)[0].no_parameters;
-    const newCDataParameters=[];
-    for(var i=0;i<noParameters;i++){
-      newCDataParameters.push("");
-    }
-    setCDataParameters(newCDataParameters);
-  }
-
-  const handleParameterChanged = index => async (event,value) => {
-    const newCDataParameters=[...cDataParameters];
-    newCDataParameters[index]=event.target.value;
-    setCDataParameters(newCDataParameters);
-  }
-
-  const updateNoParameters = (event) => {
-    if((event.target.value<10 && event.target.value>0)||event.target.value===""){
-      setAddNoParameters(event.target.value);
+    else{
+      removechildren(treeData, node);
+      modifychildren(treeData, node, "","", "Operation", "", []);
     }
   }
+
+  const handleParameterChanged = (event,node) =>{
+    modifychildren(treeData, node, event.target.value, event.target.value.split("#")[1], "Parameter", node.returnType, []);
+    console.log(treeData);
+  }
+
+  const handleFieldChanged = (event,node,newType) => {
+    removechildren(treeData, node);
+    modifychildren(treeData, node, "","", newType, node.returnType, []);
+  }
+
+  const modifychildren = (currentNode, node, childValue, childName, childType, childReturnType, children) => {
+    if(currentNode===node && currentNode.level===0){
+      var newChildren=[];
+      if(children){
+        for(var i=0;i<children.length;i++){
+          newChildren.push({name: "c_"+i+"_"+(node.level+1), level: node.level+1, type: "Operation", returnType:children[i], children:[]})
+        }
+      }
+      setTreeData({
+        ...node, value: childValue, valueName: childName, type: childType, returnType:childReturnType, children:newChildren
+      })
+    }
+    if(currentNode===node){
+      var newChildren=[];
+      if(children){
+        for(var i=0;i<children.length;i++){
+          newChildren.push({name: "c_"+i+"_"+(node.level+1), level: node.level+1, type: "Parameter", returnType:children[i], children:[]})
+        }
+      }
+      return {
+        ...node, value:childValue, valueName:childName, type:childType, returnType:childReturnType, children:newChildren
+      }
+    }
+    else if(currentNode.children){
+      const newChildren=currentNode.children;
+      for(var i=0;i<newChildren.length;i++){
+        const nonExploredNodes=newChildren.filter(c=>c!==newChildren[i]);
+        const nodeFound=modifychildren(newChildren[i], node, childValue,childName, childType, childReturnType, children);
+        if(nodeFound!==null && currentNode.level===0){
+          setTreeData({...treeData,children:[...nonExploredNodes, nodeFound]});
+          return;
+        }
+        if(nodeFound!==null){
+          return({
+          ...currentNode,
+          children: [...nonExploredNodes, nodeFound]});
+        }
+      }
+    } return null;
+  }; 
+
+  const removechildren = (currentNode, node) => {
+    if(currentNode===node && currentNode.level===0){
+      setTreeData( {
+        ...node, children:[], value:""
+      })
+    }
+    if(currentNode===node){
+      return {
+        ...node, children:[], value:""
+      }
+    }
+    else if(currentNode.children){
+      const children=currentNode.children;
+      for(var i=0;i<children.length;i++){
+        const nonExploredNodes=children.filter(c=>c!==children[i]);
+        const nodeFound=modifychildren(children[i], node);
+        if(nodeFound!==null && currentNode.level===0){
+          setTreeData({...treeData,children:[...nonExploredNodes, nodeFound]});
+          return;
+        }
+        if(nodeFound!==null){
+          return({
+          ...currentNode,
+          children: [...nonExploredNodes, nodeFound]});
+        }
+      }
+    } return null;
+  };  
+
+  const TreeNode = ({ node, game }) => {
+      return (
+        <div>
+          {node.type && node.returnType==="list" && node.type==="Operation" &&
+            <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleOperationChanged(e,node)}>
+              <option value="">Selecciona una operación</option>
+              {simpleOperations?.filter(o=>o.return_type==="list").sort(function(a, b) {
+                  if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                }).map((option, index) =>
+                <option key={index} value={option.id+"#"+option.name}>
+                  {option.name}
+                </option>
+              )}
+            </select>
+          }
+          {node.type && node.returnType==="list" && node.type==="Parameter" &&
+            <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleParameterChanged(e,node)}>
+              <option value="">Selecciona un parámetro</option>
+              {parameters.filter(p=>p.id===game.id)[0]?.data.sort(function(a, b) {
+                  if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                }).map((parameter, index) => (
+                <option key={index} value={parameter.id+"#"+parameter.name}>
+                  {parameter.name}
+                </option>
+              ))}
+            </select>
+          }
+          {node.type && node.returnType==="value" && node.type==="Operation" &&
+            <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleOperationChanged(e,node)}>
+              <option value="">Selecciona una operación</option>
+              {simpleOperations?.filter(o=>o.return_type==="value").sort(function(a, b) {
+                  if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                }).map((option, index) =>
+                <option key={index} value={option.id+"#"+option.name}>
+                  {option.name}
+                </option>
+              )}
+            </select>
+          }
+          {node.type && node.returnType==="value" && node.type==="Parameter" &&
+            <input value={node.value} className='input-parameter' placeholder="Escribe un valor" onChange={(e)=>handleParameterChanged(e,node)}/>
+          }
+          {node.type && node.level>0 && (
+              node.type==="Operation"?
+                <button className="button-admin-change-parameter" onClick={(e)=>handleFieldChanged(e,node,"Parameter")}> Parámetro </button>
+              :
+                <button className="button-admin-change-parameter" onClick={(e)=>handleFieldChanged(e,node,"Operation")}> Operación </button>
+          )}
+          {node.children && node.children.length>0 && (
+            <div class="non-bg-rectangle" style={{backgroundColor: operationColors[node.level%operationColors.length]}}>
+              {node.children.sort(function(a, b) {
+                  if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                }).map((child, index) => (
+                <TreeNode key={index} node={child} game={game} />
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    };
 
   return (
   <>
   <div class="app">
-    <h1>Panel de administración</h1> 
-    <div className="list-container">
-      <h3 style={{marginTop: "40px", fontSize: "30px"}}>OPERACIONES</h3>
-      <div className="scrollable-list" id="scrollable-list">
-        {operations.map((o, index) => (
-          <div
-            key={index}
-            className={`list-item`}>
-            {o.name}
-          </div>
-        ))}
-        {newOperationActivated===1?
-          <div class="list-item">
-            <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
-            <button className="button-admin-cancel" onClick={deactivateNewOperationPanel}> Cancelar </button>
-            <button className="button-admin-new" onClick={addOperation}> Añadir </button>
-            <div className={`list-item`}>
-              <input type='number' onChange={updateNoParameters} placeholder="No. Parámetros (1-9)" value={addNoParameters}/>
-            </div>
-            <div class="list-item">
-              <label className="boton-importar" htmlFor="import-python">
-              +
-              {importedFileName && <p className="nombre-archivo">{importedFileName}</p>}
-              </label>
-              <input
-              type="file"
-              id="import-python"
-              accept=".py"
-              onChange={handleImportPython}
-              style={{ display: "none" }}
-              />
-          </div>
-          </div>
-        :""}
-      </div>
-      <button className="button-admin-add" onClick={activateNewOperationPanel}>+</button>
+    <h1 class="main-title">¡Bienvenido Administrador!</h1>
+    <div class="preview-text">
+      ¡Bienvenid@ a una versión temprana de RIAH. Esta plataforma le permitirá administrar la información de sus minijuegos, parámetros y operaciones a consultar a partir dela información obtenida de la plataforma Rehab-Immersive.
     </div>
-    <h3 style={{marginTop: "40px", fontSize: "30px"}}>JUEGOS</h3>
+    <br></br>
+    <h3 style={{marginTop: "40px", fontSize: "30px", fontWeight: "bold"}}>JUEGOS</h3>
     {games.map((game) => (
-    <>
-    <h3>{game.name}</h3>
+    <div class="rectangle">
+    <h3 class="title">{game.name}</h3>
     <div className="admin-container">
       {/* Margen izquierdo */}
       <div className="admin-left">
           <div className="list-container">
-          <label>PARÁMETROS</label>
-            <div className="scrollable-list" id="scrollable-list">
-            {parameters.filter(p=>p.id===game.id)[0]?.data.map((p, index) => (
+            <label>PARÁMETROS</label>
+            <div className="long-scrollable-list" id="scrollable-list">
+            {parameters.filter(p=>p.id===game.id)[0]?.data.sort(function(a, b) {
+                  if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                }).map((p, index) => (
               <div
                 key={index}
                 className={`list-item`}>
@@ -351,52 +441,31 @@ function Admin() {
       {/* Margen derecho */}
       <div className="admin-right">
         <div className="list-container">
-        <label>CÁLCULOS</label>
-          <div className="scrollable-list">
-          {calculatedData.filter(cData=>cData.id===game.id)[0]?.data.map((cData, index) => (
-              <div
-                key={index}
-                className={`list-item`}>
-                {cData.name}
-              </div>
-            ))}
-          {newCDataActivated.filter(p=>p.id===game.id)[0]?.value===1?
+          <label>OPERACIONES</label>
+          <div className="long-scrollable-list" id="scrollable-list">
+          {operation.filter(Operation=>Operation.id===game.id)[0]?.data.map((Operation, index) => (
+            <div
+              key={index}
+              className={`list-item`}>
+              {Operation.name}
+            </div>
+          ))}
+          {newOperationActivated.filter(p=>p.id===game.id)[0]?.value===1?
           <>
-            <div className={`list-item`}>
-              <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
-              <button className="button-admin-cancel" onClick={deactivateNewCalculatedDataPanel(game.id)}> Cancelar </button>
-              <button className="button-admin-new" onClick={addCData(game.id)}> Añadir </button>
-              <div className={`list-item`}>
-                <select id="dropdown" className='date-input' value={selectedOperation} onChange={handleOperationChanged}> 
-                  <option value="">Selecciona una operación</option>
-                  {operations?.map((option, index) => (
-                    <option key={index} value={option.id}>
-                      {option.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {cDataParameters?.map((parameter, index) =>
-                <div className={`list-item`}>
-                  <select id="dropdown" className='date-input' value={parameter} onChange={handleParameterChanged(index)}> 
-                  <option value="">{"Parámetro "+index}</option>
-                  {parameters.filter(p=>p.id===game.id)[0]?.data.map((parameter, index2) => (
-                    <option key={index2} value={parameter.id}>
-                      {parameter.name}
-                    </option>
-                  ))}
-                </select>
-                </div>
-              )}
-              </div>
-            </>
-            :""}
+          <div className={`list-item`}>
+          <input placeholder="Escribe el nombre" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
+              <button className="button-admin-cancel" onClick={deactivateNewOperationPanel(game.id)}> Cancelar </button>
+              <button className="button-admin-new" onClick={addOperation(game.id, addValue)}> Añadir </button>
+              <TreeNode node={treeData} game={game} />
           </div>
-        <button className="button-admin-add" onClick={activateNewCalculatedDataPanel(game.id)}>+</button>
+          </>
+          :""}
+          </div>
+        <button className="button-admin-add" onClick={activateNewOperationPanel(game.id)}>+</button>
         </div>
       </div>
     </div>
-    </>
+    </div>
     ))}
     <button className="button-admin-game" onClick={activateNewGamePanel}>Nuevo juego</button>
     {newGameActivated===1?
@@ -409,6 +478,6 @@ function Admin() {
     </div>
     </>
   );
- }
+};
 
 export default Admin;

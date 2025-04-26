@@ -1,0 +1,54 @@
+.scrollable-list-patients {
+    height: 600px;
+    overflow-y: auto;
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #ffffff;
+  }
+
+  .rectangle {
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #ffffff;
+    font-weight: bold;
+  }
+
+  .button-patient-option {
+    width: 150px;
+    height: 150px;
+  }
+
+  .patients-menu {
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .patient-name {
+    text-align: center;
+    font-size: 40px;
+  }
+
+  .patient-name.unselected {
+    color:#ffffff;
+  }
+
+  .rectangle.unselected {
+    background-color:gray;
+  }
+
+  .patient-info {
+    display:flex;
+    gap: 50px;
+    text-align: center;
+  }
+
+  .search-bar {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    background-color: rgb(238, 238, 238);
+  }

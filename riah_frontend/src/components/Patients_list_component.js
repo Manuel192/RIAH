@@ -1,16 +1,15 @@
 import React, { act, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import '../css/Patients_list_component.css';
 import '../App.css';
-import { height } from '@mui/system';
+import { Rectangle } from 'recharts';
 
 function Patients_list() {
   // Estado para la búsqueda y la selección
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
-
-  // Lista de pacientes (solo incluye "Juan Pérez" como se indicó)
-  const pacientes = ["Juan Pérez"];
+  const pacientes = ["John Doe", "Paciente 1", "Paciente 2", "Paciente 3", "Paciente 4"];
   
 
   // Filtrar pacientes por término de búsqueda
@@ -23,22 +22,22 @@ function Patients_list() {
   };
 
   const handleRawData = () => {
-    navigate('/raw-data', { state: {user:"cb7c8009-b7c0-11ef-bbaf-e4e749429566"}})
+    navigate('/user/raw-data', { state: {user:"cb7c8009-b7c0-11ef-bbaf-e4e749429566"}})
   }
 
   const handleCreateSession = () => {
-    navigate('/create-session', { state: {user:"cb7c8009-b7c0-11ef-bbaf-e4e749429566"}})
+    navigate('/user/create-session', { state: {user:"cb7c8009-b7c0-11ef-bbaf-e4e749429566"}})
   }
 
   const handleEvolution = () => {
-    navigate('/evolution');
+    navigate('/user/evolution');
   }
   const handlePatientList = () => {
-    navigate('/patients-list')
+    navigate('/user/patients-list')
   }
 
   const handleUserPanel = () => {
-  navigate('/')
+  navigate('/user')
   }
 
   return (
@@ -49,42 +48,54 @@ function Patients_list() {
       Listado de pacientes
     </div>
     <div class="app">
-    <h1>Listado de pacientes</h1>
-    <div className="listado-pacientes-container">
-      {/* Margen izquierdo */}
-      <div className="list-container">
-        <div className="scrollable-list-patients">
-          <input
-            type="text"
-            placeholder="Buscar paciente..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-bar"
-          />
-          {filteredPatients.map((patient, index) => (
-            <div
-              key={index}
-              onClick={() => handleSelectPatient(patient)}
-              className={`list-item ${selectedPatient === patient ?"selected" : ""}`}>
-              {patient}
+    <h1 class="main-title">Listado de pacientes</h1>
+      <div class="patients-menu">
+        <div className="list-container">
+          <div className="scrollable-list-patients">
+            <input
+              type="text"
+              placeholder="Buscar paciente..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-bar"
+            />
+            {filteredPatients.map((patient, index) => (
+              <div
+                key={index}
+                onClick={() => handleSelectPatient(patient)}
+                className={`list-item ${selectedPatient === patient ?"selected" : ""}`}>
+                {patient}
+              </div>
+            ))}
             </div>
-          ))}
           </div>
-          </div>
+        <div class={selectedPatient?"rectangle":"rectangle unselected"}>
+          <h3 class={selectedPatient?"patient-name title":"patient-name unselected title"}>{selectedPatient || "Selecciona un paciente"}</h3>
+          {selectedPatient && (
+            <>
+            <div style={{textAlign: "center", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", justifyItems: "center",  marginBottom:"40px"}}>
+              <h3 class="title">Sexo</h3>
+              <h3 class="title">Fecha de nacimiento</h3>
+              <img style={{width:"100px"}} src={require("../media/RIAH_Man.png")}/>
+              <label>{"17/08/2003 (21 años)"}</label>
+            </div>
+            <hr></hr>
+            <div style={{textAlign: "center", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", justifyItems: "center", marginTop:"40px"}}>
+              <button class="button-patient-option" onClick={handleCreateSession}>
+              <img src={require("../media/RIAH_User_SessionCreation.png")}></img>
+              </button>
+              <button class="button-patient-option" onClick={handleEvolution}>
+                <img src={require("../media/RIAH_User_Evolution.png")}></img>
+              </button>
+              <button class="button-patient-option" onClick={handleRawData}>
+              <img src={require("../media/RIAH_User_SessionManagement.png")}></img>
+              </button>
+            </div>
+            </>
+          )}
         </div>
-
-      {/* Margen derecho */}
-      {selectedPatient ? (
-        <div className="patient-info rectangle">
-          <h3>{selectedPatient}</h3>
-          <button className="button-aniadir-sesion" onClick={handleCreateSession}>Añadir sesión</button>
-          <button className="button-evolucion" onClick={handleEvolution}>Evolución</button>
-          <button className="button-gestionar-datos" onClick={handleRawData}>Gestionar sesiones</button>
-        </div>
-        ) : (
-          ""
-        )}
       </div>
+    </div>
     </>
   );
  }

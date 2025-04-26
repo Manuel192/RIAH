@@ -1,15 +1,17 @@
 import React, { act, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import '../css/User_panel_component.css';
 import '../App.css';
-import { height } from '@mui/system';
 
 function User_panel() {
   // Estado para la búsqueda y la selección
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
-
   const handlePatientList = () => {
-    navigate('/patients-list', { state: {user:"cb7c8009-b7c0-11ef-bbaf-e4e749429566"}})
+    navigate('/user/patients-list', { state: {user:"cb7c8009-b7c0-11ef-bbaf-e4e749429566"}})
+  }
+
+  const handleAdminPanel = () => {
+    navigate(process.env.REACT_APP_ADMIN_URL)
   }
 
   return (
@@ -19,17 +21,14 @@ function User_panel() {
       Mi panel
     </div>
     <div class='app'>
-        <h1>Mi panel</h1>
+        <h1 class="main-title">¡Bienvenido Usuario!</h1>
             <div class="preview-text">
-            ¡Hola, bienvenid@ a la versión preliminar de RIAH! Este es el panel temporal que simulará lo que un usuario ve cuando
-            <br/>
-            ingresa a la aplicación, dado que el sistema de usuarios no será incluido hasta fases más avanzadas del proyecto.
-            <br/>
-            Espero que esta versión temprana le sea de utilidad para observar las funcionalidades que el futuro sistema RIAH
-            <br/>
-            le permitirá hacer. Cualquier comentario será de utilidad para un mejor resultado final.
-            <br/>
-            <button className="button-patients-list" onClick={handlePatientList}>Lista de pacientes</button>
+            ¡Bienvenid@ a una versión temprana de RIAH. Esta plataforma le permitirá administrar la información de sus pacientes adquirida mediante la plataforma Rehab-Immersive. Acceda a su lista de pacientes para comenzar su sesión o acceda al panel de administración.
+            <br></br>
+            <img src={require("../media/RIAH_User_PatientsAspect.png")}></img>
+            <br></br>
+            <button className="button-patients-list" onClick={handlePatientList}>Acceder a mi lista de pacientes</button>
+            <button className="button-patients-list" onClick={handleAdminPanel}>{"Acceder al panel de administración (TEMPORAL)"}</button>
         </div>
     </div>
     </>

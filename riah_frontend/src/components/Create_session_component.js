@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
+import VideoPlayer from "./video_player";
+import '../css/Create_session_component.css';
 import "../App.css";
-import { width } from "@mui/system";
 
 function Create_session() {
     const location=useLocation();
@@ -9,11 +10,18 @@ function Create_session() {
     const {user}=location.state;
     
     const [importedFileName, setImportedFileName] = useState("");
+    const [importedRawData, setImportedRawData] = useState("");
     const [importedData, setImportedData] = useState(null);
+
+    const [videoId, setVideoId] = useState("");
+    const [videoData, setVideoData] = useState();
   
     const [games, setGames] = useState([]);
     const [selectedGame, setSelectedGame] = useState("");
-    const [selectedDate, setselectedDate] = useState("");
+    const [selectedDate, setSelectedDate] = useState("");
+    const [selectedHour, setSelectedHour] = useState();
+    const [selectedMinute, setSelectedMinute] = useState();
+    const [selectedSecond, setselectedSecond] = useState();
 
     useEffect(() => {
         const fetchGames = async () => {
@@ -21,14 +29,12 @@ function Create_session() {
                 const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
                 if(!response.ok){
                     setGames([]);
-                    alert("No pudieron cargarse los juegos para filtrar.");
                     return;
                 }
                 // convert data to json
                 const responseData = await response.json();
                 setGames(responseData);
             }catch(error){
-                alert("La web no funciona por el momento. Inténtelo más tarde.")
             }
         }
       
@@ -43,7 +49,18 @@ function Create_session() {
         reader.onload = async (e) => {
           try {
             const content=e.target.result;
+            setImportedRawData(content);
+
+            // Parseo de nombre
             setImportedFileName(file.name);
+            const fullDate=file.name.split("_");
+            if(fullDate.length===3){
+                setSelectedDate(fullDate[1].substring(0,4)+"-"+fullDate[1].substring(4,6)+"-"+fullDate[1].substring(6));
+                setSelectedHour(fullDate[2].substring(0,2));
+                setSelectedMinute(fullDate[2].substring(2,4));
+                setselectedSecond(fullDate[2].substring(4,6));
+            }
+
             const fileExtension = file.name.split(".").pop().toLowerCase();
             if(fileExtension==="json"){
                 const jsonData = await JSON.parse(content);
@@ -71,14 +88,23 @@ function Create_session() {
           });
           return obj;
         });
-        console.log(result);
         return result;
       };
 
     const handleCreateSession = async () => {
-        if(!user || !selectedDate || !selectedGame || !importedData){
+        if(!user || !selectedDate || !selectedGame || !importedData || !selectedHour || !selectedMinute || !selectedSecond){
             alert("Asegúrese de rellenar todos los campos e importar sus datos antes de crear una sesión.")
             return;
+        }
+
+        var videoObtained="";
+
+        if(videoId!==""){
+            videoObtained=await handleUpload();
+            if(videoObtained===0){
+                alert("El vídeo no debe superar el límite de 20MB de memoria.");
+                return;
+            }
         }
 
         const responseCheck = await fetch(process.env.REACT_APP_SESSIONS_URL+'/rawDataSession/checkJson', {
@@ -95,30 +121,69 @@ function Create_session() {
         }
 
         try {
-            const response = await fetch(process.env.REACT_APP_GENERAL_URL+'session/insertSession', {
+            const response = await fetch(process.env.REACT_APP_SESSIONS_URL+'/rawDataSession/insertSession', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ game: selectedGame, date: selectedDate, patient:user }),
+                body: JSON.stringify({ frames: importedData }),
             });
 
-            const sessionId = await response.text();
+            const dataId = await response.text();
 
-            const responseMongo = await fetch(process.env.REACT_APP_SESSIONS_URL+'rawDataSession/insertSession', {
+            await fetch(process.env.REACT_APP_GENERAL_URL+'/session/insertSession', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ id: sessionId, frames: importedData }),
+                body: JSON.stringify({ game: selectedGame, date: selectedDate+" "+selectedHour+":"+selectedMinute+":"+selectedSecond, patient:user, video_id:videoObtained, data_id: dataId }),
             });
-
+            setSelectedGame("");
+            setSelectedDate("");
+            setSelectedHour("");
+            setSelectedMinute("");
+            setselectedSecond("");
+            setImportedData();
+            setImportedRawData();
+            setImportedFileName("");
+            setVideoData();
+            setVideoId("");
             alert("Se ha creado la sesión correctamente");
-            navigate('/')
-
-
         } catch (error) {
-            alert("No se ha podido realizar la inserción. Inténtelo más tarde.")
+            alert(error)
+        }
+    }
+
+    const handleUpload = async () => {
+        const formData = new FormData();
+        formData.append("file", videoData);
+        try{
+            const response = await fetch(process.env.REACT_APP_SESSIONS_URL+"/video/uploadVideo", {
+            method: "POST",
+            body: formData,
+            });
+
+            if(!response.ok){
+                console.log("Ha ido mal.");
+                return 0;
+            }
+        
+            const result = await response.text();
+            setVideoId(result);
+            return result;
+
+        }catch(error){
+            console.log("Ha ido mal.");
+            return 0;
+        }
+    };
+
+    const handlePreview = async (event) => {
+        if(event.target.files.length>0){
+            await setVideoId("");
+            setVideoData(event.target.files[0]);
+            setVideoId(URL.createObjectURL(event.target.files[0]));
+            console.log(videoData);
         }
     }
   
@@ -126,16 +191,43 @@ function Create_session() {
         setSelectedGame(event.target.value);
     }
 
-    const handleSetselectedDate = (value) => {
-        setselectedDate(value);
-    }   
+    const handleSetSelectedDate = (value) => {
+        setSelectedDate(value);
+    }
+
+    const handleSetSelectedHour = (value) => {
+        if(value>=0 && value <= 23)
+            setSelectedHour(value);
+        if(value===-1)
+            setSelectedHour(23);
+        if(value===24)
+            setSelectedHour(0);
+    }
+
+    const handleSetselectedMinute = (value) => {
+        if(value>=0 && value <= 59)
+            setSelectedMinute(value);
+        if(value===-1)
+            setSelectedMinute(59);
+        if(value===60)
+            setSelectedMinute(0);
+    }
+
+    const handleSetselectedSecond = (value) => {
+        if(value>=0 && value <= 59)
+            setselectedSecond(value);
+        if(value===-1)
+            setselectedSecond(59);
+        if(value===60)
+            setselectedSecond(0);
+    }
 
     const handlePatientList = () => {
-        navigate('/patients-list')
+        navigate('/user/patients-list')
     }
 
     const handleUserPanel = () => {
-    navigate('/')
+    navigate('/user')
     }
 
     return (
@@ -144,42 +236,80 @@ function Create_session() {
             <button className="nav-button">Home</button> &gt; 
             <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
             <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
-            Nueva sesión - Juan Pérez
+            Nueva sesión - John Doe
         </div>
         <div class="app">
-            <h1 className="titulo">Nueva sesión - Juan Pérez</h1>
+            <h3 class="main-title">Crear sesiones - John Doe</h3>
             <div class="rectangle create-session">
-                <h3>Juego</h3>
-                <h3>Fecha</h3>
-                <h3>Importar Datos</h3>
+                <h3 class="title">{"Vídeo demostrativo (Límite: 20MB)"}</h3>
+                <h3 class="title">Datos de sesión</h3>
+                <div>
+                    <input className="button-import filename" type="file" accept="video/*" onChange={handlePreview} />
+                    {videoId && <VideoPlayer videoId={videoId} preview={true} />}
+                </div>
+                <div>
+                    <label className="button-import" htmlFor="import-json-csv">
+                        {importedFileName? <p className="filename">{importedFileName}</p>:"+"}
+                    </label>
+                    {importedRawData && (
+                        <p className="imported-raw-data">
+                            {importedRawData}
+                        </p>
+                    )}
+                </div>
+            </div>
+            <div class="rectangle create-session">
+                <h3 class="title">Juego</h3>
+                <h3 class="title">Fecha y hora</h3>
                 <select id="dropdown" value={selectedGame} className="date-input create-session-field" onChange={handleGameChanged}>
-                <option value="">Selecciona un juego</option>
+                <option value="" disabled="true">Selecciona un juego</option>
                     {games?.map((option, index) => (
                         <option key={index} value={option.id}>
                         {option.name}
                         </option>
                     ))}
                 </select>
+                <input
+                type="file"
+                id="import-json-csv"
+                accept=".json,.csv"
+                onChange={handleImportJson}
+                style={{ display: "none" }}
+                />
+                <div>
                 <input 
                     type="date" 
                     value={selectedDate} 
-                    onChange={(e) => handleSetselectedDate(e.target.value)} 
-                    className="date-input create-session-field" 
+                    onChange={(e) => handleSetSelectedDate(e.target.value)} 
+                    className="date-input" 
                 />
-                <label className="boton-importar" htmlFor="import-json-csv">
-                    +
-                    {importedFileName && <p className="nombre-archivo">{importedFileName}</p>}
-                    </label>
-                    <input
-                    type="file"
-                    id="import-json-csv"
-                    accept=".json,.csv"
-                    onChange={handleImportJson}
-                    style={{ display: "none" }}
-                    />
+                <input 
+                    type="number"
+                    placeholder="HH"
+                    value={selectedHour} 
+                    onChange={(e) => handleSetSelectedHour(e.target.value)} 
+                    className="hour-input" 
+                />
+                :
+                <input 
+                    type="number"
+                    placeholder="MM"
+                    value={selectedMinute} 
+                    onChange={(e) => handleSetselectedMinute(e.target.value)} 
+                    className="hour-input" 
+                />
+                :
+                <input 
+                    type="number"
+                    placeholder="SS"
+                    value={selectedSecond} 
+                    onChange={(e) => handleSetselectedSecond(e.target.value)} 
+                    className="hour-input" 
+                />
                 </div>
-            <button className="boton-crear-sesion" onClick={handleCreateSession}>CREAR SESIÓN</button>
-            </div>
+             </div>
+            <button className="button-create-session" onClick={handleCreateSession}>CREAR SESIÓN</button>
+        </div>
         </>
     );
 }

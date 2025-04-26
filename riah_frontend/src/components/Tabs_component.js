@@ -1,4 +1,5 @@
 import React, { useState, Component, useEffect} from 'react';
+import '../css/Tabs_component.css';
 import '../App.css';
 
 function Tabs({ tabs, onTabChange }) {

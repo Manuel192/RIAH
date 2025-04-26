@@ -1,11 +1,10 @@
 "use client"
 import React, { useState, useEffect } from "react";
-import { AreaChart, BarChart, Card, Title } from "@tremor/react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { ResponsiveContainer } from "recharts";
-import { Tooltip } from "@mui/material";
-import LoadingScreen from "./loadingScreen"; // Importamos el componente de carga
-import "../App.css"; // Archivo CSS separado
+import { AreaChart, BarChart, Card} from "@tremor/react";
+import { useNavigate} from "react-router-dom";
+import LoadingScreen from "./loading_screen";
+import '../css/Evolution_component.css';
+import "../App.css";
 
 const getRandomColors = (numColors, index) => {
   const tremorColors = [
@@ -14,7 +13,7 @@ const getRandomColors = (numColors, index) => {
     "fuchsia", "purple", "violet", "indigo", "gray", "stone"
   ];
   return Array.from({ length: numColors }, () =>
-    tremorColors[index]
+    tremorColors[index%tremorColors.length]
   );
 };
 
@@ -24,6 +23,8 @@ const Evolution = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
+  const [selectedInitDate, setSelectedInitDate] = useState([]);
+  const [selectedEndDate, setSelectedEndDate] = useState([]);
   const [games, setGames] = useState([]);
   const [dataOptions, setDataOptions] = useState([[],[],[],[]]);
   const [recordID,setRecordID] = useState({});
@@ -57,8 +58,11 @@ const Evolution = () => {
         }
         const response = await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/loadRecord');
         if(!response.ok){
-          setSelectedData(["","","",""]);
-          setSelectedGame(["","","",""]);
+          setSelectedData([""]);
+          setSelectedGame([""]);
+          setSelectedInitDate([""]);
+          setSelectedEndDate([""]);
+          setIsLoading(false);
           return;
         }
         // convert data to json
@@ -66,13 +70,14 @@ const Evolution = () => {
         setRecordID(responseData.id);
         const obtainedGraphs=responseData.graphs;
         console.log(responseData.graphs);
-        for(var i=0;i<obtainedGraphs.length;i++)
-          selectedGame.push(obtainedGraphs[i].game);
-        for(var i=0;i<obtainedGraphs.length;i++)
+        for(var i=0;i<obtainedGraphs.length;i++){
+          selectedGame.push(obtainedGraphs[i].game || "");
+          selectedData.push(obtainedGraphs[i].operation || "");
+          selectedInitDate.push(obtainedGraphs[i].initDate || "");
+          selectedEndDate.push(obtainedGraphs[i].endDate || "");
           graphs.push("area");
+        }
         const obtainedDataOptions=await fetchAll(obtainedGraphs);
-        for(var i=0;i<obtainedGraphs.length;i++)
-          selectedData.push(obtainedGraphs[i].calculatedData);
         const newGraphData=await calculateAll(obtainedGraphs, obtainedDataOptions);
         setGraphData(newGraphData);
         setIsLoading(false);
@@ -83,63 +88,56 @@ const Evolution = () => {
   }, []);
 
   const addGraph = () => {
-    setSelectedData([... selectedData, ""]);
-    setSelectedGame([... selectedGame, ""]);
-    setGraphs([... graphs, "area"]);
+    setSelectedData([...selectedData, ""]);
+    setSelectedGame([...selectedGame, ""]);
+    setSelectedInitDate([...selectedInitDate, ""]);
+    setSelectedEndDate([...selectedEndDate, ""]);
+    setGraphs([...graphs, "area"]);
   }
 
   const fetchAll = async (obtainedGraphs) => {
-    try{
-      const newDataOptions=[...dataOptions];
-      for(var i=0;i<obtainedGraphs.length;i++){
-        const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/loadCalculatedData?gameId="+obtainedGraphs[i].game);
-        if(!response.ok){
-          newDataOptions[i]=[];
-          setDataOptions(newDataOptions);
-          const newSelectedData=[...selectedData];
-          newSelectedData[i]="";
-          setSelectedData(newSelectedData);
-          continue;
-        }
-        // convert data to json
-        const responseData = await response.json();
-        newDataOptions[i]=responseData;
+    const newDataOptions=[...dataOptions];
+    for(var i=0;i<obtainedGraphs.length;i++){
+      const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations?gameId="+obtainedGraphs[i].game);
+      if(!response.ok){
+        newDataOptions[i]=[];
+        setDataOptions(newDataOptions);
+        const newSelectedData=[...selectedData];
+        newSelectedData[i]="";
+        setSelectedData(newSelectedData);
+        continue;
       }
-      setDataOptions(newDataOptions);
-      return newDataOptions;
-    }catch(error){
-        alert("La web no funciona por el momento. Inténtelo más tarde.")
+      // convert data to json
+      const responseData = await response.json();
+      newDataOptions[i]=responseData;
     }
+    setDataOptions(newDataOptions);
+    return newDataOptions;
   }
 
   const fetchCalculatedData = async (gameId, index) => {
-    try{
-        const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/calculatedData/loadCalculatedData?gameId="+gameId);
-        if(!response.ok){
-          const newDataOptions=[...dataOptions];
-          newDataOptions[index]=[];
-          setDataOptions(newDataOptions);
-          const newSelectedData=[...selectedData];
-          newSelectedData[index]="";
-          setSelectedData(newSelectedData);
-          alert("No existen datos calculables para este juego o no cargaron correctamente.");
-          return;
-        }
-        // convert data to json
-        const responseData = await response.json();
-        const newDataOptions=[...dataOptions];
-        newDataOptions[index]=responseData;
-        setDataOptions(newDataOptions);
-    }catch(error){
-        alert("La web no funciona por el momento. Inténtelo más tarde.")
+    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations?gameId="+gameId);
+    if(!response.ok){
+      const newDataOptions=[...dataOptions];
+      newDataOptions[index]=[];
+      setDataOptions(newDataOptions);
+      const newSelectedData=[...selectedData];
+      newSelectedData[index]="";
+      setSelectedData(newSelectedData);
+      return;
     }
+    // convert data to json
+    const responseData = await response.json();
+    const newDataOptions=[...dataOptions];
+    newDataOptions[index]=responseData;
+    setDataOptions(newDataOptions);
   }
 
   const calculateAll = async (obtainedGraphs, obtainedDataOptions) => {
     var newGraphData = [];
     for(var i=0;i<obtainedGraphs.length;i++){
-      const obtainedGraphData=await obtainDynamicCalculus(obtainedGraphs[i].calculatedData,i,obtainedDataOptions);
-      if(obtainedGraphData.length>0) newGraphData=[... newGraphData, ... obtainedGraphData];
+      const obtainedGraphData=await obtainDynamicCalculus(obtainedGraphs[i].operation,i,obtainedDataOptions);
+      if(obtainedGraphData.length>0) newGraphData=[...newGraphData, ...obtainedGraphData];
       else newGraphData.push({"index":i,"session":"","value":0, "date":""});
     }
     return newGraphData;
@@ -153,10 +151,9 @@ const Evolution = () => {
           headers: {
               'Content-Type': 'application/json',
           },
-          body: JSON.stringify({"sessions":optionToObtain.sessions,"parameters":optionToObtain.parameters}),
+          body: JSON.stringify({"sessions":optionToObtain.sessions}),
       });
       if(!response.ok){
-        alert("No existen datos calculables para este juego o no cargaron correctamente.");
         return;
       }
       const responseData = await response.json();
@@ -167,14 +164,13 @@ const Evolution = () => {
       }
       return newGraphData;
     }catch(error){
-        alert("La web no funciona por el momento. Inténtelo más tarde.");
-        return [];
+      return [];
     }
   }
 
   const handleGameChanged = index => (event,value) =>{
     const newSelectedGame=[...selectedGame];
-    newSelectedGame[index]=event.target.value;
+    newSelectedGame[index]=event.target.value || "";
     setSelectedGame(newSelectedGame);
     if(value===""){
       setDataOptions([]);
@@ -188,17 +184,47 @@ const Evolution = () => {
 
   const handleDataOptionChanged = index => async (event,value) =>{
     const newSelectedData=[...selectedData];
-    newSelectedData[index]=event.target.value;
+    newSelectedData[index]=event.target.value || "";
     setSelectedData(newSelectedData);
+    updateRecord(newSelectedData[index], newSelectedData[index], selectedInitDate[index], selectedEndDate[index], index);
 
+    const obtainedGraphData=await obtainDynamicCalculus(event.target.value,index,dataOptions);
+    var newGraphData=graphData.filter(graph => graph.index!=index);
+    newGraphData=[... newGraphData, ...obtainedGraphData];
+    setGraphData(newGraphData);
+  }
+
+  const handleGraphChanged = index => async (event,value) =>{
+    const newGraphs=[...graphs];
+    newGraphs[index]=event.target.value || "";
+    setGraphs(newGraphs);
+  }
+
+  const handleInitDate = index => async (event, value) =>{
+    const newSelectedInitDate=[...selectedInitDate];
+    newSelectedInitDate[index]=event.target.value || "";
+    setSelectedInitDate(newSelectedInitDate);
+    updateRecord(newSelectedInitDate[index], selectedData[index], newSelectedInitDate[index], selectedEndDate[index], index);
+  }
+
+  const handleEndDate = index => async (event) =>{
+    const newSelectedEndDate=[...selectedEndDate];
+    newSelectedEndDate[index]=event.target.value || "";
+    setSelectedEndDate(newSelectedEndDate);
+    updateRecord(newSelectedEndDate[index], selectedData[index], selectedInitDate[index], newSelectedEndDate[index], index);
+  }
+
+  const updateRecord = async (newValue, newData, newInitDate, newEndDate, index) => {
     var data=[];
     for(var i=0;i<selectedGame.length;i++){
-      data.push({"game":selectedGame[i],"calculatedData":newSelectedData[i]});
+      if(i===index)
+        data.push({"game":selectedGame[i] || "","operation":newData || "","initDate":newInitDate || "","endDate":newEndDate || ""});
+      else
+        data.push({"game":selectedGame[i] || "","operation":selectedData[i] || "","initDate":selectedInitDate[i] || "","endDate":selectedEndDate[i] || ""});
     }
 
-    if(event.target.value===""){
+    if(newData===""){
       setGraphData(graphData.filter(graph => graph.index!=index));
-      return;
     }
 
     const responseCheck = await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/updateRecord', {
@@ -213,24 +239,14 @@ const Evolution = () => {
       alert("Algo ha ido mal al actualizar la configuración.");
       return;
     }
-
-    const obtainedGraphData=await obtainDynamicCalculus(event.target.value,index,dataOptions);
-    var newGraphData=graphData.filter(graph => graph.index!=index);
-    newGraphData=[... newGraphData, ...obtainedGraphData];
-    setGraphData(newGraphData);
   }
 
-  const handleGraphChanged = index => async (event,value) =>{
-    const newGraphs=[...graphs];
-    newGraphs[index]=event.target.value;
-    setGraphs(newGraphs);
-  }
   const handlePatientList = () => {
-    navigate('/patients-list')
+    navigate('/user/patients-list')
   }
 
   const handleUserPanel = () => {
-  navigate('/')
+  navigate('/user')
   }
 
   const exportDataToCsv = (index) => {
@@ -258,39 +274,37 @@ const Evolution = () => {
 return (
   <>
   {/* Pantalla de carga */}
-  <LoadingScreen isLoading={isLoading} />
-
   <div className="sub-banner">
       <button className="nav-button">Home</button> &gt; 
       <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
       <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
-    Evolución - Juan Pérez
+    Evolución - John Doe
   </div>
   <div div class="app">
-  <div className="usuario-detalle-container">
-    {/* Título */}
-    <h1>Evolución - Juan Pérez</h1>
+  <div className="evolution-container">
+    <h1 class="main-title">Evolución - John Doe</h1>
     <div class="graphs">
-      {/* Sección Superior */}
       {graphs?.map((graph, index) => (
         <Card className="tremor-Card">
-        <div className="seccion-inferior">
-        <div className="campo">
-          <h3>JUEGO</h3>
+        <div className="inferior-container">
+        <div className="field">
+        <LoadingScreen isLoading={isLoading} />
+          <h3 class="title">{dataOptions[index]?.filter(option=>option.id===selectedData[index])[0]?.name || "Sin nombre"}</h3>
+          <label style={{fontWeight: "bold"}}>JUEGO</label>
           <select id="dropdown" value={selectedGame[index]} className="dropdown" onChange={handleGameChanged(index)}>
-              <option value="">Ninguno</option>
-                  {games?.map((option, index) => (
-                      <option key={index} value={option.id}>
-                      {option.name}
-                      </option>
-                  ))}
-              </select>
+            <option value="" disabled="true">Ninguno</option>
+              {games?.map((option, index) => (
+                <option key={index} value={option.id}>
+                {option.name}
+                </option>
+              ))}
+          </select>
         </div>
 
-        <div className="campo">
-          <h3>DATO</h3>
+        <div className="field">
+        <label style={{fontWeight: "bold"}}>DATO</label>
           <select id="dropdown" value={selectedData[index]} className="dropdown" onChange={handleDataOptionChanged(index)} disabled={selectedGame[index]===""}>
-              <option value="">Ninguno</option>
+              <option value="" disabled="true">Ninguno</option>
                   {dataOptions[index]?.map((option, index) => (
                       <option key={index} value={option.id}>
                       {option.name}
@@ -299,55 +313,64 @@ return (
               </select>
         </div>
 
-        <div className="campo">
-          <h3>GRÁFICO</h3>
-          <select 
-            className="dropdown"
-            value={graphs[index]}
-            onChange={handleGraphChanged(index)}
-            disabled={selectedData[index]===""}
-          >
+        <div className="field">
+        <label style={{fontWeight: "bold"}}>GRÁFICO</label>
+          <select className="dropdown" value={graphs[index]} onChange={handleGraphChanged(index)} disabled={selectedData[index]===""}>
             <option value="area">G. Lineal</option>
             <option value="bar">G. Barras</option>
           </select>
         </div>
-      </div> 
+        </div>
         {graph==="area"?(
           <AreaChart
-          data={graphData.filter(graph=>graph.index==index)}
+          data={graphData.filter(graph=>graph.index===index&&(selectedInitDate[index].length<1 || selectedInitDate[index]<=graph.date)&&(selectedEndDate[index].length<1 || selectedEndDate[index]>=graph.date))}
           index="date"
           categories={["value"]}
           onValueChange={(v) => console.log(v)}
-          xLabel="Time"
-          valueFormatter={(value, index) => `${value}m/s`}
-          yLabel="Velocity"
+          valueFormatter={(value, index) => `${value}`}
           colors={getRandomColors(1,index)}
           showLegend={false}
           showXAxis={true}
-          tooltip={({ index }) => <CustomTooltip index={index} />}
         >
         </AreaChart>
         ):""}
         {graph==="bar"?(
           <BarChart
-              data={graphData.filter(graph=>graph.index==index)}
-              index="date"
-              xLabel="Time"
-              yLabel="Velocity"
-              categories={['value']}
-              colors={getRandomColors(1,index)}
-              valueFormatter={(value, index) => `${value}m/s`}
-              showLegend={false}
-              showXAxis={true}
-              tooltip={({ index }) => <CustomTooltip index={index} />}
-              >
-            </BarChart>
+          data={graphData.filter(graph=>graph.index===index&&(selectedInitDate[index].length<1 || selectedInitDate[index]<=graph.date)&&(selectedEndDate[index].length<1 || selectedEndDate[index]>=graph.date))}
+          index="date"
+          categories={['value']}
+          colors={getRandomColors(1,index)}
+          valueFormatter={(value, index) => `${value}`}
+          showLegend={false}
+          showXAxis={true}
+          >
+        </BarChart>
         ):""}
-          <button className='btn mostrar' onClick={()=>exportDataToCsv(index)}>Exportar</button>
+        <div class="date-filter">
+          <div className="date-field">
+          <label style={{fontWeight: "bold"}}>INICIO</label>
+            <input 
+              type="date" 
+              value={selectedInitDate[index]}
+              onChange={handleInitDate(index)}
+              className="raw-data-input" 
+            />
+          </div>
+          <div className="date-field">
+          <label style={{fontWeight: "bold"}}>FIN</label>
+            <input 
+              type="date" 
+              value={selectedEndDate[index]}
+              onChange={handleEndDate(index)}
+              className="raw-data-input" 
+            />
+          </div>
+        </div>
+          <button className='button-export-evolution' onClick={()=>exportDataToCsv(index)}>Exportar datos</button>
       </Card>
       ))}       
     </div>
-    <button className="button-admin-game" onClick={addGraph}>Nueva gráfica</button>
+    <button className="button-new-graph" onClick={addGraph}>Nueva gráfica</button>
     </div>
     </div>
   </>

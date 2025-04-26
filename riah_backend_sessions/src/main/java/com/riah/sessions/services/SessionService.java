@@ -16,9 +16,10 @@ import org.springframework.stereotype.Service;
 
 import com.riah.sessions.dao.SessionDAO;
 import com.riah.sessions.model.Frame;
+import com.riah.sessions.model.OperationDB;
 import com.riah.sessions.model.Session;
-import com.riah.sessions.model.SessionInsert;
-import com.riah.sessions.so.PythonExecutor;
+import com.riah.sessions.model.SessionDB;
+import com.riah.sessions.so.PythonService;
 import com.riah.sessions.model.SessionDTO;
 
 @Service
@@ -29,13 +30,13 @@ public class SessionService {
 	
 	@Autowired
 	private SessionDAO sessionDAO;
-
-	public SessionDTO loadSessionRawData(UUID id) throws ParseException {
+	
+	public SessionDTO loadSessionRawData(String id) throws ParseException {
 		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
 		Session session= sessionDAO.loadSessionRawData(id);
 		if(session==null) return null;
 		
-		SessionDTO parsedSession=new SessionDTO(session.getId());
+		SessionDTO parsedSession=new SessionDTO();
 		for(int j=0;j<session.getData().size();j++) {
 			String dataFrame=session.getData().get(j);
 			dataFrame=dataFrame.replace("\"", "").replace("{","").replace("}","");
@@ -49,6 +50,12 @@ public class SessionService {
 		}
 		return parsedSession;
 	}
+
+	public SessionDB loadSessionParameters(String id) throws ParseException {
+		SessionDB session= sessionDAO.loadSessionParameters(id);
+		if(session==null) return null;
+		return session;
+	}
 	
 	public void checkJSON(String session) {
 		JSONObject json = new JSONObject(session);
@@ -56,38 +63,42 @@ public class SessionService {
 		return;
 	}
 
-	public boolean insertSession(String session) {
+	public String insertSession(String session) {
 		JSONObject json = new JSONObject(session);
-		ArrayList<String> parsedFrames=new ArrayList<>();
 		JSONArray frames=json.getJSONArray("frames");
-		SessionInsert sessionToInsert=new SessionInsert(json.getString("id"),frames.toList());
-		sessionDAO.insertSession(sessionToInsert);
-		return true;
+		String[] parametersNames=JSONObject.getNames(frames.getJSONObject(0));
+		Map<String,String[]> parameters=new HashMap<String,String[]>();
+		for(int i=0;i<parametersNames.length;i++) {
+			List<String> values=new ArrayList<String>();
+			for(int j=0;j<frames.length();j++) {
+				values.add(frames.getJSONObject(j).getString(parametersNames[i]));
+			}
+			parameters.put(parametersNames[i], values.toArray(new String[0]));
+		}
+		SessionDB sessionToInsert=new SessionDB(frames.toList(), parameters);
+		SessionDB savedSession=sessionDAO.insertSession(sessionToInsert);
+		return savedSession.get_id().toString(); 
 	}
 
-	public Map<UUID, String> calculateData(String sessionsParameters, String operation) throws ParseException {
-		Map<UUID, String> results=new HashMap<>();
+	public Map<String, String> calculateData(String sessionsParameters, String opId) throws ParseException {
+		Map<String, String> results=new HashMap<>();
 		JSONObject json = new JSONObject(sessionsParameters);
 		JSONArray sessions=json.getJSONArray("sessions");
-		List<String> parameters=new ArrayList<>();
-		int parametersSize=json.getJSONArray("parameters").length();
-		for(int k=0;k<parametersSize;k++) {
-			parameters.add(json.getJSONArray("parameters").getJSONObject(k).getString("name"));
-		}
-		String code=operationService.loadOperation(operation);
+		OperationDB operation=operationService.loadOperation(opId);
+		List<String> codeLines=operation.getCode();
+		String basicCode="";
+		for(int i=0;i<codeLines.size();i++)
+			basicCode+=codeLines.get(i)+"\n";
 		for(int i=0;i<sessions.length();i++) {
-			String[] values= new String[parametersSize];
-			for(int j=0;j<parametersSize;j++) values[j]="";
-			List<Frame> sessionFrames=loadSessionRawData(UUID.fromString(sessions.get(i).toString())).getFrames();
-			for(int j=0;j<sessionFrames.size();j++) {
-				Map<String,String> dataValues=sessionFrames.get(j).getDataValues();
-				for(int k=0;k<parametersSize;k++) {
-					String value=dataValues.get(parameters.get(k));
-					values[k]+=value.trim()+",";
-				}
+			String code=basicCode;
+			SessionDB session=loadSessionParameters(sessions.getString(i));
+			List<String> variables=operation.getVariables();
+			Map<String,String[]> parameterList=session.getParameters();
+			for(int j=0;j<variables.size();j++) {
+				code+=variables.get(j)+"=["+String.join(",",parameterList.get(variables.get(j)))+"]\n";
 			}
-			for(int j=0;j<parametersSize;j++) values[j]=values[j].substring(0,values[j].length()-2);
-			results.put(UUID.fromString(sessions.get(i).toString()), PythonExecutor.execute(code, values));
+			code+=operation.getMethod_call();
+			results.put(sessions.get(i).toString(), PythonService.execute(code));
 		}
 		return results;
 	}

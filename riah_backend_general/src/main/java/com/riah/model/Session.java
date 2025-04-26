@@ -28,6 +28,12 @@ public class Session {
 
     @Column(name = "date", nullable = false)
     private Date date;
+    
+    @Column(name = "video_id", nullable = true)
+    private String videoID;
+    
+    @Column(name = "data_id", nullable = true)
+    private String dataID;
 
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
@@ -37,16 +43,12 @@ public class Session {
     @JoinColumn(name = "game_id", nullable = false)
     private Game game;
     
-    public Session(UUID id, Date date, Patient patient) {
-    	this.id=id;
-    	this.date=date;
-    	this.patient=patient;
-    }
-    
-    public Session(UUID game, UUID patient, Date date) {
+    public Session(UUID game, UUID patient, Date date, String videoID, String dataID) {
     	this.game=new Game(game);
     	this.date=date;
     	this.patient=new Patient(patient);
+    	this.videoID=videoID;
+    	this.dataID=dataID;
     }
     
     public Session() {
@@ -69,6 +71,14 @@ public class Session {
 		this.date = date; 
 	}
 
+	public String getDataID() {
+		return dataID;
+	}
+
+	public void setDataID(String dataID) {
+		this.dataID = dataID;
+	}
+
 	public Patient getPatient() {
 		return patient;
 	}
@@ -83,5 +93,13 @@ public class Session {
 
 	public void setGame(Game game) {
 		this.game = game;
+	}
+
+	public String getVideoID() {
+		return videoID;
+	}
+
+	public void setVideoID(String videoID) {
+		this.videoID = videoID;
 	}
 }

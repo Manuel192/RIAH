@@ -9,23 +9,20 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.riah.dao.CalculatedDataDAO;
-import com.riah.dao.GameDAO;
 import com.riah.dao.OperationDAO;
-import com.riah.dao.ParameterDAO;
+import com.riah.dao.GameDAO;
 import com.riah.dao.SessionDAO;
-import com.riah.model.CalculatedData;
-import com.riah.model.CalculatedDataDTO;
-import com.riah.model.Game;
-import com.riah.model.GameDTO;
 import com.riah.model.Operation;
 import com.riah.model.OperationDTO;
+import com.riah.model.Game;
+import com.riah.model.GameDTO;
 import com.riah.model.Parameter;
 import com.riah.model.ParameterDTO;
 import com.riah.model.Session;
@@ -38,33 +35,43 @@ public class OperationService {
 	
 	@Autowired
 	private OperationDAO operationDAO;
+	
+	@Autowired
+	private SessionService sessionService;
 		
-	public List<OperationDTO> loadOperations() throws ParseException {
-		List<Operation> operations= operationDAO.findAll();
-		if(operations.isEmpty()) return null;
+	public List<OperationDTO> loadOperations(String id) throws ParseException {
+		Game game=new Game(UUID.fromString(id));
+		List<Operation> operations= operationDAO.findByGame(game);
+		if(operations==null) return null;
 		List<OperationDTO> parsedOperations= mapOperations(operations);
 		return parsedOperations;
 	}
 	
-	private List<OperationDTO> mapOperations(List<Operation> operations) {
-		return operations.stream().map(operation -> {
-			OperationDTO operationDTO = new OperationDTO();
-			operationDTO.setId(operation.getId());
-			operationDTO.setName(operation.getName());
-			operationDTO.setNoParameters(operation.getNoParameters());
-            return operationDTO;
-        }).collect(Collectors.toList());
-	}
-	
 	public OperationDTO insertOperation(String operation) {
 		JSONObject json = new JSONObject(operation);
+		UUID gameId=UUID.fromString(json.getString("game"));
 		String name=json.getString("name");
-		int noParameters=json.getInt("noParameters");
-		Operation operationToInsert=new Operation(name,noParameters);
+		String operationID=json.getString("operationId");
+		Operation operationToInsert=new Operation(name,new Game(gameId),operationID);
 		Operation savedOperation=operationDAO.save(operationToInsert);
 		List<Operation> operationToParse=new ArrayList<>();
 		operationToParse.add(savedOperation);
-		List<OperationDTO> parsedParameter=mapOperations(operationToParse);
-		return parsedParameter.getFirst();
+		List<OperationDTO> parsedOperation=mapOperations(operationToParse);
+		return parsedOperation.getFirst();
+	}
+	
+	private List<OperationDTO> mapOperations(List<Operation> operations) {
+		List<OperationDTO> result= new ArrayList<>();
+		for(int i=0;i<operations.size();i++) {
+			OperationDTO operationDTO = new OperationDTO();
+			operationDTO.setId(operations.get(i).getId());
+			operationDTO.setName(operations.get(i).getName());
+			operationDTO.setGameId(operations.get(i).getGame().getId());
+			operationDTO.setOperation(operations.get(i).getOperation());
+			operationDTO.setSessions(sessionService.getSessionsByGame(operations.get(i).getGame().getId()));
+			operationDTO.setSessionDates(sessionService.getSessionDatesByGame(operations.get(i).getGame().getId()));
+            result.add(operationDTO);
+		}  
+            return result;
 	}
 }

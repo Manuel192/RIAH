@@ -15,12 +15,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.riah.dao.CalculatedDataDAO;
+import com.riah.dao.OperationDAO;
 import com.riah.dao.GameDAO;
 import com.riah.dao.ParameterDAO;
 import com.riah.dao.SessionDAO;
-import com.riah.model.CalculatedData;
-import com.riah.model.CalculatedDataDTO;
+import com.riah.model.Operation;
+import com.riah.model.OperationDTO;
 import com.riah.model.Game;
 import com.riah.model.GameDTO;
 import com.riah.model.Parameter;

@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.bson.types.ObjectId;
 import org.json.JSONArray;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "Records")
 public class RecordInsert {
-	private String ID;
+	private ObjectId _id;
     private List<Object> data;
 
     public List<Object> getData() {
@@ -17,12 +18,21 @@ public class RecordInsert {
     }
     
     public String getId() {
-        return ID;
+        return _id.toString();
     }
     
-    public RecordInsert(String ID, List<Object> data) {
-    	this.ID=ID;
+    public RecordInsert(String _id, List<Object> data) {
+    	this._id=new ObjectId(_id);
     	this.data=data;
     }
+    
+    public RecordInsert(byte[] _id, List<Object> data) {
+    	this._id=new ObjectId(_id);
+    	this.data=data;
+    }
+
+	public RecordInsert(List<Object> data) {
+		this.data=data;
+	}
     
 }
