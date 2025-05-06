@@ -1,7 +1,7 @@
 // src/Scene.jsx
 import React from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, Stars } from "@react-three/drei";
+import { CameraControls, OrbitControls, PerspectiveCamera, Stars } from "@react-three/drei";
 import { useNavigate, useLocation} from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { BooleanKeyframeTrack } from "three";
@@ -11,6 +11,8 @@ import { Suspense } from "react";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import {BufferGeometry} from 'three'
+import { Grid, Center, GizmoHelper, GizmoViewport, AccumulativeShadows, RandomizedLight, Environment, useGLTF } from '@react-three/drei'
+import { useControls } from 'leva'
 
 const Scene = () => {
   const navigate=useNavigate();
@@ -88,8 +90,23 @@ const Scene = () => {
     const rHandModel=useLoader(OBJLoader,'/right_hand.obj').children[0].geometry;
     const lHandModel=useLoader(OBJLoader,'/left_hand.obj').children[0].geometry;
     const camera=useThree();
+
+    /* https://codesandbox.io/p/sandbox/19uq2u?file=%2Fsrc%2FApp.js%3A9%2C58 */
+    const { gridSize, ...gridConfig } = useControls({
+      gridSize: [10.5, 10.5],
+      cellSize: { value: 0.6, min: 0, max: 10, step: 0.1 },
+      cellThickness: { value: 1, min: 0, max: 5, step: 0.1 },
+      cellColor: '#6f6f6f',
+      sectionSize: { value: 3.3, min: 0, max: 10, step: 0.1 },
+      sectionThickness: { value: 1.5, min: 0, max: 5, step: 0.1 },
+      sectionColor: '#42a4ce',
+      fadeDistance: { value: 25, min: 0, max: 100, step: 1 },
+      fadeStrength: { value: 1, min: 0, max: 1, step: 0.1 },
+      infiniteGrid: true
+    })
     
     useFrame(()=>{
+      camera.camera.fov=30;
       if(isPlaying){
         console.log(camera);
       }
@@ -142,25 +159,34 @@ const Scene = () => {
         {/* Helpers de Drei */}
         <OrbitControls enableZoom={true}>
         </OrbitControls>
-        <mesh position={geometries[0].pos} ref={headRef} geometry={headModel} rotation={geometries[0].rot} scale={geometries[0].scale}>
-          <meshStandardMaterial color={geometries[0].color} />
-        </mesh>
 
-        <mesh position={geometries[0].pos} ref={bodyRef} geometry={bodyModel} scale={geometries[0].scale}>
-          <meshStandardMaterial color={geometries[0].color} />
-        </mesh>
+        <group position={[0, -0.5, 0]}>
+          <Grid position={[0, -0.01, -0.01]} args={gridSize} {...gridConfig} />
+          
+          <mesh position={geometries[0].pos} ref={headRef} geometry={headModel} rotation={geometries[0].rot} scale={geometries[0].scale}>
+            <meshStandardMaterial color={geometries[0].color} />
+          </mesh>
 
-        <mesh position={geometries[0].pos} ref={vrHeadsetRef} geometry={vrHeadsetModel} rotation={geometries[0].rot} scale={geometries[0].scale}>
-          <meshStandardMaterial color={"gray"} />
-        </mesh>
+          <mesh position={geometries[0].pos} ref={bodyRef} geometry={bodyModel} scale={geometries[0].scale}>
+            <meshStandardMaterial color={geometries[0].color} />
+          </mesh>
 
-        <mesh position={geometries[1].pos} ref={lHandRef} geometry={lHandModel} rotation={geometries[1].rot} scale={geometries[1].scale}>
-          <meshStandardMaterial color={geometries[1].color} />
-        </mesh>
+          <mesh position={geometries[0].pos} ref={vrHeadsetRef} geometry={vrHeadsetModel} rotation={geometries[0].rot} scale={geometries[0].scale}>
+            <meshStandardMaterial color={"gray"} />
+          </mesh>
 
-        <mesh position={geometries[2].pos} ref={rHandRef} geometry={rHandModel} rotation={geometries[2].rot} scale={geometries[2].scale}>
-          <meshStandardMaterial color={geometries[2].color} />
-        </mesh>
+          <mesh position={geometries[1].pos} ref={lHandRef} geometry={lHandModel} rotation={geometries[1].rot} scale={geometries[1].scale}>
+            <meshStandardMaterial color={geometries[1].color} />
+          </mesh>
+
+          <mesh position={geometries[2].pos} ref={rHandRef} geometry={rHandModel} rotation={geometries[2].rot} scale={geometries[2].scale}>
+            <meshStandardMaterial color={geometries[2].color} />
+          </mesh>
+        </group>
+
+        <GizmoHelper>
+          <GizmoViewport disabled={true} axisColors={['#9d4b4b', '#2f7f4f', '#3b5b9d']} labelColor="white" />
+        </GizmoHelper>
         </>
     );
   };
@@ -402,7 +428,7 @@ const Scene = () => {
   return <>
     <h1 class="main-title" style={{position:"fixed", right:"40%"}}>Visualización 3D</h1>
     <Suspense>
-      <Canvas gl={{preserveDrawingBuffer:true}} camera={{zoom:0.3}} style={{height:"70%", top:0, position:"fixed", marginLeft:"15%", width:"85%",marginTop:"150px", zIndex:"0", borderColor:"#ebf9fc", borderWidth:"10px", backgroundColor:"#e3f9ff"}}>
+      <Canvas gl={{preserveDrawingBuffer:true}} camera={{zoom:0.3}} style={{height:"70%", top:0, position:"fixed", marginLeft:"15%", width:"85%",marginTop:"150px", zIndex:"0", borderColor:"#ebf9fc", borderWidth:"10px", backgroundColor:"#192124"}}>
         <VideoScene/>
       </Canvas>
     </Suspense>

@@ -47,6 +47,7 @@ function Raw_data() {
   const [selectedSessions, setSelectedSessions] = useState([]);
 
   const [selectedDataItems, setSelectedDataItems] = useState([]);
+  const [selectedDataItemsIndex, setSelectedDataItemsIndex] = useState([]);
   const [selectedDataItemsValues, setSelectedDataItemsValues] = useState([]);
 
   const [commonGraphDataItems, setCommonGraphDataItems] = useState([]);
@@ -88,7 +89,7 @@ function Raw_data() {
     const blob = new Blob([dataString], { type: "text/csv" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = activeSession.id;
+    link.download = activeSession.game+"_"+activeSession.date.substring(0,10);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -203,6 +204,10 @@ function Raw_data() {
         return;
       }else{
         setSelectedDataItems([...selectedDataItems, item].sort());
+        var newSelectedDataItemsIndex=selectedDataItemsIndex.filter(i=>i.name!=item);
+        newSelectedDataItemsIndex.push({name:item,value:"Frame"});
+        setSelectedDataItemsIndex(newSelectedDataItemsIndex);
+        console.log(newSelectedDataItemsIndex);
         obtainFrames([item], activeSessionData);
       };
     }
@@ -215,8 +220,9 @@ function Raw_data() {
       var maxValue=null;
       var minValue=null;
       for(var i=0;i<sessionData.frames.length;i++){
-        if(sessionData.frames[i].dataValues[items[j]]==="") continue;
-        if(sessionData.frames[i].dataValues[items[j]].trim()==="True"||sessionData.frames[i].dataValues[items[j]].trim()==="False"){
+        if(isNaN(sessionData.frames[i].dataValues[items[j]]))
+          newDataItemValues.push({"value":0});
+        else if(sessionData.frames[i].dataValues[items[j]].trim()==="True"||sessionData.frames[i].dataValues[items[j]].trim()==="False"){
           if(maxValue===null){
             maxValue=1;
             minValue=0;
@@ -277,7 +283,7 @@ function Raw_data() {
   }
 
   const loadThreeDView = () => {
-    navigate('/user/3d-view', {state:{dataItems: dataItems, activeSessionData: activeSessionData}});
+    navigate('/user/3d-points', {state:{dataItems: dataItems, activeSessionData: activeSessionData}});
   }
 
   const handleCommonGraphChanged = (event,index) => {
@@ -400,19 +406,18 @@ function Raw_data() {
               <Card className="tremor-Card">
                 <h3 class="title">{dataItem}</h3>
                 <AreaChart
-                data={selectedDataItemsValues[dataItem].values}
-                index="frame"
-                categories={["value"]}
-                onValueChange={(v) => console.log(v)}
-                maxValue={Number(selectedDataItemsValues[dataItem].max)}
-                minValue={Number(selectedDataItemsValues[dataItem].min)}
-                xLabel="Frame"
-                yLabel="Value"
-                colors={getRandomColors(1,index)}
-                showLegend={false}
-                showXAxis={true}
-              >
-              </AreaChart>
+                  data={activeSessionData.frames.map(frame=>(frame.dataValues))}
+                  index="Frame"
+                  categories={[dataItem]}
+                  onValueChange={(v) => console.log(v)}
+                  maxValue={Number(selectedDataItemsValues[dataItem].max)}
+                  minValue={Number(selectedDataItemsValues[dataItem].min)}
+                  xLabel="Frame"
+                  yLabel="Value"
+                  colors={getRandomColors(1,index)}
+                  showLegend={false}
+                  showXAxis={true}
+                />
             </Card>
           ))}       
         </div>
@@ -440,17 +445,17 @@ function Raw_data() {
             </div>
             <Card>
               <AreaChart
-              data={activeSessionData.frames.map(frame=>(frame.dataValues))}
-              index="frame"
-              categories={commonGraphDataItems}
-              onValueChange={(v) => console.log(v)}
-              xLabel="Frame"
-              yLabel="Value"
-              maxValue={Number(commonGraphMax)}
-              minValue={Number(commonGraphMin)}
-              colors={tremorColors}
-              showLegend={false}
-              showXAxis={true}
+                data={activeSessionData.frames.map(frame=>(frame.dataValues))}
+                index="Frame"
+                categories={commonGraphDataItems}
+                onValueChange={(v) => console.log(v)}
+                xLabel="Frame"
+                yLabel="Value"
+                maxValue={Number(commonGraphMax)}
+                minValue={Number(commonGraphMin)}
+                colors={tremorColors}
+                showLegend={false}
+                showXAxis={true}
               />
             </Card>
           </div>

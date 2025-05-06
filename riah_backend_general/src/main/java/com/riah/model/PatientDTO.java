@@ -2,6 +2,8 @@ package com.riah.model;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,46 +15,37 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "Patients")
-public class Patient {
+public class PatientDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false, updatable = false)
+	@JsonProperty("id")
     private UUID id;
 
-    @Column(name = "name", nullable = false)
+	@JsonProperty("name")
     private String name;
     
-    @Column(name = "gender", nullable = false)
+	@JsonProperty("gender")
     private String gender;
     
-    @Column(name = "age", nullable = false)
+	@JsonProperty("age")
     private int age;
     
-    @ManyToOne
-    @JoinColumn(name = "hospital_id", nullable = false)
-    private Hospital hospital;
+	@JsonProperty("hospital")
+    private String hospital;
     
 
-	public Patient(UUID id) {
+	public PatientDTO(UUID id) {
 		this.id=id;
 	}
 	
-	public Patient() {
+	public PatientDTO() {
 		
 	}
 
-	public Patient(String name, int age, String gender, Hospital hospitalId) {
-		
-	}
-
-	public Hospital getHospital() {
+	public String getHospital() {
 		return hospital;
 	}
 
-	public void setHospital(Hospital hospital) {
+	public void setHospital(String hospital) {
 		this.hospital = hospital;
 	}
 

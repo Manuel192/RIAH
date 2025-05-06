@@ -405,7 +405,7 @@ function Admin() {
       ¡Bienvenid@ a una versión temprana de RIAH. Esta plataforma le permitirá administrar la información de sus minijuegos, parámetros y operaciones a consultar a partir dela información obtenida de la plataforma Rehab-Immersive.
     </div>
     <br></br>
-    <h3 style={{marginTop: "40px", fontSize: "30px", fontWeight: "bold"}}>JUEGOS</h3>
+    <h3 style={{marginTop: "40px", fontSize: "30px", fontWeight: "bold"}}>JUEGOS SERIOS</h3>
     {games.map((game) => (
     <div class="rectangle">
     <h3 class="title">{game.name}</h3>
