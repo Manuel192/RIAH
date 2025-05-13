@@ -4,32 +4,29 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ParameterDTO{
+public class HospitalDTO {
+
 	@JsonProperty("id")
-	private UUID id;
+    private UUID id;
 
 	@JsonProperty("name")
     private String name;
-	
-	@JsonProperty("game_id")
-	private UUID gameId;
-	
-	public UUID getGameId() {
-		return gameId;
-	}
+    
 
-	public void setGameId(UUID gameId) {
-		this.gameId = gameId;
+	public HospitalDTO(UUID id) {
+		this.id=id;
 	}
-
+	
+	public HospitalDTO() {
+		
+	}
 	public UUID getId() {
 		return id;
 	}
-	
+
 	public void setId(UUID id) {
 		this.id = id;
 	}
-	
 
 	public String getName() {
 		return name;
@@ -37,5 +34,5 @@ public class ParameterDTO{
 
 	public void setName(String name) {
 		this.name = name;
-	}
+	}	
 }

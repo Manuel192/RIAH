@@ -1,6 +1,5 @@
 package com.riah.model;
 
-import java.util.Date;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -13,8 +12,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Patients")
-public class Patient {
+@Table(name = "Users")
+public class User {
 
     @Id 
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -27,27 +26,31 @@ public class Patient {
     @Column(name = "gender", nullable = false)
     private String gender;
     
-    @Column(name = "birthdate", nullable = false) 
-    private Date birthdate;
-    
     @ManyToOne
     @JoinColumn(name = "hospital_id", nullable = false)
     private Hospital hospital;
     
+    @Column(name = "email", nullable = false)
+    private String email;
+    
+    @Column(name = "password", nullable = false)
+    private String password;
+    
 
-	public Patient(UUID id) {
+	public User(UUID id) {
 		this.id=id;
 	}
 	
-	public Patient() {
+	public User() {
 		
 	}
 
-	public Patient(String name, Date birthdate, String gender, Hospital hospital) {
+	public User(String name, String gender, Hospital hospital, String email, String password) {
 		this.name=name;
-		this.birthdate=birthdate;
 		this.gender=gender;
 		this.hospital=hospital;
+		this.email=email;
+		this.password=password;
 	}
 
 	public Hospital getHospital() {
@@ -82,13 +85,22 @@ public class Patient {
 		this.gender = gender;
 	}
 
-	public Date getBirthdate() {
-		return birthdate;
+	public String getEmail() {
+		return email;
 	}
 
-	public void setBirthdate(Date birthdate) {
-		this.birthdate = birthdate;
+	public void setEmail(String email) {
+		this.email = email;
 	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
 	
 	
 }

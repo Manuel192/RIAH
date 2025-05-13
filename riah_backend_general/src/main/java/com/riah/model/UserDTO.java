@@ -1,11 +1,10 @@
 package com.riah.model;
 
-import java.util.Date;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PatientDTO {
+public class UserDTO {
 
 	@JsonProperty("id")
     private UUID id;
@@ -16,18 +15,15 @@ public class PatientDTO {
 	@JsonProperty("gender")
     private String gender;
     
-	@JsonProperty("birthdate")
-    private Date birthdate;
-    
 	@JsonProperty("hospital")
     private String hospital;
     
 
-	public PatientDTO(UUID id) {
+	public UserDTO(UUID id) {
 		this.id=id;
 	}
 	
-	public PatientDTO() {
+	public UserDTO() {
 		
 	}
 
@@ -61,14 +57,6 @@ public class PatientDTO {
 
 	public void setGender(String gender) {
 		this.gender = gender;
-	}
-
-	public Date getBirthdate() {
-		return birthdate;
-	}
-
-	public void setBirthdate(Date birthdate) {
-		this.birthdate = birthdate;
 	}
 	
 	

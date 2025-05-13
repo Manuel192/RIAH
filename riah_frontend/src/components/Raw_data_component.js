@@ -40,6 +40,9 @@ function Raw_data() {
   ];
 
   const navigate=useNavigate();
+  const location=useLocation();
+  const {patient}=location.state;
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [games, setGames] = useState([]);
@@ -138,7 +141,7 @@ function Raw_data() {
     const lDate=endDate?endDate:"X";
     const gameId=game?game:"X";
     try{
-      const url=process.env.REACT_APP_GENERAL_URL+"/session/loadFilteredSessions?firstDate="+stDate+"&lastDate="+lDate+"&gameId="+gameId;
+      const url=process.env.REACT_APP_GENERAL_URL+"/session/loadFilteredSessions?firstDate="+stDate+"&lastDate="+lDate+"&gameId="+gameId+"&patientId="+patient.id;
       const response = await fetch(url);
       if(!response.ok){
         setSessions([]);
@@ -318,10 +321,10 @@ function Raw_data() {
         <button className="nav-button">Home</button> &gt; 
         <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
         <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
-      Gestión de sesiones - John Doe
+      Gestión de sesiones - {patient.name}
     </div>
     <div className="app">
-      <h1 class="main-title">Gestión de sesiones - John Doe</h1>
+      <h1 class="main-title">Gestión de sesiones - {patient.name}</h1>
       <div class="rectangle">
         <div className="filters">
           <div className="date-field">

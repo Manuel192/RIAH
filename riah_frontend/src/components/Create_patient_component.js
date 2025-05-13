@@ -10,49 +10,45 @@ function Create_Patient() {
     const navigate=useNavigate();
 
     // Tratamos con una aplicación de gestión médica: se toman únicamente en cuenta los géneros biológicos sin afán de ofender a los colectivos no binarios.
-    const genders=["Masculino","Femenino","Sin especificar"];
+    const genders=["Masculino","Femenino","NA"];
   
     const [hospitals, setHospitals] = useState([]);
     const [name, setName] = useState("");
-    const [age, setAge] = useState();
+    const [birthdate, setBirthdate] = useState();
     const [gender, setGender] = useState("");
     const [hospital, setHospital] = useState("");
 
-    /*useEffect(() => {
-        const fetchGames = async () => {
-            try{
-                const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/hospital/loadHospitals');
-                if(!response.ok){
-                    setGames([]);
-                    return;
-                }
-                // convert data to json
-                const responseData = await response.json();
-                setGames(responseData);
-            }catch(error){
+    useEffect(()=>{
+        const fetchHospitals = async () => {
+          try{
+            const responseHospitals = await fetch(process.env.REACT_APP_GENERAL_URL+"/hospital/loadHospitals");
+            if(!responseHospitals.ok){
+              return;
             }
+            // convert data to json
+            const hospitalsParsed = await responseHospitals.json();
+            setHospitals(hospitalsParsed);
+          }catch(error){}
         }
-      
-        // call the function
-        fetchGames()
-      }, []);*/
+        fetchHospitals();
+      }, [])
 
-    const handleCreateSession = async () => {
-        if(!name || !age || !hospital || !gender){
+    const handleCreatePatient = async () => {
+        if(!name || !birthdate || !hospital || !gender){
+            console.log(name+birthdate+hospital+gender);
             alert("Asegúrese de rellenar todos los campos e importar sus datos antes de crear una sesión.")
             return;
         }
-
         try {
             await fetch(process.env.REACT_APP_GENERAL_URL+'/patient/insertPatient', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name: name, age: age, gender:gender, hospital: hospital }),
+                body: JSON.stringify({ name: name, birthdate: birthdate, gender:gender, hospital: hospital }),
             });
             setName("");
-            setAge();
+            setBirthdate();
             setGender("");
             setHospital("");
             alert("Se ha creado el paciente correctamente");
@@ -63,6 +59,10 @@ function Create_Patient() {
   
     const handleHospitalChanged = (event) =>{
         setHospital(event.target.value);
+    }
+
+    const handleGenderChanged = (event) =>{
+        setGender(event.target.value);
     }
 
     const handlePatientList = () => {
@@ -83,51 +83,52 @@ function Create_Patient() {
         </div>
         <div class="app">
             <h3 class="main-title">Crear pacientes</h3>
-            <div class="rectangle create-session">
-                <h3 class="title">Nombre</h3>
-                <h3 class="title">Edad</h3>
-                <div>
-                    <input 
-                        value={name} 
-                        placeholder="Nombre"
-                        onChange={(e) => setName(e.target.value)} 
-                        className="date-input" 
-                    />
+            <div class="rectangle">
+                <div class="create-session">
+                    <div class="create-session-section">
+                        <h3 class="title">Nombre</h3>
+                        <input 
+                            value={name} 
+                            placeholder="Nombre"
+                            onChange={(e) => setName(e.target.value)} 
+                            className="create-session-field" 
+                        />
+                    </div>
+                    <div class="create-session-section">
+                        <h3 class="title">Fecha de nacimiento</h3>
+                        <input 
+                            type="date"
+                            placeholder="Fecha de nacimiento"
+                            value={birthdate} 
+                            onChange={(e) => setBirthdate(e.target.value)} 
+                            className="date-input" 
+                        />
+                    </div>
+                    <div class="create-session-section">
+                        <h3 class="title">Género</h3>
+                        <select id="dropdown" value={gender} className="create-session-field" onChange={handleGenderChanged}>
+                        <option value="" disabled="true">Selecciona un género</option>
+                            {genders?.map((option, index) => (
+                                <option key={index} value={option}>
+                                {option}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div class="create-session-section">
+                        <h3 class="title">Hospital</h3>
+                        <select id="dropdown" value={hospital} className="create-session-field" onChange={handleHospitalChanged}>
+                        <option value="" disabled="true">Selecciona un hospital</option>
+                            {hospitals?.map((option, index) => (
+                                <option key={index} value={option.id}>
+                                {option.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <button className="button-create-session" onClick={handleCreatePatient}>CREAR PACIENTE</button>
                 </div>
-                <div>
-                    <input 
-                        type="number"
-                        placeholder="Edad"
-                        value={age} 
-                        onChange={(e) => setAge(e.target.value)} 
-                        className="hour-input" 
-                    />
-                </div>
-                <h3 class="title">Género</h3>
-                <h3 class="title">hospital</h3>
-                <div>
-                    <select id="dropdown" value={hospital} className="date-input create-session-field" onChange={handleHospitalChanged}>
-                    <option value="" disabled="true">Selecciona un género</option>
-                        {genders?.map((option, index) => (
-                            <option key={index} value={option}>
-                            {option}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <select id="dropdown" value={hospital} className="date-input create-session-field" onChange={handleHospitalChanged}>
-                    <option value="" disabled="true">Selecciona un hospital</option>
-                        {hospitals?.map((option, index) => (
-                            <option key={index} value={option.id}>
-                            {option.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                
              </div>
-            <button className="button-create-session" onClick={handleCreateSession}>CREAR PACIENTE</button>
         </div>
         </>
     );

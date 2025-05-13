@@ -7,7 +7,7 @@ function User_panel() {
   // Estado para la búsqueda y la selección
   const navigate = useNavigate();
   const handlePatientList = () => {
-    navigate('/user/patients-list', { state: {user:"cb7c8009-b7c0-11ef-bbaf-e4e749429566"}})
+    navigate('/user/patients-list')
   }
 
   const handleAdminPanel = () => {

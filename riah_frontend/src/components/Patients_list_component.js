@@ -9,35 +9,53 @@ function Patients_list() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
-  const pacientes = ["John Doe", "Paciente 1", "Paciente 2", "Paciente 3", "Paciente 4"];
-  
+  const [patients, setPatients] = useState([]);
 
-  // Filtrar pacientes por término de búsqueda
-  const filteredPatients = pacientes.filter((patient) =>
-    patient.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(()=>{
+    const fetchPatients = async () => {
+      try{
+        const responsePatients = await fetch(process.env.REACT_APP_GENERAL_URL+"/patient/loadPatients");
+        if(!responsePatients.ok){
+          return;
+        }
+        // convert data to json
+        const patientsParsed = await responsePatients.json();
+        setPatients(patientsParsed);
+      }catch(error){}
+    }
+    fetchPatients();
+  }, [])
+  
+  // Filtrar patients por término de búsqueda
+  const filteredPatients = patients.filter((patient) =>
+    patient.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleSelectPatient = (patient) => {
-    setSelectedPatient((prev) => (prev === patient ? null : patient));
+    setSelectedPatient((prev) => (prev? (prev.name === patient.name ? null : patient):patient));
   };
 
   const handleRawData = () => {
-    navigate('/user/raw-data', { state: {user:"cb7c8009-b7c0-11ef-bbaf-e4e749429566"}})
+    navigate('/user/raw-data', { state: {patient:selectedPatient}})
   }
 
   const handleCreateSession = () => {
-    navigate('/user/create-session', { state: {user:"cb7c8009-b7c0-11ef-bbaf-e4e749429566"}})
+    navigate('/user/create-session', { state: {patient:selectedPatient}})
   }
 
   const handleEvolution = () => {
-    navigate('/user/evolution');
+    navigate('/user/evolution', { state: {patient:selectedPatient}});
   }
   const handlePatientList = () => {
     navigate('/user/patients-list')
   }
 
   const handleUserPanel = () => {
-  navigate('/user')
+    navigate('/user')
+  }
+
+  const handleAddPatient = () => {
+    navigate('/user/create-patient')
   }
 
   return (
@@ -64,31 +82,36 @@ function Patients_list() {
                 key={index}
                 onClick={() => handleSelectPatient(patient)}
                 className={`list-item ${selectedPatient === patient ?"selected" : ""}`}>
-                {patient}
+                {patient.name}
               </div>
             ))}
             </div>
+            <button className="button-new-patient" onClick={handleAddPatient}>
+                +
+            </button>
           </div>
         <div class={selectedPatient?"rectangle":"rectangle unselected"}>
-          <h3 class={selectedPatient?"patient-name title":"patient-name unselected title"}>{selectedPatient || "Selecciona un paciente"}</h3>
+          <h3 class={selectedPatient?"patient-name title":"patient-name unselected title"}>{selectedPatient?.name || "Selecciona un paciente"}</h3>
           {selectedPatient && (
             <>
             <div style={{textAlign: "center", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", justifyItems: "center",  marginBottom:"40px"}}>
               <h3 class="title">Sexo</h3>
               <h3 class="title">Fecha de nacimiento</h3>
-              <img style={{width:"100px"}} src={require("../media/RIAH_Man.png")}/>
-              <label>{"17/08/2003 (21 años)"}</label>
+              <img style={{width:"100px"}} src={require("../media/RIAH_"+selectedPatient.gender+".png")}/>
+              <label>{selectedPatient.birthdate.substring(8,10)+"/"+selectedPatient.birthdate.substring(5,7)+"/"+selectedPatient.birthdate.substring(0,4)+
+              " ("+Math.floor(((new Date()).getTime () - (new Date(selectedPatient.birthdate.substring(0,10))).getTime()) / (365 * 24 * 60 * 60 * 1000))+
+              " años)"}</label>
             </div>
             <hr></hr>
             <div style={{textAlign: "center", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", justifyItems: "center", marginTop:"40px"}}>
               <button class="button-patient-option" onClick={handleCreateSession}>
-              <img src={require("../media/RIAH_User_SessionCreation.png")}></img>
+              <img src={require("../media/RIAH_"+(selectedPatient.gender==="Masculino"?"M":"W")+"_SessionCreation.png")}></img>
               </button>
               <button class="button-patient-option" onClick={handleEvolution}>
-                <img src={require("../media/RIAH_User_Evolution.png")}></img>
+                <img src={require("../media/RIAH_"+(selectedPatient.gender==="Masculino"?"M":"W")+"_Evolution.png")}></img>
               </button>
               <button class="button-patient-option" onClick={handleRawData}>
-              <img src={require("../media/RIAH_User_SessionManagement.png")}></img>
+              <img src={require("../media/RIAH_"+(selectedPatient.gender==="Masculino"?"M":"W")+"_SessionManagement.png")}></img>
               </button>
             </div>
             </>

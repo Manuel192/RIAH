@@ -31,20 +31,6 @@ const PointsScene = () => {
 
   const[normalizedPoints, setNormalizedPoints]=useState([]);
 
-  /* https://codesandbox.io/p/sandbox/19uq2u?file=%2Fsrc%2FApp.js%3A9%2C58 */
-      const { gridSize, ...gridConfig } = useControls({
-        gridSize: [10.5, 10.5],
-        cellSize: { value: 0.6, min: 0, max: 10, step: 0.1 },
-        cellThickness: { value: 1, min: 0, max: 5, step: 0.1 },
-        cellColor: '#6f6f6f',
-        sectionSize: { value: 3.3, min: 0, max: 10, step: 0.1 },
-        sectionThickness: { value: 1.5, min: 0, max: 5, step: 0.1 },
-        sectionColor: '#42a4ce',
-        fadeDistance: { value: 25, min: 0, max: 100, step: 1 },
-        fadeStrength: { value: 1, min: 0, max: 1, step: 0.1 },
-        infiniteGrid: true
-      })
-
   useEffect(()=>{
     var currentMax=[null,null,null];
     var currentMin=[null,null,null];
@@ -142,12 +128,12 @@ const PointsScene = () => {
 
     const handleSetPointScale=(value)=>{
       if(value>0)
-        setPointScale(value/10);
+        setPointScale(value/100);
     }
     
     const handleSetFontScale=(value)=>{
       if(value>0)
-        setFontScale(value/10);
+        setFontScale(value/100);
     }
 
     return (
@@ -197,7 +183,7 @@ const PointsScene = () => {
               <input 
                 type="number"
                 placeholder="1"
-                value={pointScale*10} 
+                value={pointScale*100} 
                 onChange={(e) => handleSetPointScale(e.target.value)} 
                 className="date-input"
               />
@@ -207,7 +193,7 @@ const PointsScene = () => {
               <input 
                 type="number"
                 placeholder="1"
-                value={fontScale*10} 
+                value={fontScale*100} 
                 onChange={(e) => handleSetFontScale(e.target.value)} 
                 className="date-input"
               />

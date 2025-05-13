@@ -3,30 +3,24 @@ package com.riah.services;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.riah.dao.SessionDAO;
 import com.riah.model.Game;
+import com.riah.model.Patient;
 import com.riah.model.Session;
 import com.riah.model.SessionDTO;
-
-import jakarta.annotation.PostConstruct;
 
 @Service
 public class SessionService {
@@ -34,9 +28,8 @@ public class SessionService {
 	@Autowired
 	private SessionDAO sessionDAO;
 		
-	public List<SessionDTO> loadDateFilteredSessions(Date firstDate, Date lastDate) throws ParseException {
-		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
-		List<Session> sessions= sessionDAO.loadDateFilteredSessions(firstDate, lastDate);
+	public List<SessionDTO> loadDateFilteredSessions(Date firstDate, Date lastDate, String patientId) throws ParseException {
+		List<Session> sessions= sessionDAO.loadDateFilteredSessionsPatient(firstDate, lastDate, new Patient(UUID.fromString(patientId)));
 		if(sessions==null) return null;
 		
 		List<SessionDTO> parsedSessions= mapSessions(sessions);
@@ -56,8 +49,8 @@ public class SessionService {
         }).collect(Collectors.toList());
 	}
 
-	public List<SessionDTO> loadAll() {
-		List<Session> sessions= sessionDAO.findAll();
+	public List<SessionDTO> loadAll(String patientId) {
+		List<Session> sessions= sessionDAO.findByPatient(new Patient(UUID.fromString(patientId)));
 		if(sessions.isEmpty()) 
 			return null;
 		
@@ -65,9 +58,9 @@ public class SessionService {
 		return parsedSessions;
 	}
 
-	public List<SessionDTO> loadGameFilteredSessions(String gameId) {
+	public List<SessionDTO> loadGameFilteredSessions(String gameId, String patientId) {
 		Game game=new Game(UUID.fromString(gameId));
-		List<Session> sessions= sessionDAO.findByGame(game);
+		List<Session> sessions= sessionDAO.findByGamePatient(game, new Patient(UUID.fromString(patientId)));
 		if(sessions.isEmpty()) 
 			return null;
 		
@@ -80,11 +73,9 @@ public class SessionService {
 		UUID gameId=UUID.fromString(json.getString("game"));
 		UUID patientId=UUID.fromString(json.getString("patient"));
 		String videoId="";
-		boolean videoAvailable=true;
 		try {
 			videoId=json.getString("video_id");
 		}catch(JSONException jsone) {
-			videoAvailable=false;
 		}
 		String dataId=json.getString("data_id");
 		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

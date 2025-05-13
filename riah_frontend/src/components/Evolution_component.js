@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect } from "react";
 import { AreaChart, BarChart, Card} from "@tremor/react";
-import { useNavigate} from "react-router-dom";
+import { useNavigate, useLocation} from "react-router-dom";
 import LoadingScreen from "./loading_screen";
 import '../css/Evolution_component.css';
 import "../App.css";
@@ -19,6 +19,9 @@ const getRandomColors = (numColors, index) => {
 
 const Evolution = () => {
   const navigate=useNavigate();
+  const location=useLocation();
+  const {patient}=location.state;
+
   const [graphs, setGraphs]=useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState([]);
@@ -137,8 +140,10 @@ const Evolution = () => {
     var newGraphData = [];
     for(var i=0;i<obtainedGraphs.length;i++){
       const obtainedGraphData=await obtainDynamicCalculus(obtainedGraphs[i].operation,i,obtainedDataOptions);
-      if(obtainedGraphData.length>0) newGraphData=[...newGraphData, ...obtainedGraphData];
-      else newGraphData.push({"index":i,"session":"","value":0, "date":""});
+      if(obtainedGraphData!=null){
+        if(obtainedGraphData.length>0) newGraphData=[...newGraphData, ...obtainedGraphData];
+        else newGraphData.push({"index":i,"session":"","value":0, "date":""});
+      }
     }
     return newGraphData;
   }
@@ -190,7 +195,8 @@ const Evolution = () => {
 
     const obtainedGraphData=await obtainDynamicCalculus(event.target.value,index,dataOptions);
     var newGraphData=graphData.filter(graph => graph.index!=index);
-    newGraphData=[... newGraphData, ...obtainedGraphData];
+    if(obtainedGraphData!=null)
+      newGraphData=[... newGraphData, ...obtainedGraphData];
     setGraphData(newGraphData);
   }
 
@@ -278,11 +284,11 @@ return (
       <button className="nav-button">Home</button> &gt; 
       <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
       <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
-    Evolución - John Doe
+    Evolución - {patient.name}
   </div>
   <div div class="app">
   <div className="evolution-container">
-    <h1 class="main-title">Evolución - John Doe</h1>
+    <h1 class="main-title">Evolución - {patient.name}</h1>
     <div class="graphs">
       {graphs?.map((graph, index) => (
         <Card className="tremor-Card">

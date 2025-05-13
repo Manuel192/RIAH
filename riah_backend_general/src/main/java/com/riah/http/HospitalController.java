@@ -12,30 +12,30 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.riah.model.GameDTO;
-import com.riah.services.GameService;
+import com.riah.model.HospitalDTO;
+import com.riah.services.HospitalService;
 
 @RestController
-@RequestMapping("/game")
-public class GameController {
+@RequestMapping("/hospital")
+public class HospitalController {
 	
 	@Autowired
-	private GameService gameService;
+	private HospitalService hospitalService;
 	
 	@CrossOrigin(origins = "http://localhost:3000")
-	@GetMapping("/loadGames")
-    public ResponseEntity<List<GameDTO>> loadGames() throws ParseException{
-		List<GameDTO> games=gameService.loadGames();
-    	if(!games.isEmpty())
-			return ResponseEntity.ok(games);
+	@PostMapping("/insertHospital")
+	public ResponseEntity<String> insertSession(@RequestBody String hospital){
+		String id=hospitalService.insertHospital(hospital);
+		return ResponseEntity.ok(id);
+	}
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@GetMapping("/loadHospitals")
+    public ResponseEntity<List<HospitalDTO>> loadPatients() throws ParseException{
+		List<HospitalDTO> hospitals=hospitalService.loadHospitals();
+    	if(!hospitals.isEmpty())
+			return ResponseEntity.ok(hospitals);
     	else
     		return ResponseEntity.ofNullable(null);
     }
-	
-	@CrossOrigin(origins = "http://localhost:3000")
-	@PostMapping("/insertGame")
-	public ResponseEntity<GameDTO> insertGame(@RequestBody String name){
-		GameDTO game=gameService.insertGame(name);
-		return ResponseEntity.ok(game); 
-	}
 }

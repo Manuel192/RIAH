@@ -3,9 +3,9 @@ package com.riah.dao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.riah.model.Patient;
+import com.riah.model.User;
 
 @Repository
-public interface PatientDAO extends JpaRepository<Patient, Integer> {
+public interface UserDAO extends JpaRepository<User, Integer> {
 
 }

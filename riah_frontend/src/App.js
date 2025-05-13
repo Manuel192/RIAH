@@ -1,4 +1,6 @@
 import './App.css';
+import Register from './components/Register_component';
+import SignIn from './components/Sign_in_component';
 import User_panel from './components/User_panel_component';
 import Create_session from './components/Create_session_component';
 import Evolution from './components/Evolution_component';
@@ -34,13 +36,15 @@ function App() {
       </header>
       <Routes>
         <Route path="/user" element={<User_panel />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/user/sign-in" element={<Register />} />
         <Route path="/user/3d-model" element={<ModelScene />} />
         <Route path="/user/3d-points" element={<PointsScene />} />
         <Route path="/user/patients-list" element={<Patients_list />} />
         <Route path="/user/raw-data" element={<Raw_data />} />
         <Route path="/user/evolution" element={<Evolution />} />
         <Route path="/user/create-session" element={<Create_session />} />
-        <Route path="/user/create-patient" element={<Create_session />} />
         <Route path={process.env.REACT_APP_ADMIN_URL} element={<Admin />} />
         <Route path="*" element={<User_panel/>}/>
       </Routes>

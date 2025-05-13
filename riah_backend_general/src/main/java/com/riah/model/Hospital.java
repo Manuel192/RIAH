@@ -33,6 +33,10 @@ public class Hospital {
     	this.id=id;
     }
 
+	public Hospital(String name) {
+		this.name=name;
+	}
+
 	public void setId(UUID id) {
 		this.id = id;
 	}

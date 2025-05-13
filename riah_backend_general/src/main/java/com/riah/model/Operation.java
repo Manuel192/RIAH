@@ -1,6 +1,5 @@
 package com.riah.model;
 
-import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Column;

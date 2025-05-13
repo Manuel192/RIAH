@@ -97,7 +97,6 @@ function Admin() {
         setNewParameterActivated(newActivatedTemp);
         setNewsimpleOperationActivated(newActivatedTemp);
       }catch(error){
-        alert("La web no funciona por el momento. Inténtelo más tarde.")
       }
     }
   
