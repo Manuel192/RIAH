@@ -15,6 +15,7 @@ import com.riah.dao.PatientDAO;
 import com.riah.model.Hospital;
 import com.riah.model.Patient;
 import com.riah.model.PatientDTO;
+import com.riah.model.User;
 
 @Service
 public class PatientService {
@@ -24,7 +25,8 @@ public class PatientService {
 
 	public String insertPatient(String patient) {
 		JSONObject json = new JSONObject(patient);
-		UUID hospitalId=UUID.fromString(json.getString("hospital"));
+		UUID hospitalID=UUID.fromString(json.getString("hospital"));
+		UUID userID=UUID.fromString(json.getString("user"));
 		String name=json.getString("name");
 		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
 		String dateString=json.getString("birthdate");
@@ -35,13 +37,14 @@ public class PatientService {
 			e.printStackTrace();
 		}
 		String gender=json.getString("gender");
-		Patient patientToInsert=new Patient(name,birthdate,gender,new Hospital(hospitalId));
+		Patient patientToInsert=new Patient(name,birthdate,gender,new Hospital(hospitalID),new User(userID));
 		Patient savedPatient=patientDAO.save(patientToInsert);
 		return savedPatient.getId().toString();
 	}
 
-	public List<PatientDTO> loadPatients() {
-		List<Patient> patients= patientDAO.findAll();
+	public List<PatientDTO> loadPatients(String userID) {
+		User user=new User(UUID.fromString(userID));
+		List<Patient> patients= patientDAO.getByUser(user);
 		if(patients.size()==0) return null;
 		List<PatientDTO> parsedPatients= mapPatients(patients);
 		return parsedPatients;

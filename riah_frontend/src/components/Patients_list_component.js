@@ -1,20 +1,21 @@
-import React, { act, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../css/Patients_list_component.css';
 import '../App.css';
-import { Rectangle } from 'recharts';
 
-function Patients_list() {
+function Patients_list({redirect}) {
   // Estado para la búsqueda y la selección
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [patients, setPatients] = useState([]);
 
   useEffect(()=>{
-    const fetchPatients = async () => {
+    const init = async () => {
+      const userID=await redirect();
       try{
-        const responsePatients = await fetch(process.env.REACT_APP_GENERAL_URL+"/patient/loadPatients");
+        const responsePatients = await fetch(process.env.REACT_APP_GENERAL_URL+"/patient/loadPatients?user="+userID);
         if(!responsePatients.ok){
           return;
         }
@@ -23,7 +24,7 @@ function Patients_list() {
         setPatients(patientsParsed);
       }catch(error){}
     }
-    fetchPatients();
+    init();
   }, [])
   
   // Filtrar patients por término de búsqueda
@@ -46,12 +47,9 @@ function Patients_list() {
   const handleEvolution = () => {
     navigate('/user/evolution', { state: {patient:selectedPatient}});
   }
-  const handlePatientList = () => {
-    navigate('/user/patients-list')
-  }
 
-  const handleUserPanel = () => {
-    navigate('/user')
+  const handleHomePanel = () => {
+    navigate('/')
   }
 
   const handleAddPatient = () => {
@@ -61,13 +59,12 @@ function Patients_list() {
   return (
   <>
     <div className="sub-banner">
-        <button className="nav-button">Home</button> &gt; 
-        <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
+        <button className="nav-button" onClick={handleHomePanel}>Home</button> &gt; 
       Listado de pacientes
     </div>
     <div class="app">
     <h1 class="main-title">Listado de pacientes</h1>
-      <div class="patients-menu">
+      <div class={selectedPatient?"patients-menu-selected":"patients-menu"}>
         <div className="list-container">
           <div className="scrollable-list-patients">
             <input
@@ -85,14 +82,17 @@ function Patients_list() {
                 {patient.name}
               </div>
             ))}
+            {filteredPatients.length<1&&(
+               <h3 class={"introduction-text"}>¡Buenas! Ya puedes empezar a crear los perfiles de tus pacientes para realizar análisis de sus sesiones.</h3>
+            )}
             </div>
             <button className="button-new-patient" onClick={handleAddPatient}>
                 +
             </button>
           </div>
-        <div class={selectedPatient?"rectangle":"rectangle unselected"}>
-          <h3 class={selectedPatient?"patient-name title":"patient-name unselected title"}>{selectedPatient?.name || "Selecciona un paciente"}</h3>
-          {selectedPatient && (
+        {selectedPatient && (
+        <div class={"rectangle"}>
+          <h3 class={"patient-name title"}>{selectedPatient.name}</h3>
             <>
             <div style={{textAlign: "center", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", justifyItems: "center",  marginBottom:"40px"}}>
               <h3 class="title">Sexo</h3>
@@ -115,8 +115,8 @@ function Patients_list() {
               </button>
             </div>
             </>
-          )}
         </div>
+        )}
       </div>
     </div>
     </>

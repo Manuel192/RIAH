@@ -3,22 +3,22 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../css/User_panel_component.css';
 import '../App.css';
 
-function User_panel() {
+function HomePanel() {
   // Estado para la búsqueda y la selección
   const navigate = useNavigate();
-  const handlePatientList = () => {
-    navigate('/user/patients-list')
+
+  const handleRegister = () => {
+    navigate('/register')
   }
 
-  const handleAdminPanel = () => {
-    navigate(process.env.REACT_APP_ADMIN_URL)
+  const handleLogin = () => {
+    navigate('/sign-in')
   }
 
   return (
     <>
     <div className="sub-banner">
-      <button className="nav-button">Home</button> &gt; 
-      Mi panel
+      Home
     </div>
     <div class='app'>
         <h1 class="main-title">¡Bienvenido Usuario!</h1>
@@ -27,12 +27,12 @@ function User_panel() {
             <br></br>
             <img src={require("../media/RIAH_User_PatientsAspect.png")}></img>
             <br></br>
-            <button className="button-patients-list" onClick={handlePatientList}>Acceder a mi lista de pacientes</button>
-            <button className="button-patients-list" onClick={handleAdminPanel}>{"Acceder al panel de administración (TEMPORAL)"}</button>
+            <button className="button-patients-list" onClick={handleRegister}>Registrarse</button>
+            <button className="button-patients-list" onClick={handleLogin}>Loguearse</button>
         </div>
     </div>
     </>
     )
  }
 
-export default User_panel;
+export default HomePanel;

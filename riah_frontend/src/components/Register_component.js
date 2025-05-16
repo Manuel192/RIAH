@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
+import LoadingScreen from "./loading_screen";
 import '../css/Create_session_component.css';
 import "../App.css";
+import "../css/loading_screen.css"
+import "../css/Register_component.css"
 
-function Register() {
+function Register({redirect,setUser}) {
     const location=useLocation();
     const navigate=useNavigate();
 
@@ -19,70 +22,83 @@ function Register() {
     const [repeatPassword, setRepeatPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+    const [isLoading, setIsLoading]= useState(false);
 
-    const [errors, setErrors] = useState("");
+    const [errors, setErrors] = useState([]);
 
     useEffect(()=>{
-        const fetchHospitals = async () => {
-          try{
-            const responseHospitals = await fetch(process.env.REACT_APP_GENERAL_URL+"/hospital/loadHospitals");
-            if(!responseHospitals.ok){
-              return;
+        const init = async () => {
+            await redirect();
+            try{
+                const responseHospitals = await fetch(process.env.REACT_APP_GENERAL_URL+"/hospital/loadHospitals");
+                if(!responseHospitals.ok){
+                return;
+                }
+                // convert data to json
+                const hospitalsParsed = await responseHospitals.json();
+                setHospitals(hospitalsParsed);
+            }catch(error){
+            
             }
-            // convert data to json
-            const hospitalsParsed = await responseHospitals.json();
-            setHospitals(hospitalsParsed);
-          }catch(error){}
         }
-        fetchHospitals();
+        init();
     }, [])
 
     const registerUser = async () => {
-        var errorList="";
+        var errorList=[];
         var errorDetected=false;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+        if (name === '') {
+            errorList.push('El campo "Nombre" está vacío.');
+            errorDetected = true;
+        }
+        if (gender === '') {
+            errorList.push('El campo "Género" está vacío.');
+            errorDetected = true;
+        }
+        if (hospital === '') {
+            errorList.push('El campo "Hospital" está vacío.');
+            errorDetected = true;
+        }
+
         if (!emailRegex.test(email)) {
-            errorList+="El formato del correo electrónico no es válido.\n";
+            errorList.push("El formato del correo electrónico no es válido.");
             errorDetected = true;
         }
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         if (!passwordRegex.test(password)) {
-            errorList+="La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un carácter especial (@, $, !, %, *, ?, &).\n";
-            errorDetected = true;
-        }
-        if (name === '') {
-            errorList+='El campo "Nombre" está vacío';
-            errorDetected = true;
-        }
-        if (gender === '') {
-            errorList+='El campo "Género" está vacío.';
-            errorDetected = true;
-        }
-        if (hospital === '') {
-            errorList+='El campo "Hospital" está vacío';
+            errorList.push("La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un carácter especial (@, $, !, %, *, ?, &).");
             errorDetected = true;
         }
         if (repeatPassword === '') {
-            errorList+='El campo "Repetir contraseña" está vacío.';
+            errorList.push('El campo "Repetir contraseña" está vacío.');
             errorDetected = true;
         }
         if (password !== repeatPassword) {
-            errorList+="Las contraseñas no coinciden.";
+            errorList.push("Las contraseñas no coinciden.");
             errorDetected = true;
         }
 
+        setErrors(errorList);
+
         if(errorDetected!==true){
             try {
-            await fetch(process.env.REACT_APP_GENERAL_URL+'/user/doubleFactor', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name: name, gender:gender, hospital: hospital, email:email, password: password }),
-            });
+                setIsLoading(true);
+                const response=await fetch(process.env.REACT_APP_GENERAL_URL+'/user/doubleFactor', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: name, gender:gender, hospital: hospital, email:email, password: password }),
+                });
+                if(response.ok){
+                    const responseUserID=await response.text();
+                    setUser(responseUserID);
+                    navigate('/register-2fa');
+                }
         } catch (error) {
-            alert(error)
+            alert(error);
         }
         }
     }
@@ -95,10 +111,36 @@ function Register() {
         setGender(event.target.value);
     }
 
+    const handleHomePanel = () => {
+        navigate('/')
+    }
+
+    const handleCloseErrors = () => {
+        setErrors([]);
+    }
+
     return (
     <>
+    {errors.length>0&&(
+            <>
+            <div class="error-overlay">
+                <div class="rectangle error-panel">
+                    <h1 class="main-title">Revise los siguientes errores:</h1>
+                    {errors.map(error=>(
+                        <div class="error-panel-content">
+                            <label>* {error}</label>
+                        </div>
+                    ))}
+                    <div >
+                        <button className="button-error" onClick={handleCloseErrors}>Aceptar</button>
+                    </div>
+                </div>
+            </div>
+            </>
+        )}
+        <LoadingScreen isLoading={isLoading} text={"Verificando registro..."} isFixed={true} />
         <div className="sub-banner">
-            <button className="nav-button">Home</button> &gt; 
+            <button className="nav-button" onClick={handleHomePanel}>Home</button> &gt;
             Registrarse
         </div>
         <div class="app">
@@ -185,7 +227,7 @@ function Register() {
                             }
                         </button>
                     </div>
-                    <button className="button-create-session" onClick={registerUser}>Registrar</button>
+                    <button className="button-register" onClick={registerUser}>Registrarse</button>
                 </div>
              </div>
         </div>

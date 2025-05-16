@@ -34,6 +34,9 @@ public class Patient {
     @JoinColumn(name = "hospital_id", nullable = false)
     private Hospital hospital;
     
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
 	public Patient(UUID id) {
 		this.id=id;
@@ -43,11 +46,12 @@ public class Patient {
 		
 	}
 
-	public Patient(String name, Date birthdate, String gender, Hospital hospital) {
+	public Patient(String name, Date birthdate, String gender, Hospital hospital, User user) {
 		this.name=name;
 		this.birthdate=birthdate;
 		this.gender=gender;
 		this.hospital=hospital;
+		this.user=user;
 	}
 
 	public Hospital getHospital() {

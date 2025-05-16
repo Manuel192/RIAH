@@ -3,20 +3,15 @@ import React from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useNavigate, useLocation} from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { BooleanKeyframeTrack } from "three";
-import { useSpring, animated } from "@react-spring/three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { Suspense } from "react";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { STLLoader ,} from "three/examples/jsm/loaders/STLLoader.js";
-import { BufferGeometry } from 'three'
 import { Grid, Center, Text, GizmoHelper, GizmoViewport,OrbitControls,Line, AccumulativeShadows, RandomizedLight, Environment, useGLTF } from '@react-three/drei'
-import { useControls } from 'leva'
 
 const colorWheel=['#ff0000','#ff4000','#ff8000','#ffbf00','#ffff00','#bfff00','#80ff00','#40ff00','#00ff00','#00ff40','#00ff80','#00ffbf','#00ffff','#00bfff','#0080ff',
   '#0040ff','#0000ff','#4000ff','#8000ff','#bf00ff','#ff00ff','#ff00bf','#ff0080','#ff0040','#ff0000']
 
-const PointsScene = () => {
+const PointsScene = ({redirect}) => {
+  
   const navigate=useNavigate();
   const location=useLocation();
 
@@ -27,60 +22,68 @@ const PointsScene = () => {
   const desiredScale=30;
   const [pointScale, setPointScale]=useState(0.1);
   const [fontScale, setFontScale]=useState(0.1)
+  const [startFrame, setStartFrame]=useState(0);
+  const [endFrame, setEndFrame]=useState(activeSessionData.frames.length-1);
   const [pos, setPos]=useState(["HeadPosition_x","HeadPosition_y","HeadPosition_z"]);
 
   const[normalizedPoints, setNormalizedPoints]=useState([]);
 
   useEffect(()=>{
-    var currentMax=[null,null,null];
-    var currentMin=[null,null,null];
-    var newNormalizedPoints=[];
-    var distanceSum=[0,0,0];
+    const init = async () => {
+      const userID=await redirect();
+      var currentMax=[null,null,null];
+      var currentMin=[null,null,null];
+      var newNormalizedPoints=[];
+      var distanceSum=[0,0,0];
 
-    // Obtain minimums, maximums and normalized points
-    for(var i=0;i<activeSessionData.frames.length;i++){
-      var frame=activeSessionData.frames[i];
-      if(!currentMax[0] || Number(frame.dataValues[pos[0]])>Number(currentMax[0]))
-          currentMax[0]=frame.dataValues[pos[0]];
-      else if(!currentMin[0] || Number(frame.dataValues[pos[0]])<Number(currentMin[0]))
-        currentMin[0]=frame.dataValues[pos[0]];
-      if(!currentMax[1] || Number(frame.dataValues[pos[1]])>Number(currentMax[1]))
-        currentMax[1]=frame.dataValues[pos[1]];
-      else if(!currentMin[1] || Number(frame.dataValues[pos[1]])<Number(currentMin[1]))
-        currentMin[1]=frame.dataValues[pos[1]];
-      if(!currentMax[2] || Number(frame.dataValues[pos[2]])>Number(currentMax[2]))
-        currentMax[2]=frame.dataValues[pos[2]];
-      else if(!currentMin[2] || Number(frame.dataValues[pos[2]])<Number(currentMin[2]))
-        currentMin[2]=frame.dataValues[pos[2]];
-      distanceSum[0]+=Number(frame.dataValues[pos[0]]);
-      distanceSum[1]+=Number(frame.dataValues[pos[1]]);
-      distanceSum[2]+=Number(frame.dataValues[pos[2]]);
-    }
-    
-    var dataLength=activeSessionData.frames.length;
-    setMins(currentMin);
-    setMaxs(currentMax);
+      for(var i=startFrame;i<endFrame+1;i++){
+        var frame=activeSessionData.frames[i];
+        if(!currentMax[0] || Number(frame.dataValues[pos[0]])>Number(currentMax[0]))
+            currentMax[0]=frame.dataValues[pos[0]];
+        else if(!currentMin[0] || Number(frame.dataValues[pos[0]])<Number(currentMin[0]))
+          currentMin[0]=frame.dataValues[pos[0]];
+        if(!currentMax[1] || Number(frame.dataValues[pos[1]])>Number(currentMax[1]))
+          currentMax[1]=frame.dataValues[pos[1]];
+        else if(!currentMin[1] || Number(frame.dataValues[pos[1]])<Number(currentMin[1]))
+          currentMin[1]=frame.dataValues[pos[1]];
+        if(!currentMax[2] || Number(frame.dataValues[pos[2]])>Number(currentMax[2]))
+          currentMax[2]=frame.dataValues[pos[2]];
+        else if(!currentMin[2] || Number(frame.dataValues[pos[2]])<Number(currentMin[2]))
+          currentMin[2]=frame.dataValues[pos[2]];
+        distanceSum[0]+=Number(frame.dataValues[pos[0]]);
+        distanceSum[1]+=Number(frame.dataValues[pos[1]]);
+        distanceSum[2]+=Number(frame.dataValues[pos[2]]);
+      }
+      
+      var dataLength=endFrame-startFrame+1;
+      setMins(currentMin);
+      setMaxs(currentMax);
 
-    // Obtain minimum/maximum differences
-    var currentFactors=[null,null,null];
-    for(i=0;i<currentMax.length;i++){
-      currentFactors[i]=currentMax[i]-currentMin[i];
+      // Obtain minimum/maximum differences
+      var currentFactors=[null,null,null];
+      for(i=0;i<currentMax.length;i++){
+        currentFactors[i]=currentMax[i]-currentMin[i];
+      }
+      
+      for(i=startFrame;i<endFrame+1;i++){
+        var frame=activeSessionData.frames[i];
+        newNormalizedPoints=[...newNormalizedPoints,[(Number(frame.dataValues[pos[0]]) - Number(distanceSum[0]/dataLength)) * desiredScale / currentFactors[0], 
+        (Number(frame.dataValues[pos[1]]) - Number(distanceSum[1]/dataLength)) * desiredScale / currentFactors[1],
+        (Number(frame.dataValues[pos[2]]) - Number(distanceSum[2]/dataLength)) * desiredScale / currentFactors[2]]];
+      }
+      setNormalizedPoints(newNormalizedPoints);
     }
-    
-    for(i=0;i<activeSessionData.frames.length;i++){
-      var frame=activeSessionData.frames[i];
-      newNormalizedPoints=[...newNormalizedPoints,[(Number(frame.dataValues[pos[0]]) - Number(distanceSum[0]/dataLength)) * desiredScale / currentFactors[0], 
-      (Number(frame.dataValues[pos[1]]) - Number(distanceSum[1]/dataLength)) * desiredScale / currentFactors[1],
-      (Number(frame.dataValues[pos[2]]) - Number(distanceSum[2]/dataLength)) * desiredScale / currentFactors[2]]];
-    }
-    setNormalizedPoints(newNormalizedPoints);
-    console.log(newNormalizedPoints[0]);
-  },[])
+    init();
+  },[startFrame,endFrame])
 
   const VideoScene = () => {
 
     const pointModel=useLoader(OBJLoader,'/point.obj').children[0].geometry;
     const camera=useThree();
+
+    useEffect(()=>{
+      console.log(camera);
+    },[startFrame,endFrame]);
     
     useFrame(()=>{
       camera.camera.fov=40;
@@ -97,25 +100,24 @@ const PointsScene = () => {
 
         <group position={[0, -0.5, 0]}>
             {normalizedPoints.map((point,index)=>(
-            <>
-            <mesh position={point} geometry={pointModel} rotation={[0, 0, 0]} scale={[pointScale,pointScale,pointScale]}>
-              <meshStandardMaterial color={colorWheel[index % colorWheel.length]} />
-            </mesh>
-            <Text position={[point[0],point[1]+pointScale*2,point[2]]} color="white" fontSize={fontScale}>
-              P{(index+1)+" ["+activeSessionData.frames[index].dataValues[pos[0]]+", "+activeSessionData.frames[index].dataValues[pos[1]]+", "+activeSessionData.frames[index].dataValues[pos[2]]+"]"}
-            </Text>
-             
-            {index+1<normalizedPoints.length && (
-              <Line
-                points={[point,normalizedPoints[index+1]]}
-                color="white"
-                lineWidth={1}
-                segments
-              />
-            )}
+              <>
+              <mesh position={point} geometry={pointModel} rotation={[0, 0, 0]} scale={[pointScale,pointScale,pointScale]}>
+                <meshStandardMaterial color={colorWheel[index % colorWheel.length]} />
+              </mesh>
+              <Text position={[point[0],point[1]+pointScale*2,point[2]]} color="white" fontSize={fontScale}>
+                P{(index+1)+" ["+activeSessionData.frames[index].dataValues[pos[0]]+", "+activeSessionData.frames[index].dataValues[pos[1]]+", "+activeSessionData.frames[index].dataValues[pos[2]]+"]"}
+              </Text>
+              
+              {index+1<normalizedPoints.length && (
+                <Line
+                  points={[point,normalizedPoints[index+1]]}
+                  color="white"
+                  lineWidth={1}
+                  segments
+                />
+              )}
             </>
-
-            ))}
+        ))}
         </group>
 
         <GizmoHelper>
@@ -127,22 +129,32 @@ const PointsScene = () => {
     const VideoVariables = () => {
 
     const handleSetPointScale=(value)=>{
-      if(value>0)
+      if(value>0 && value<200)
         setPointScale(value/100);
     }
     
     const handleSetFontScale=(value)=>{
-      if(value>0)
+      if(value>0 && value<200)
         setFontScale(value/100);
+    }
+
+    const handleSetStartFrame=(value)=>{
+        if(value<=endFrame && value<=activeSessionData.frames.length-1 && value>=0)
+          setStartFrame(Number(value));
+    }
+
+    const handleSetEndFrame=(value)=>{
+        if(value>=startFrame && value<=activeSessionData.frames.length-1 && value>=0)
+          setEndFrame(Number(value));
     }
 
     return (
       <div className="contenedor-secciones">
         <div className="seccion-izquierda" style={{marginLeft: "1%", minHeight: "800px", width:"14%", right:"80%"}}>
           <div>
-          <label class="title">↓ Posición ↓</label>
+          <label class="title">↓ Parámetros ↓</label>
           <>
-          <h3>Posición X</h3>
+          <h3>Parámetro X</h3>
           <div style={{marginLeft: "10px"}}>
             <select id="dropdown" value={pos[0]} className='input-parameter' onChange={(e)=>setPos([e.target.value,pos[1],pos[2]])}>
               <option value="">Selecciona</option>
@@ -153,7 +165,7 @@ const PointsScene = () => {
               ))}
             </select>
           </div>
-          <h3>Posición Y</h3>
+          <h3>Parámetro Y</h3>
           <div style={{marginLeft: "10px"}}>
             <select id="dropdown" value={pos[1]} className='input-parameter' onChange={(e)=>setPos([pos[0],e.target.value,pos[2]])}>
               <option value="">Selecciona</option>
@@ -164,7 +176,7 @@ const PointsScene = () => {
               ))}
             </select>
           </div>
-          <h3>Posición Z</h3>
+          <h3>Parámetro Z</h3>
           <div style={{marginLeft: "10px"}}>
             <select id="dropdown" value={pos[2]} className='input-parameter' onChange={(e)=>setPos([pos[0],pos[1],e.target.value])}>
               <option value="">Selecciona</option>
@@ -176,10 +188,10 @@ const PointsScene = () => {
             </select>
           </div>
           </>
-          <label class="title">↓ Opciones ↓</label>
+          <label class="title">↓ Visual ↓</label>
           <>
             <h3>Tamaño de puntos</h3>
-            <div>
+            <div style={{marginLeft: "10px"}}>
               <input 
                 type="number"
                 placeholder="1"
@@ -189,12 +201,33 @@ const PointsScene = () => {
               />
             </div>
             <h3>Tamaño de fuente</h3>
-            <div>
+            <div style={{marginLeft: "10px"}}>
               <input 
                 type="number"
                 placeholder="1"
                 value={fontScale*100} 
                 onChange={(e) => handleSetFontScale(e.target.value)} 
+                className="date-input"
+              />
+            </div>
+          </>
+          <label class="title">↓ Rangos ↓</label>
+          <>
+            <h3>Frame inicial</h3>
+            <div style={{marginLeft: "10px"}}>
+              <input 
+                type="number"
+                value={startFrame} 
+                onChange={(e) => handleSetStartFrame(e.target.value)} 
+                className="date-input"
+              />
+            </div>
+            <h3>Frame final</h3>
+            <div style={{marginLeft: "10px"}}>
+              <input 
+                type="number"
+                value={endFrame} 
+                onChange={(e) => handleSetEndFrame(e.target.value)} 
                 className="date-input"
               />
             </div>

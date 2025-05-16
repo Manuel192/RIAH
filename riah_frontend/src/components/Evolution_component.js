@@ -17,7 +17,7 @@ const getRandomColors = (numColors, index) => {
   );
 };
 
-const Evolution = () => {
+const Evolution = ({redirect}) => {
   const navigate=useNavigate();
   const location=useLocation();
   const {patient}=location.state;
@@ -45,7 +45,8 @@ const Evolution = () => {
   };
 
   useEffect(() => {
-    const fetchGames = async () => {
+    const init = async () => {
+        await redirect();
         try{
             const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
             if(!response.ok){
@@ -86,8 +87,7 @@ const Evolution = () => {
         setIsLoading(false);
     }
   
-    // call the function
-    fetchGames()
+    init()
   }, []);
 
   const addGraph = () => {
@@ -251,8 +251,8 @@ const Evolution = () => {
     navigate('/user/patients-list')
   }
 
-  const handleUserPanel = () => {
-  navigate('/user')
+  const handleHomePanel = () => {
+  navigate('/')
   }
 
   const exportDataToCsv = (index) => {
@@ -281,8 +281,7 @@ return (
   <>
   {/* Pantalla de carga */}
   <div className="sub-banner">
-      <button className="nav-button">Home</button> &gt; 
-      <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
+      <button className="nav-button" onClick={handleHomePanel}>Home</button> &gt; 
       <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
     Evolución - {patient.name}
   </div>
@@ -294,7 +293,7 @@ return (
         <Card className="tremor-Card">
         <div className="inferior-container">
         <div className="field">
-        <LoadingScreen isLoading={isLoading} />
+        <LoadingScreen isLoading={isLoading} text={"Cargando gráfica..."} isFixed={false} />
           <h3 class="title">{dataOptions[index]?.filter(option=>option.id===selectedData[index])[0]?.name || "Sin nombre"}</h3>
           <label style={{fontWeight: "bold"}}>JUEGO</label>
           <select id="dropdown" value={selectedGame[index]} className="dropdown" onChange={handleGameChanged(index)}>

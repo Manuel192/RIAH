@@ -33,13 +33,25 @@
   }
 
   .patients-menu {
-    display:grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: inline-grid;
+    width: 100%;
+    align-items: center;
+  }
+
+  .patients-menu-selected {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /*Or simply : 1fr 1fr 1fr*/
   }
 
   .patient-name {
     text-align: center;
     font-size: 40px;
+  }
+
+  .introduction-text {
+    text-align: center;
+    font-size: 30px;
+    color:rgb(153, 153, 153);
   }
 
   .patient-name.unselected {

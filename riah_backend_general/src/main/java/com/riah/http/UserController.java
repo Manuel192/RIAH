@@ -1,20 +1,20 @@
 package com.riah.http;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.riah.services.UserService;
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.AddressException;
 
 @RestController
 @RequestMapping("/user")
@@ -24,16 +24,34 @@ public class UserController {
 	private UserService userService;
 	
 	@CrossOrigin(origins = "http://localhost:3000")
-	@PostMapping("/insertPatient")
-	public ResponseEntity<String> insertSession(@RequestBody String user){
-		String id=userService.insertUser(user);
-		return ResponseEntity.ok(id);
+	@PostMapping("/insertUser")
+	public ResponseEntity<String> insertUser(@RequestParam String code, @RequestBody String user){
+		if(userService.insertUser(user,code)==true) {
+			return ResponseEntity.ok("");
+		}else {
+			return ResponseEntity
+		            .status(HttpStatus.FORBIDDEN)
+		            .body("Código inválido");
+		}
 	}
 	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@PostMapping("/doubleFactor")
-	public ResponseEntity<String> doubleFactor(@RequestBody String user) throws AddressException, IOException, MessagingException, GeneralSecurityException{
-		String code=userService.doubleFactor(user);
-		return ResponseEntity.ok(code);
+	public ResponseEntity<String> doubleFactor(@RequestBody String user) throws JSONException, Exception{
+		String userId=userService.doubleFactor(user);
+		return ResponseEntity.ok(userId);
+	}
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@PostMapping("/login")
+	public ResponseEntity<String> login(@RequestBody String user) throws Exception{
+		String id=userService.login(user);
+		if(!id.isBlank()) {
+			return ResponseEntity.ok(id);
+		} else {
+			return ResponseEntity
+		    .status(HttpStatus.FORBIDDEN)
+		    .body("Email o contraseña incorrectos.");
+		}
 	}
 }

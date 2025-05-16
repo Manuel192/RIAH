@@ -15,8 +15,7 @@ import jakarta.persistence.Table;
 @Table(name = "Users")
 public class User {
 
-    @Id 
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
@@ -49,6 +48,20 @@ public class User {
 		this.name=name;
 		this.gender=gender;
 		this.hospital=hospital;
+		this.email=email;
+		this.password=password;
+	}
+	
+	public User(UUID id, String name, String gender, Hospital hospital, String email, String password) {
+		this.id=id;
+		this.name=name;
+		this.gender=gender;
+		this.hospital=hospital;
+		this.email=email;
+		this.password=password;
+	}
+
+	public User(String email, String password) {
 		this.email=email;
 		this.password=password;
 	}

@@ -5,7 +5,6 @@ import VideoPlayer from './video_player';
 import Tabs from './Tabs_component';
 import '../css/Raw_data_component.css';
 import '../App.css';
-import { colors } from '@mui/material';
 
 function Modal({ onClose, onConfirm }) {
   return (
@@ -32,7 +31,7 @@ const getRandomColors = (numColors, index) => {
   );
 };
 
-function Raw_data() {
+function Raw_data({redirect}) {
   const tremorColors = [
     "blue", "sky", "cyan", "teal", "green", "lime",
     "yellow", "amber", "orange", "red", "rose", "pink",
@@ -99,7 +98,8 @@ function Raw_data() {
   };
 
   useEffect(() => {
-    const fetchGames = async () => {
+    const init = async () => {
+        await redirect();
         try{
             const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
             if(!response.ok){
@@ -115,8 +115,7 @@ function Raw_data() {
         }
     }
   
-    // call the function
-    fetchGames()
+    init()
   }, []);
 
   const handleSetStartDate = (value) => {
@@ -184,7 +183,6 @@ function Raw_data() {
           return;
         }
         setDataItems(sessionData.dataTypes);
-        setSelectedDataItems([]);
         setactiveSession(item);
         setactiveSessionData(sessionData);
         setVideoSource(process.env.REACT_APP_SESSIONS_URL+"/video/loadVideo?id="+item.video_id);
@@ -281,12 +279,16 @@ function Raw_data() {
     navigate('/user/patients-list')
   }
 
-  const handleUserPanel = () => {
-    navigate('/user')
+  const handleHomePanel = () => {
+    navigate('/')
   }
 
-  const loadThreeDView = () => {
+  const loadThreeDPoints = () => {
     navigate('/user/3d-points', {state:{dataItems: dataItems, activeSessionData: activeSessionData}});
+  }
+
+  const loadThreeDModel = () => {
+    navigate('/user/3d-model', {state:{dataItems: dataItems, activeSessionData: activeSessionData}});
   }
 
   const handleCommonGraphChanged = (event,index) => {
@@ -318,8 +320,7 @@ function Raw_data() {
   return (
   <>
     <div className="sub-banner">
-        <button className="nav-button">Home</button> &gt; 
-        <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
+        <button className="nav-button" onClick={handleHomePanel}>Home</button> &gt; 
         <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
       Gestión de sesiones - {patient.name}
     </div>
@@ -346,7 +347,7 @@ function Raw_data() {
             />
           </div>
           <div className="date-field">
-            <span>Minijuego</span>
+            <span>Juego serio</span>
             <select id="dropdown" className="raw-data-input" value={game} onChange={handleGameChanged}>
               <option value="">Ninguno</option>
               {games?.map((option, index) => (
@@ -359,11 +360,10 @@ function Raw_data() {
           <button className="button-search" onClick={loadSessions}>Buscar</button>
         </div>
       </div>
-          {sessions.length>0 &&
           <div className="list-sections">
             <div className="list-container" style={{width: "100%"}}>
               <div className="scrollable-list">
-                {sessions?.map((session, index) => (
+                {sessions.length<1? (<h1 class="main-title">No hay gráficas disponibles</h1>): sessions.map((session, index) => (
                   <div
                     key={index}
                     className={`list-item ${selectedSessions.includes(session.id) ? "selected" : ""}`}
@@ -391,112 +391,132 @@ function Raw_data() {
             </div>
             }
           </div>
-          }
-          <div class="tremor-Card" style={{width: "100%"}}>
-          {activeSession &&(
-            <h3 class="main-title">{activeSession.game+ ", "+activeSession.date.substring(0,10)+" "+activeSession.date.substring(11,19)}</h3>
-          )}
+            {!activeSession?
+              (<div class="rectangle" style={{width: "100%"}}>
+                <h1 class="main-title">Selecciona una sesión</h1>
+              </div>):(
 
-          {videoSource && (
-            <div style={{justifyItems: "center"}}>
-              <video id="sessionVideo" width="900" height="500" controls>
-                <source src={videoSource} type="video/mp4"/>
-              </video>
-            </div>
-          )}
-          <div>
-            {selectedDataItems?.map((dataItem, index) => (
-              <Card className="tremor-Card">
-                <h3 class="title">{dataItem}</h3>
-                <AreaChart
-                  data={activeSessionData.frames.map(frame=>(frame.dataValues))}
-                  index="Frame"
-                  categories={[dataItem]}
-                  onValueChange={(v) => console.log(v)}
-                  maxValue={Number(selectedDataItemsValues[dataItem].max)}
-                  minValue={Number(selectedDataItemsValues[dataItem].min)}
-                  xLabel="Frame"
-                  yLabel="Value"
-                  colors={getRandomColors(1,index)}
-                  showLegend={false}
-                  showXAxis={true}
-                />
-            </Card>
-          ))}       
-        </div>
-
-        {isModalOpen && <Modal onClose={handleCloseModal} onConfirm={handleConfirm} />}
-        
-        <Tabs tabs={tabs} onTabChange={handleTabChange} />
-          {selectedDataItems.length>0 && (
-          <div className="tremor-card-full-width">
-            <h3 class="title">Comparación</h3>
-            <div class="add-parameters-section">
-              {commonGraphDataItems.map((c,index)=>(
-                <select id="dropdown" value={c} className='input-parameter' onChange={(e)=>handleCommonGraphChanged(e,index)}>
-                  <option value="">{"Parámetro "+(index+1)}</option>
-                  {selectedDataItems.filter(d=>!commonGraphDataItems.includes(d) || d==c).map((dataItem, index) => (
-                    <option key={index} value={dataItem}>
-                      {dataItem}
-                    </option>
-                  ))}
-                </select>
-              ))}
-              <button class="button-search" onClick={()=>addCommonGraphDataItem()}>
-                + Añadir parámetro
-              </button>
-            </div>
-            <Card>
-              <AreaChart
-                data={activeSessionData.frames.map(frame=>(frame.dataValues))}
-                index="Frame"
-                categories={commonGraphDataItems}
-                onValueChange={(v) => console.log(v)}
-                xLabel="Frame"
-                yLabel="Value"
-                maxValue={Number(commonGraphMax)}
-                minValue={Number(commonGraphMin)}
-                colors={tremorColors}
-                showLegend={false}
-                showXAxis={true}
-              />
-            </Card>
-          </div>
-          )}
-      
-        {selectedDataItems.length>0 &&
-          <div className="table-container">
-            <table>
-              <thead className='table-header'>
-                <th>Id</th>
-                {selectedDataItems?.map((data)=>
-                    <th>{data}</th>
+              <div class="rectangle" style={{width: "100%"}}>
+                <h1 class="main-title">Sesión {activeSession.id}</h1>
+                <h3 class="title">Información general</h3>
+                <label class="session-info">Juego: {activeSession.game}</label>
+                <br></br>
+                <label class="session-info">Fecha: {activeSession.date.substring(0,10)}</label>
+                <br></br>
+                <label class="session-info">Hora: {activeSession.date.substring(11,19)}</label>
+                <br></br>
+                <label class="session-info">Autor: {patient.name}</label>
+                <br></br>
+                <br></br>
+                <h3 class="title">Opciones</h3>
+                {activeSession &&(
+                  <div className="button-bar">
+                    <div>
+                      <button className="button-export" onClick={exportDataToCsv} disabled={selectedDataItems.length<1}>Exportar datos seleccionados</button>
+                    </div>
+                    <div>
+                      <button className="button-export" onClick={loadThreeDPoints}>Vista 3D Puntos</button>
+                    </div>
+                    <div>
+                      <button className="button-export" onClick={loadThreeDModel}>Vista 3D Simulación</button>
+                    </div>
+                  </div>
                 )}
-              </thead>
-              <tbody className='table-body'>
-                {activeSessionData?.frames.map((row, rowIndex) => (
-                  <tr key={rowIndex}>
-                    <td>{rowIndex}</td>
-                    {Object.keys(row?.dataValues).sort().map((data, colIndex) => (
-                      selectedDataItems.includes(data) &&
-                      <td key={colIndex}>{row.dataValues[data] || ""}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          }
+                <h3 class="title">Vídeo resumen</h3>
+                {videoSource && (
+                  <div style={{justifyItems: "center"}}>
+                    <video id="sessionVideo" width="900" height="500" controls>
+                      <source src={videoSource} type="video/mp4"/>
+                    </video>
+                  </div>
+                )}
+                <div>
+                <h3 class="title">Gráficas de datos</h3>
+                {selectedDataItems?.map((dataItem, index) => (
+                  <Card className="tremor-Card">
+                    <h3 class="title">{dataItem}</h3>
+                    <AreaChart
+                      data={activeSessionData.frames.map(frame=>(frame.dataValues))}
+                      index="Frame"
+                      categories={[dataItem]}
+                      onValueChange={(v) => console.log(v)}
+                      maxValue={Number(selectedDataItemsValues[dataItem].max)}
+                      minValue={Number(selectedDataItemsValues[dataItem].min)}
+                      xLabel="Frame"
+                      yLabel="Value"
+                      colors={getRandomColors(1,index)}
+                      showLegend={false}
+                      showXAxis={true}
+                    />
+                </Card>
+              ))}
+              </div>
 
-          {activeSession &&(
-          <div className="button-bar">
-            <button className="button-export" onClick={loadThreeDView}>3D VIEW</button>
-            {/*<button className="button-clean" onClick={handleOpenModal}>LIMPIAR SESIÓN</button>*/}
-            <button className="button-export" onClick={exportDataToCsv}>EXPORTAR</button>
-          </div>
-          )}
-        </div>
-        <div style={{height: "200px"}}></div>
+              {isModalOpen && <Modal onClose={handleCloseModal} onConfirm={handleConfirm} />}
+              
+              <Tabs tabs={tabs} onTabChange={handleTabChange} />
+              {selectedDataItems.length>0 && (
+              <div className="tremor-card-full-width">
+                <h3 class="title">Comparativa de gráficas</h3>
+                <div class="add-parameters-section">
+                  {commonGraphDataItems.map((c,index)=>(
+                    <select id="dropdown" value={c} className='input-parameter' onChange={(e)=>handleCommonGraphChanged(e,index)}>
+                      <option value="">{"Parámetro "+(index+1)}</option>
+                      {selectedDataItems.filter(d=>!commonGraphDataItems.includes(d) || d==c).map((dataItem, index) => (
+                        <option key={index} value={dataItem}>
+                          {dataItem}
+                        </option>
+                      ))}
+                    </select>
+                  ))}
+                  <button class="button-search" onClick={()=>addCommonGraphDataItem()}>
+                    + Añadir parámetro
+                  </button>
+                </div>
+                <Card>
+                  <AreaChart
+                    data={activeSessionData.frames.map(frame=>(frame.dataValues))}
+                    index="Frame"
+                    categories={commonGraphDataItems}
+                    onValueChange={(v) => console.log(v)}
+                    xLabel="Frame"
+                    yLabel="Value"
+                    maxValue={Number(commonGraphMax)}
+                    minValue={Number(commonGraphMin)}
+                    colors={tremorColors}
+                    showLegend={false}
+                    showXAxis={true}
+                  />
+                </Card>
+              </div>
+              )}
+          <h3 class="title">Tabla de datos</h3>
+              {selectedDataItems.length>0 &&
+              <div className="table-container">
+                <table>
+                  <thead className='table-header'>
+                    <th>Id</th>
+                    {selectedDataItems?.map((data)=>
+                        <th>{data}</th>
+                    )}
+                  </thead>
+                  <tbody className='table-body'>
+                    {activeSessionData?.frames.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        <td>{rowIndex}</td>
+                        {Object.keys(row?.dataValues).sort().map((data, colIndex) => (
+                          selectedDataItems.includes(data) &&
+                          <td key={colIndex}>{row.dataValues[data] || ""}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+            </div> 
+            }
+            </div>
+            )}
+          <div style={{height: "200px"}}></div>
       </div>
     </>
   );

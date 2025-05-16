@@ -4,7 +4,7 @@ import VideoPlayer from "./video_player";
 import '../css/Create_session_component.css';
 import "../App.css";
 
-function Create_session() {
+function Create_session({redirect}) {
     const navigate=useNavigate();
     const location=useLocation();
     const {patient}=location.state;
@@ -24,7 +24,8 @@ function Create_session() {
     const [selectedSecond, setselectedSecond] = useState();
 
     useEffect(() => {
-        const fetchGames = async () => {
+        const init = async () => {
+            await redirect();
             try{
                 const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
                 if(!response.ok){
@@ -37,9 +38,7 @@ function Create_session() {
             }catch(error){
             }
         }
-      
-        // call the function
-        fetchGames()
+        init();
       }, []);
 
     const handleImportJson = (event) => {
@@ -226,15 +225,14 @@ function Create_session() {
         navigate('/user/patients-list')
     }
 
-    const handleUserPanel = () => {
-    navigate('/user')
+    const handleHomePanel = () => {
+    navigate('/')
     }
 
     return (
     <>
         <div className="sub-banner">
-            <button className="nav-button">Home</button> &gt; 
-            <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
+            <button className="nav-button" onClick={handleHomePanel}>Home</button> &gt; 
             <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
             Nueva sesión - John Doe
         </div>

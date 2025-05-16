@@ -3,9 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import VideoPlayer from "./video_player";
 import '../css/Create_session_component.css';
 import "../App.css";
-import { addAfterEffect } from "@react-three/fiber";
 
-function Create_Patient() {
+function Create_Patient({redirect}) {
     const location=useLocation();
     const navigate=useNavigate();
 
@@ -18,8 +17,13 @@ function Create_Patient() {
     const [gender, setGender] = useState("");
     const [hospital, setHospital] = useState("");
 
+    const [userID,setUserID]=useState("");
+
     useEffect(()=>{
-        const fetchHospitals = async () => {
+        const init = async () => {
+          const newUserID=await redirect();
+          console.log(newUserID);
+          setUserID(newUserID);
           try{
             const responseHospitals = await fetch(process.env.REACT_APP_GENERAL_URL+"/hospital/loadHospitals");
             if(!responseHospitals.ok){
@@ -30,13 +34,13 @@ function Create_Patient() {
             setHospitals(hospitalsParsed);
           }catch(error){}
         }
-        fetchHospitals();
+        init();
       }, [])
 
     const handleCreatePatient = async () => {
         if(!name || !birthdate || !hospital || !gender){
-            console.log(name+birthdate+hospital+gender);
             alert("Asegúrese de rellenar todos los campos e importar sus datos antes de crear una sesión.")
+            console.log(userID)
             return;
         }
         try {
@@ -45,7 +49,7 @@ function Create_Patient() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name: name, birthdate: birthdate, gender:gender, hospital: hospital }),
+                body: JSON.stringify({ name: name, birthdate: birthdate, gender:gender, hospital: hospital, user:userID }),
             });
             setName("");
             setBirthdate();
@@ -69,15 +73,14 @@ function Create_Patient() {
         navigate('/user/patients-list')
     }
 
-    const handleUserPanel = () => {
-    navigate('/user')
+    const handleHomePanel = () => {
+    navigate('/')
     }
 
     return (
     <>
         <div className="sub-banner">
-            <button className="nav-button">Home</button> &gt; 
-            <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
+            <button className="nav-button" onClick={handleHomePanel}>Home</button> &gt; 
             <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
             Nueva sesión - John Doe
         </div>

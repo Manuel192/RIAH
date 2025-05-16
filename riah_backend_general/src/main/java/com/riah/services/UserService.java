@@ -1,15 +1,22 @@
 package com.riah.services;
 
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.GeneralSecurityException;
+import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,14 +34,13 @@ import com.google.auth.oauth2.UserCredentials;
 import com.riah.dao.UserDAO;
 import com.riah.model.Hospital;
 import com.riah.model.User;
+import com.riah.security.EncryptionService;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 
 import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
-import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
@@ -44,6 +50,9 @@ public class UserService {
 	@Autowired
 	private UserDAO userDAO;
 	
+	private Map<String,String> codes=new HashMap<String,String>();
+	private Map<String, User> temporalUsers=new HashMap<String,User>();
+	
 	@Value("${spring.mail.username}")
     private String from;
 	
@@ -51,36 +60,35 @@ public class UserService {
     private static final String TOKENS_DIRECTORY = "src/main/resources/tokens";
     private static final String SCOPE = "https://mail.google.com/";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-
-	public String insertUser(String patient) {
-		JSONObject json = new JSONObject(patient);
-		UUID hospitalId=UUID.fromString(json.getString("hospital"));
-		String name=json.getString("name");
-		String gender=json.getString("gender");
-		String email=json.getString("email");
-		String password=json.getString("password");
-		User userToInsert=new User(name,gender,new Hospital(hospitalId),email,password);
-		User savedUser=userDAO.save(userToInsert);
-		return savedUser.getId().toString();
+    
+    public boolean insertUser(String userID, String code) {
+    	JSONObject json = new JSONObject(userID);
+		if(codes.get(json.get("user")).contentEquals(code)) {
+			userDAO.save(temporalUsers.get(json.get("user")));
+			return true;
+		}else {
+			return false;
+		}
 	}
 	
-	public String doubleFactor(String userData) throws IOException, AddressException, MessagingException, GeneralSecurityException {
+	public String doubleFactor(String userData) throws JSONException, Exception {
 		JSONObject json = new JSONObject(userData);
 		UUID hospitalId=UUID.fromString(json.getString("hospital"));
-		String name=json.getString("name");
+		String name=EncryptionService.encrypt(json.getString("name"));
 		String gender=json.getString("gender");
-		String email=json.getString("email");
-		String password=json.getString("password");
-		User user=new User(name,gender,new Hospital(hospitalId),email,password);
+		String email=EncryptionService.encrypt(json.getString("email"));
+		String password=EncryptionService.encrypt(json.getString("password"));
+		UUID userID=UUID.randomUUID();
+		User user=new User(userID,name,gender,new Hospital(hospitalId),email,password);
 		
 		Random rand = new Random();
 		int max=999999;
 		int min=100000;
 		String code=(rand.nextInt((max - min) + 1) + min)+"";
 		
-		String header="Rehab-Inmersive Analysis Hub - Proceso de registro";
-		String content="¡Buenas!\n\n Le llega este correo para verificar que posee el correo electrónico especificado en la página web RIAH. Si usted no realizó tal acción, ignore este correo.\n\n Su código de verificación:\n"+code;
-	
+		String header="Rehab-Inmersive Analysis Hub - Código de registro";
+		String content="¡Buenas!\n\n Le llega este correo para verificar que posee el correo electrónico especificado en la página web RIAH. Si usted no realizó tal acción, ignore este correo.\n\n Su código de verificación:\n\n"+code;
+
 		NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(
@@ -91,7 +99,7 @@ public class UserService {
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 httpTransport, JSON_FACTORY, clientSecrets, Collections.singleton(SCOPE))
-                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY)))
+                .setDataStoreFactory(new FileDataStoreFactory(new File(TOKENS_DIRECTORY)))
                 .setAccessType("offline")
                 .build();
 
@@ -120,7 +128,7 @@ public class UserService {
 
         MimeMessage msg = new MimeMessage(session);
         msg.setFrom(new InternetAddress(from));
-        msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
+        msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(EncryptionService.decrypt(user.getEmail())));
         msg.setSubject(header);
         msg.setText(content);
 
@@ -129,7 +137,21 @@ public class UserService {
             transport.sendMessage(msg, msg.getAllRecipients());
             transport.close();
         }
-        System.out.println(credential.getAccessToken());
-		return code;
+        codes.put(userID.toString(),code);
+        temporalUsers.put(userID.toString(), user);
+		return userID.toString();
+	}
+
+	public String login(String userText) throws Exception {
+		JSONObject json = new JSONObject(userText);
+		String email = EncryptionService.encrypt(json.getString("email"));
+		String password = json.getString("password");
+		List<User> foundUser = userDAO.getByEmail(email);
+		
+		if(foundUser.size()>0) {	
+			if(password.contentEquals(EncryptionService.decrypt(foundUser.get(0).getPassword())))
+				return foundUser.get(0).getId().toString();
+		}
+		return "";
 	}
 }

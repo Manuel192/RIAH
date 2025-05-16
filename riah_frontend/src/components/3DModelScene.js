@@ -14,7 +14,7 @@ import {BufferGeometry} from 'three'
 import { Grid, Center, GizmoHelper, GizmoViewport, AccumulativeShadows, RandomizedLight, Environment, useGLTF } from '@react-three/drei'
 import { useControls } from 'leva'
 
-const ModelScene = () => {
+const ModelScene = ({redirect}) => {
   const navigate=useNavigate();
   const location=useLocation();
 
@@ -42,20 +42,24 @@ const ModelScene = () => {
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    if (isPlaying) {
-      intervalRef.current = setInterval(() => {
-        setFrame((prevIndex) => {
-          const nextIndex = (prevIndex + 1) % activeSessionData.frames.length;
-          setProgress((nextIndex / (activeSessionData.frames.length - 1)) * 100);
-          return nextIndex;
-        });
-      }, 1000/fps);
-    } else {
-      clearInterval(intervalRef.current);
+    const init = async () => {
+      const userID=await redirect();
+      if (isPlaying) {
+        intervalRef.current = setInterval(() => {
+          setFrame((prevIndex) => {
+            const nextIndex = (prevIndex + 1) % activeSessionData.frames.length;
+            setProgress((nextIndex / (activeSessionData.frames.length - 1)) * 100);
+            return nextIndex;
+          });
+        }, 1000/fps);
+      } else {
+        clearInterval(intervalRef.current);
+      }
+      return () => {
+        clearInterval(intervalRef.current);
+      }
     }
-    return () => {
-      clearInterval(intervalRef.current);
-    }
+    init();
   }, [isPlaying, activeSessionData.frames.length, 1000/fps]);
 
   const handlePlayPause = () => {
