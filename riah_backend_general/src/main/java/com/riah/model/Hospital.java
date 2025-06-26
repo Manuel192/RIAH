@@ -24,6 +24,18 @@ public class Hospital {
     public UUID getId() {
 		return id;
 	}
+    
+    public Hospital() {
+    	
+    }
+    
+    public Hospital(UUID id) {
+    	this.id=id;
+    }
+
+	public Hospital(String name) {
+		this.name=name;
+	}
 
 	public void setId(UUID id) {
 		this.id = id;

@@ -1,0 +1,66 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: riah_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  mongo:
+    image: mongo:6
+    container_name: mongo-db
+    environment:
+      MONGO_INITDB_DATABASE: RIAH
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  riah_backend_general:
+    build:
+      context: ./riah_backend_general
+      dockerfile: Dockerfile
+    container_name: riah-backend-general
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/riah_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+
+  riah_backend_data:
+    build:
+      context: ./riah_backend_data
+      dockerfile: Dockerfile
+    container_name: riah-backend-data
+    ports:
+      - "9000:9000"
+    depends_on:
+      - mongo
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/RIAH
+
+  frontend:
+    build:
+      context: ./RIAH_Frontend
+      dockerfile: Dockerfile
+    container_name: riah-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - riah_backend_general
+      - riah_backend_data
+
+volumes:
+  mysql_data:
+  mongo_data:

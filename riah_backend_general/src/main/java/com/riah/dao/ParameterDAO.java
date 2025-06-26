@@ -7,10 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.riah.model.Operation;
 import com.riah.model.Game;
 import com.riah.model.Parameter;
-import com.riah.model.Session;
 
 @Repository
 public interface ParameterDAO extends JpaRepository<Parameter, Integer> {

@@ -4,10 +4,10 @@ import VideoPlayer from "./video_player";
 import '../css/Create_session_component.css';
 import "../App.css";
 
-function Create_session() {
-    const location=useLocation();
+function Create_session({redirect}) {
     const navigate=useNavigate();
-    const {user}=location.state;
+    const location=useLocation();
+    const {patient}=location.state;
     
     const [importedFileName, setImportedFileName] = useState("");
     const [importedRawData, setImportedRawData] = useState("");
@@ -24,7 +24,8 @@ function Create_session() {
     const [selectedSecond, setselectedSecond] = useState();
 
     useEffect(() => {
-        const fetchGames = async () => {
+        const init = async () => {
+            await redirect();
             try{
                 const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
                 if(!response.ok){
@@ -37,9 +38,7 @@ function Create_session() {
             }catch(error){
             }
         }
-      
-        // call the function
-        fetchGames()
+        init();
       }, []);
 
     const handleImportJson = (event) => {
@@ -92,7 +91,7 @@ function Create_session() {
       };
 
     const handleCreateSession = async () => {
-        if(!user || !selectedDate || !selectedGame || !importedData || !selectedHour || !selectedMinute || !selectedSecond){
+        if(!selectedDate || !selectedGame || !importedData || !selectedHour || !selectedMinute || !selectedSecond){
             alert("Asegúrese de rellenar todos los campos e importar sus datos antes de crear una sesión.")
             return;
         }
@@ -136,7 +135,7 @@ function Create_session() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ game: selectedGame, date: selectedDate+" "+selectedHour+":"+selectedMinute+":"+selectedSecond, patient:user, video_id:videoObtained, data_id: dataId }),
+                body: JSON.stringify({ game: selectedGame, date: selectedDate+" "+selectedHour+":"+selectedMinute+":"+selectedSecond, patient:patient.id, video_id:videoObtained, data_id: dataId }),
             });
             setSelectedGame("");
             setSelectedDate("");
@@ -226,89 +225,92 @@ function Create_session() {
         navigate('/user/patients-list')
     }
 
-    const handleUserPanel = () => {
-    navigate('/user')
+    const handleHomePanel = () => {
+    navigate('/')
     }
 
     return (
     <>
         <div className="sub-banner">
-            <button className="nav-button">Home</button> &gt; 
-            <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
+            <button className="nav-button" onClick={handleHomePanel}>Home</button> &gt; 
             <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
             Nueva sesión - John Doe
         </div>
         <div class="app">
             <h3 class="main-title">Crear sesiones - John Doe</h3>
-            <div class="rectangle create-session">
-                <h3 class="title">{"Vídeo demostrativo (Límite: 20MB)"}</h3>
-                <h3 class="title">Datos de sesión</h3>
-                <div>
-                    <input className="button-import filename" type="file" accept="video/*" onChange={handlePreview} />
-                    {videoId && <VideoPlayer videoId={videoId} preview={true} />}
-                </div>
-                <div>
-                    <label className="button-import" htmlFor="import-json-csv">
-                        {importedFileName? <p className="filename">{importedFileName}</p>:"+"}
-                    </label>
-                    {importedRawData && (
-                        <p className="imported-raw-data">
-                            {importedRawData}
-                        </p>
-                    )}
-                </div>
-            </div>
-            <div class="rectangle create-session">
-                <h3 class="title">Juego</h3>
-                <h3 class="title">Fecha y hora</h3>
-                <select id="dropdown" value={selectedGame} className="date-input create-session-field" onChange={handleGameChanged}>
-                <option value="" disabled="true">Selecciona un juego</option>
-                    {games?.map((option, index) => (
-                        <option key={index} value={option.id}>
-                        {option.name}
-                        </option>
-                    ))}
-                </select>
-                <input
-                type="file"
-                id="import-json-csv"
-                accept=".json,.csv"
-                onChange={handleImportJson}
-                style={{ display: "none" }}
-                />
-                <div>
-                <input 
-                    type="date" 
-                    value={selectedDate} 
-                    onChange={(e) => handleSetSelectedDate(e.target.value)} 
-                    className="date-input" 
-                />
-                <input 
-                    type="number"
-                    placeholder="HH"
-                    value={selectedHour} 
-                    onChange={(e) => handleSetSelectedHour(e.target.value)} 
-                    className="hour-input" 
-                />
-                :
-                <input 
-                    type="number"
-                    placeholder="MM"
-                    value={selectedMinute} 
-                    onChange={(e) => handleSetselectedMinute(e.target.value)} 
-                    className="hour-input" 
-                />
-                :
-                <input 
-                    type="number"
-                    placeholder="SS"
-                    value={selectedSecond} 
-                    onChange={(e) => handleSetselectedSecond(e.target.value)} 
-                    className="hour-input" 
-                />
+            <div class="rectangle" style={{width: "50%", margin:"auto"}}>
+                <div class="create-session">
+                    <div class="create-session-section">
+                        <h3 class="title">Vídeo demostrativo {"(Límite: 20MB)"}</h3>
+                        <input className="button-import filename" type="file" accept="video/*" onChange={handlePreview} />
+                        {videoId && <VideoPlayer videoId={videoId} preview={true} />}
+                    </div>
+                    <div class="create-session-section">
+                        <h3 class="title">Datos de sesión</h3>
+                        <label className="button-import" htmlFor="import-json-csv">
+                            {importedFileName? <p className="filename">{importedFileName}</p>:"+"}
+                        </label>
+                        {importedRawData && (
+                            <p className="imported-raw-data">
+                                {importedRawData}
+                            </p>
+                        )}
+                    </div>
+                    <div class="create-session-section">
+                        <h3 class="title">Juego</h3>
+                            <select id="dropdown" value={selectedGame} className="date-input create-session-field" onChange={handleGameChanged}>
+                            <option value="" disabled="true">Selecciona un juego</option>
+                                {games?.map((option, index) => (
+                                    <option key={index} value={option.id}>
+                                    {option.name}
+                                    </option>
+                                ))}
+                            </select>
+                    </div>
+                    <div class="create-session-section">
+                    <h3 class="title">Fecha y hora</h3>
+                        <input
+                        type="file"
+                        id="import-json-csv"
+                        accept=".json,.csv"
+                        onChange={handleImportJson}
+                        style={{ display: "none" }}
+                        />
+                        <div>
+                        <input 
+                            type="date" 
+                            value={selectedDate} 
+                            onChange={(e) => handleSetSelectedDate(e.target.value)} 
+                            className="date-input" 
+                        />
+                        <input 
+                            type="number"
+                            placeholder="HH"
+                            value={selectedHour} 
+                            onChange={(e) => handleSetSelectedHour(e.target.value)} 
+                            className="hour-input" 
+                        />
+                        :
+                        <input 
+                            type="number"
+                            placeholder="MM"
+                            value={selectedMinute} 
+                            onChange={(e) => handleSetselectedMinute(e.target.value)} 
+                            className="hour-input" 
+                        />
+                        :
+                        <input 
+                            type="number"
+                            placeholder="SS"
+                            value={selectedSecond} 
+                            onChange={(e) => handleSetselectedSecond(e.target.value)} 
+                            className="hour-input" 
+                        />
+                        </div>
+                    </div>
+                    <button className="button-create-session" onClick={handleCreateSession}>CREAR SESIÓN</button>
                 </div>
              </div>
-            <button className="button-create-session" onClick={handleCreateSession}>CREAR SESIÓN</button>
         </div>
         </>
     );

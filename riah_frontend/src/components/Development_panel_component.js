@@ -44,7 +44,6 @@ function Admin() {
   const pacientes = ["John Doe"];
 
   useEffect(() => {
-    // Encuentra el contenedor de la lista por su id y desplázalo al final
     const listContainer = document.getElementById("scrollable-list");
     if (listContainer) {
       listContainer.scrollTop = listContainer.scrollHeight;

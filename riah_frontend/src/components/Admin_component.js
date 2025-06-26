@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../css/Admin_component.css';
 import '../App.css';
 
-function Admin() {    
+function Admin({redirect}) {    
   // Estado para la búsqueda y la selección
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
@@ -45,18 +45,13 @@ function Admin() {
       },
   );
 
-  const pacientes = ["John Doe"];
-
   useEffect(() => {
-    // Encuentra el contenedor de la lista por su id y desplázalo al final
-    const listContainer = document.getElementById("scrollable-list");
-    if (listContainer) {
-      listContainer.scrollTop = listContainer.scrollHeight;
-    }
-  }, [newParameterActivated, newSimpleOperationActivated]);
-
-  useEffect(() => {
-    const fetchGames = async () => {
+    const init = async () => {
+      var user=await redirect();
+      const listContainer = document.getElementById("scrollable-list");
+      if (listContainer) {
+        listContainer.scrollTop = listContainer.scrollHeight;
+      }
       try{
         const responseGames = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames");
         if(!responseGames.ok){
@@ -97,12 +92,9 @@ function Admin() {
         setNewParameterActivated(newActivatedTemp);
         setNewsimpleOperationActivated(newActivatedTemp);
       }catch(error){
-        alert("La web no funciona por el momento. Inténtelo más tarde.")
       }
     }
-  
-    // call the function
-    fetchGames()
+    init();
   }, []);
 
   const activateNewGamePanel = () =>{
@@ -405,7 +397,7 @@ function Admin() {
       ¡Bienvenid@ a una versión temprana de RIAH. Esta plataforma le permitirá administrar la información de sus minijuegos, parámetros y operaciones a consultar a partir dela información obtenida de la plataforma Rehab-Immersive.
     </div>
     <br></br>
-    <h3 style={{marginTop: "40px", fontSize: "30px", fontWeight: "bold"}}>JUEGOS</h3>
+    <h3 style={{marginTop: "40px", fontSize: "30px", fontWeight: "bold"}}>JUEGOS SERIOS</h3>
     {games.map((game) => (
     <div class="rectangle">
     <h3 class="title">{game.name}</h3>

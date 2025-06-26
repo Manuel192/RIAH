@@ -1,0 +1,26 @@
+.code-align {
+    text-align: center;
+    vertical-align:middle;
+    margin:auto;
+}
+
+.secondfactor-description-text{
+    width: 50%;
+    font-size: 1.5em;
+}
+
+.code{
+    margin-top:30px;
+}
+
+.digit-input {
+    width: 100px;
+    padding: 8px 12px;
+    margin-left: 10px;
+    margin-right: 10px;
+    font-size: 4em;
+    border-radius: 5px;
+    border: 1px solid #cccccc;
+    background-color: #ffffff;
+    text-align: center;
+  }

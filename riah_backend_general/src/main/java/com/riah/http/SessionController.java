@@ -4,13 +4,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -21,10 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.riah.dao.SessionDAO;
-import com.riah.model.Session;
-import com.riah.services.SessionService;
 import com.riah.model.SessionDTO;
+import com.riah.services.SessionService;
 
 @RestController
 @RequestMapping("/session")
@@ -35,10 +28,10 @@ public class SessionController {
 	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@GetMapping("/loadFilteredSessions")
-    public ResponseEntity<List<SessionDTO>> loadFilteredSessions(@RequestParam String firstDate, @RequestParam String lastDate, @RequestParam String gameId) throws ParseException{
+    public ResponseEntity<List<SessionDTO>> loadFilteredSessions(@RequestParam String firstDate, @RequestParam String lastDate, @RequestParam String gameId, @RequestParam String patientId) throws ParseException{
 		List<SessionDTO> sessions=new ArrayList<SessionDTO>();
 		if(firstDate.equals("X") && lastDate.equals("X") && gameId.toString().equals("X")) {
-			sessions=sessionService.loadAll();
+			sessions=sessionService.loadAll(patientId);
 			if(!sessions.isEmpty())
 				return ResponseEntity.ok(sessions);
 	    	else
@@ -54,10 +47,10 @@ public class SessionController {
 			Date date2=sdf.parse(lastDate);
 			if(date1.after(date2))
 				return ResponseEntity.ok(null);
-			sessionsDate=sessionService.loadDateFilteredSessions(date1, date2);
+			sessionsDate=sessionService.loadDateFilteredSessions(date1, date2, patientId);
 		}
 		if(!gameId.equals("X")) {
-			sessionsGame=sessionService.loadGameFilteredSessions(gameId);
+			sessionsGame=sessionService.loadGameFilteredSessions(gameId, patientId);
 		}
 		if(firstDate.equals("X") || firstDate.equals("X")) {
 			if(!sessionsGame.isEmpty())

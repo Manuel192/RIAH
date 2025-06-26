@@ -1,5 +1,5 @@
 .loading-overlay {
-    background-color: rgba(0, 0, 0, 0.3); /* Fondo negro translúcido */
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo negro translúcido */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -12,7 +12,6 @@
   }
 
   .loading-graph{
-    position:absolute;
     left: 0;
     top:0;
     border-radius: 4px;
@@ -20,6 +19,7 @@
   
   /* Spinner de carga */
   .spinner {
+    margin-bottom:5%;
     width: 50px;
     height: 50px;
     border: 5px solid rgba(255, 255, 255, 0.3);

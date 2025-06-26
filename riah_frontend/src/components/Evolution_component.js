@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect } from "react";
 import { AreaChart, BarChart, Card} from "@tremor/react";
-import { useNavigate} from "react-router-dom";
+import { useNavigate, useLocation} from "react-router-dom";
 import LoadingScreen from "./loading_screen";
 import '../css/Evolution_component.css';
 import "../App.css";
@@ -17,8 +17,11 @@ const getRandomColors = (numColors, index) => {
   );
 };
 
-const Evolution = () => {
+const Evolution = ({redirect}) => {
   const navigate=useNavigate();
+  const location=useLocation();
+  const {patient}=location.state;
+
   const [graphs, setGraphs]=useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState([]);
@@ -42,7 +45,8 @@ const Evolution = () => {
   };
 
   useEffect(() => {
-    const fetchGames = async () => {
+    const init = async () => {
+        await redirect();
         try{
             const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
             if(!response.ok){
@@ -83,8 +87,7 @@ const Evolution = () => {
         setIsLoading(false);
     }
   
-    // call the function
-    fetchGames()
+    init()
   }, []);
 
   const addGraph = () => {
@@ -137,8 +140,10 @@ const Evolution = () => {
     var newGraphData = [];
     for(var i=0;i<obtainedGraphs.length;i++){
       const obtainedGraphData=await obtainDynamicCalculus(obtainedGraphs[i].operation,i,obtainedDataOptions);
-      if(obtainedGraphData.length>0) newGraphData=[...newGraphData, ...obtainedGraphData];
-      else newGraphData.push({"index":i,"session":"","value":0, "date":""});
+      if(obtainedGraphData!=null){
+        if(obtainedGraphData.length>0) newGraphData=[...newGraphData, ...obtainedGraphData];
+        else newGraphData.push({"index":i,"session":"","value":0, "date":""});
+      }
     }
     return newGraphData;
   }
@@ -190,7 +195,8 @@ const Evolution = () => {
 
     const obtainedGraphData=await obtainDynamicCalculus(event.target.value,index,dataOptions);
     var newGraphData=graphData.filter(graph => graph.index!=index);
-    newGraphData=[... newGraphData, ...obtainedGraphData];
+    if(obtainedGraphData!=null)
+      newGraphData=[... newGraphData, ...obtainedGraphData];
     setGraphData(newGraphData);
   }
 
@@ -245,8 +251,8 @@ const Evolution = () => {
     navigate('/user/patients-list')
   }
 
-  const handleUserPanel = () => {
-  navigate('/user')
+  const handleHomePanel = () => {
+  navigate('/')
   }
 
   const exportDataToCsv = (index) => {
@@ -275,20 +281,19 @@ return (
   <>
   {/* Pantalla de carga */}
   <div className="sub-banner">
-      <button className="nav-button">Home</button> &gt; 
-      <button className="nav-button" onClick={handleUserPanel}>Mi panel</button> &gt; 
+      <button className="nav-button" onClick={handleHomePanel}>Home</button> &gt; 
       <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
-    Evolución - John Doe
+    Evolución - {patient.name}
   </div>
   <div div class="app">
   <div className="evolution-container">
-    <h1 class="main-title">Evolución - John Doe</h1>
+    <h1 class="main-title">Evolución - {patient.name}</h1>
     <div class="graphs">
       {graphs?.map((graph, index) => (
         <Card className="tremor-Card">
         <div className="inferior-container">
         <div className="field">
-        <LoadingScreen isLoading={isLoading} />
+        <LoadingScreen isLoading={isLoading} text={"Cargando gráfica..."} isFixed={false} />
           <h3 class="title">{dataOptions[index]?.filter(option=>option.id===selectedData[index])[0]?.name || "Sin nombre"}</h3>
           <label style={{fontWeight: "bold"}}>JUEGO</label>
           <select id="dropdown" value={selectedGame[index]} className="dropdown" onChange={handleGameChanged(index)}>
