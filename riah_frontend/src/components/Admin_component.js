@@ -7,8 +7,10 @@ function Admin({redirect}) {
   // Estado para la búsqueda y la selección
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
-  const [parameters, setParameters] = useState([]); 
+  const [parameters, setParameters] = useState([]);
+  const [versions, setVersions] = useState([]);  
   const [operation, setOperation] = useState([]);
+  const [newVersionActivated, setNewVersionActivated] = useState([]);
   const [newParameterActivated, setNewParameterActivated] = useState([]);
   const [newOperationActivated, setNewOperationActivated] = useState([]);
   const [newGameActivated, setNewGameActivated] = useState(0);
@@ -47,7 +49,7 @@ function Admin({redirect}) {
 
   useEffect(() => {
     const init = async () => {
-      var user=await redirect();
+      await redirect();
       const listContainer = document.getElementById("scrollable-list");
       if (listContainer) {
         listContainer.scrollTop = listContainer.scrollHeight;
@@ -101,6 +103,12 @@ function Admin({redirect}) {
     setNewGameActivated(1);
   }
 
+  const activateNewVersionPanel = gameId => () => {
+    var newVersionActivatedTemp=newVersionActivated.filter(p=>(p.id!==gameId));
+    newVersionActivatedTemp.push({"id":gameId,"value":1});
+    setNewVersionActivated(newVersionActivatedTemp);
+  }
+
   const activateNewParameterPanel = gameId => () => {
     var newParameterActivatedTemp=newParameterActivated.filter(p=>(p.id!==gameId));
     newParameterActivatedTemp.push({"id":gameId,"value":1});
@@ -111,6 +119,12 @@ function Admin({redirect}) {
     var operationActivatedTemp=newOperationActivated.filter(p=>(p.id!==gameId));
     operationActivatedTemp.push({"id":gameId,"value":1});
     setNewOperationActivated(operationActivatedTemp);
+  }
+
+  const deactivateNewVersionPanel = gameId => () => {
+    var newVersionActivatedTemp=newVersionActivated.filter(p=>(p.id!==gameId));
+    newVersionActivatedTemp.push({"id":gameId,"value":0});
+    setNewVersionActivated(newVersionActivatedTemp);
   }
 
   const deactivateNewParameterPanel = gameId => () => {
@@ -204,6 +218,14 @@ function Admin({redirect}) {
     newParameters.push(newGameParameters);
     setAddValue("");
     setParameters(newParameters);
+  }
+
+  const addVersion = (gameId, name) => async () => {
+    const versionsTemp=versions;
+    const newVersions=versionsTemp.filter(p=>p.id!==gameId);
+    newVersions.push({id:gameId,data:[{name:name}]});
+    setAddValue("");
+    setVersions(newVersions);
   }
 
   const addGame = name => async () => {
@@ -394,7 +416,8 @@ function Admin({redirect}) {
   <div class="app">
     <h1 class="main-title">¡Bienvenido Administrador!</h1>
     <div class="preview-text">
-      ¡Bienvenid@ a una versión temprana de RIAH. Esta plataforma le permitirá administrar la información de sus minijuegos, parámetros y operaciones a consultar a partir dela información obtenida de la plataforma Rehab-Immersive.
+      ¡Bienvenid@ a una versión temprana de RIAH. Esta plataforma le permitirá administrar la información de sus minijuegos,
+       parámetros y operaciones a consultar a partir dela información obtenida de la plataforma Rehab-Immersive.
     </div>
     <br></br>
     <h3 style={{marginTop: "40px", fontSize: "30px", fontWeight: "bold"}}>JUEGOS SERIOS</h3>
@@ -402,10 +425,33 @@ function Admin({redirect}) {
     <div class="rectangle">
     <h3 class="title">{game.name}</h3>
     <div className="admin-container">
-      {/* Margen izquierdo */}
-      <div className="admin-left">
-          <div className="list-container">
-            <label>PARÁMETROS</label>
+        <div className="list-container admin-panel">
+            <label>Versiones</label>
+            <div className="long-scrollable-list" id="scrollable-list">
+            {versions.filter(p=>p.id===game.id)[0]?.data.sort(function(a, b) {
+                  if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                }).map((p, index) => (
+              <div
+                key={index}
+                className={`list-item`}>
+                {p.name}
+              </div>
+            ))}
+            {newVersionActivated.filter(p=>p.id===game.id)[0]?.value===1?
+              <div className={`list-item`}>
+                <input placeholder="Escribe el identificador" value={addValue} onChange={(e) => setAddValue(e.target.value)}></input>
+                <button className="button-admin-cancel" onClick={deactivateNewVersionPanel(game.id)}> Cancelar </button>
+                <button className="button-admin-new" onClick={addVersion(game.id, addValue)}> Añadir </button>
+              </div>
+            :""}
+          </div>
+          <button className="button-admin-add" onClick={activateNewVersionPanel(game.id)}>+</button>
+        </div>
+      
+        <div className="list-container admin-panel">
+            <label>Parámetros</label>
             <div className="long-scrollable-list" id="scrollable-list">
             {parameters.filter(p=>p.id===game.id)[0]?.data.sort(function(a, b) {
                   if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
@@ -427,13 +473,10 @@ function Admin({redirect}) {
             :""}
           </div>
           <button className="button-admin-add" onClick={activateNewParameterPanel(game.id)}>+</button>
-          </div>
         </div>
 
-      {/* Margen derecho */}
-      <div className="admin-right">
-        <div className="list-container">
-          <label>OPERACIONES</label>
+        <div className="list-container admin-panel">
+          <label>Operaciones</label>
           <div className="long-scrollable-list" id="scrollable-list">
           {operation.filter(Operation=>Operation.id===game.id)[0]?.data.map((Operation, index) => (
             <div
@@ -456,8 +499,7 @@ function Admin({redirect}) {
         <button className="button-admin-add" onClick={activateNewOperationPanel(game.id)}>+</button>
         </div>
       </div>
-    </div>
-    </div>
+      </div>
     ))}
     <button className="button-admin-game" onClick={activateNewGamePanel}>Nuevo juego</button>
     {newGameActivated===1?

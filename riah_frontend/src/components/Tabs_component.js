@@ -4,15 +4,9 @@ import '../App.css';
 
 function Tabs({ tabs, onTabChange }) {
   const [activeTab, setActiveTab] = useState();
-  const [firstTabComing, setFirstTabComing] = useState(true);
 
   useEffect(() =>{
-    if(tabs.length===0)
-      setFirstTabComing(true);
-    else if(tabs.length===1 && firstTabComing)
       setActiveTab(tabs[0]);
-    else if(tabs.length>1)
-      setFirstTabComing(false);
   }, [tabs])
 
   const handleTabClick = (item) => {

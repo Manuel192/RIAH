@@ -142,11 +142,24 @@ public class UserService {
 		return userID.toString();
 	}
 
-	public String login(String userText) throws Exception {
+	public String loginUser(String userText) throws Exception {
 		JSONObject json = new JSONObject(userText);
 		String email = EncryptionService.encrypt(json.getString("email"));
 		String password = json.getString("password");
-		List<User> foundUser = userDAO.getByEmail(email);
+		List<User> foundUser = userDAO.getByEmailUnchecked(email);
+		
+		if(foundUser.size()>0) {	
+			if(password.contentEquals(EncryptionService.decrypt(foundUser.get(0).getPassword())))
+				return foundUser.get(0).getId().toString();
+		}
+		return "";
+	}
+	
+	public String loginAdmin(String userText) throws Exception {
+		JSONObject json = new JSONObject(userText);
+		String email = EncryptionService.encrypt(json.getString("email"));
+		String password = json.getString("password");
+		List<User> foundUser = userDAO.getByEmailChecked(email);
 		
 		if(foundUser.size()>0) {	
 			if(password.contentEquals(EncryptionService.decrypt(foundUser.get(0).getPassword())))

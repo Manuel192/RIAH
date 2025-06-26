@@ -44,15 +44,22 @@ function Create_Patient({redirect}) {
             return;
         }
         try {
+            const recordResponse = await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/insertRecord', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            const recordID=await recordResponse.text();
             await fetch(process.env.REACT_APP_GENERAL_URL+'/patient/insertPatient', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name: name, birthdate: birthdate, gender:gender, hospital: hospital, user:userID }),
+                body: JSON.stringify({ name: name, birthdate: birthdate, gender:gender, hospital: hospital, user:userID, recordID: recordID}),
             });
             setName("");
-            setBirthdate();
+            setBirthdate("");
             setGender("");
             setHospital("");
             alert("Se ha creado el paciente correctamente");
@@ -89,7 +96,7 @@ function Create_Patient({redirect}) {
             <div class="rectangle">
                 <div class="create-session">
                     <div class="create-session-section">
-                        <h3 class="title">Nombre</h3>
+                        <h3 class="title">Identificador</h3>
                         <input 
                             value={name} 
                             placeholder="Nombre"

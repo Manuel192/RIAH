@@ -8,16 +8,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.riah.model.Game;
 import com.riah.model.Patient;
+import com.riah.model.Recordd;
 import com.riah.model.Session;
-import com.riah.model.User;
 
 @Repository
-public interface UserDAO extends JpaRepository<User, Integer> {
-
-	@Query("SELECT u FROM User u WHERE u.email =:email AND u.isAdmin = false")
-	List<User> getByEmailUnchecked (@Param("email") String email);
+public interface RecordDAO extends JpaRepository<Recordd, Integer> {
+    
+    @Query("SELECT r FROM Recordd r WHERE r.patient=:patientID")
+	List<Recordd> findByPatient(@Param("patientID") Patient patient);
 	
-	@Query("SELECT u FROM User u WHERE u.email =:email AND u.isAdmin = true")
-	List<User> getByEmailChecked (@Param("email") String email);
 }

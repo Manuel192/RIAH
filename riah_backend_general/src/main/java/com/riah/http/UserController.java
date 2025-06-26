@@ -43,9 +43,22 @@ public class UserController {
 	}
 	
 	@CrossOrigin(origins = "http://localhost:3000")
-	@PostMapping("/login")
-	public ResponseEntity<String> login(@RequestBody String user) throws Exception{
-		String id=userService.login(user);
+	@PostMapping("/loginUser")
+	public ResponseEntity<String> loginUser(@RequestBody String user) throws Exception{
+		String id=userService.loginUser(user);
+		if(!id.isBlank()) {
+			return ResponseEntity.ok(id);
+		} else {
+			return ResponseEntity
+		    .status(HttpStatus.FORBIDDEN)
+		    .body("Email o contraseña incorrectos.");
+		}
+	}
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@PostMapping("/loginAdmin")
+	public ResponseEntity<String> loginAdmin(@RequestBody String user) throws Exception{
+		String id=userService.loginAdmin(user);
 		if(!id.isBlank()) {
 			return ResponseEntity.ok(id);
 		} else {

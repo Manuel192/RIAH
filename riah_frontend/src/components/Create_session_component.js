@@ -4,10 +4,8 @@ import VideoPlayer from "./video_player";
 import '../css/Create_session_component.css';
 import "../App.css";
 
-function Create_session({redirect}) {
+function Create_session({patient}) {
     const navigate=useNavigate();
-    const location=useLocation();
-    const {patient}=location.state;
     
     const [importedFileName, setImportedFileName] = useState("");
     const [importedRawData, setImportedRawData] = useState("");
@@ -25,7 +23,7 @@ function Create_session({redirect}) {
 
     useEffect(() => {
         const init = async () => {
-            await redirect();
+            console.log(patient);
             try{
                 const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/game/loadGames');
                 if(!response.ok){
@@ -231,14 +229,8 @@ function Create_session({redirect}) {
 
     return (
     <>
-        <div className="sub-banner">
-            <button className="nav-button" onClick={handleHomePanel}>Home</button> &gt; 
-            <button className="nav-button" onClick={handlePatientList}>Listado de pacientes</button> &gt;
-            Nueva sesión - John Doe
-        </div>
-        <div class="app">
-            <h3 class="main-title">Crear sesiones - John Doe</h3>
-            <div class="rectangle" style={{width: "50%", margin:"auto"}}>
+            <div class="rectangle" style={{ margin:"auto"}}>
+                <h3 class="main-title">Crear sesiones</h3>
                 <div class="create-session">
                     <div class="create-session-section">
                         <h3 class="title">Vídeo demostrativo {"(Límite: 20MB)"}</h3>
@@ -311,7 +303,6 @@ function Create_session({redirect}) {
                     <button className="button-create-session" onClick={handleCreateSession}>CREAR SESIÓN</button>
                 </div>
              </div>
-        </div>
         </>
     );
 }

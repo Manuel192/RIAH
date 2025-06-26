@@ -33,7 +33,7 @@ function App() {
         }
         const responseToken2 = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/checkAdminToken?token="+sessionStorage.getItem("token"));
         if(responseToken2.ok){
-          navigate(process.env.REACT_APP_ADMIN_URL);
+          navigate("/admin");
         }
     }
   };
@@ -48,6 +48,8 @@ function App() {
           setUserID(newUserID)
           return newUserID;
         }
+      }else{
+        navigate("/");
       }
     }
 
@@ -56,7 +58,13 @@ function App() {
         const responseToken = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/checkAdminToken?token="+sessionStorage.getItem("token"));
         if(!responseToken.ok){
             navigate("/");
-          }
+        }else{
+          const newUserID = await responseToken.text();
+          setUserID(newUserID)
+          return newUserID;
+        }
+      }else{
+        navigate("/");
       }
     };
   
@@ -82,7 +90,7 @@ function App() {
         <div className="right-section">
           <button className="nav-button">Rehab-Immersive</button>
           <button className="nav-button">Sobre Nosotros</button>
-          <button className="nav-button" onClick={handlePanel}>Mi panel</button>
+          <button className="nav-button" onClick={handlePanel}>Home</button>
           <button onClick={handleShowCloseSession}>
             <img src={require('./media/RIAH_profile.png')} alt="Profile" className="profile-pic" />
           </button>

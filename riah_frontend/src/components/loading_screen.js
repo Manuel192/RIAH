@@ -3,7 +3,7 @@ import '../css/loading_screen.css';
 import "../App.css";
 
 const LoadingScreen = ({ isLoading, text, isFixed }) => {
-  if (!isLoading) return null; // Si no está cargando, no mostramos nada
+  if (!isLoading) return null;
 
   return (
     <>

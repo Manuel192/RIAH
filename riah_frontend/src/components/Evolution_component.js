@@ -60,8 +60,10 @@ const Evolution = ({redirect}) => {
         }catch(error){
             alert(error)
         }
-        const response = await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/loadRecord');
-        if(!response.ok){
+        const response = await fetch(process.env.REACT_APP_GENERAL_URL+'/record/loadRecord?patient='+patient.id);
+        const responseData = await response.text();
+        const responseRecord = await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/loadRecord?id='+responseData);
+        if(!responseRecord.ok){
           setSelectedData([""]);
           setSelectedGame([""]);
           setSelectedInitDate([""]);
@@ -70,10 +72,9 @@ const Evolution = ({redirect}) => {
           return;
         }
         // convert data to json
-        const responseData = await response.json();
-        setRecordID(responseData.id);
-        const obtainedGraphs=responseData.graphs;
-        console.log(responseData.graphs);
+        const responsRecordData = await responseRecord.json();
+        setRecordID(responsRecordData.id);
+        const obtainedGraphs=responsRecordData.graphs;
         for(var i=0;i<obtainedGraphs.length;i++){
           selectedGame.push(obtainedGraphs[i].game || "");
           selectedData.push(obtainedGraphs[i].operation || "");

@@ -201,9 +201,9 @@ function Register({redirect,setUser}) {
                             onClick={() => setShowPassword(!showPassword)}
                             >
                             {showPassword ?
-                            <img src={require("../media/RIAH_hide.png")} style={{width:"30px", marginTop:"50%"}}></img>
+                            <img src={require("../media/RIAH_hide.png")} style={{width:"30px"}}></img>
                             :
-                            <img src={require("../media/RIAH_show.png")} style={{width:"30px", marginTop:"50%"}}></img>
+                            <img src={require("../media/RIAH_show.png")} style={{width:"30px"}}></img>
                             }
                         </button>
                     </div>
@@ -221,9 +221,9 @@ function Register({redirect,setUser}) {
                             onClick={() => setShowRepeatPassword(!showRepeatPassword)}
                             >
                             {showRepeatPassword ?
-                            <img src={require("../media/RIAH_hide.png")} style={{width:"30px", marginTop:"50%"}}></img>
+                            <img src={require("../media/RIAH_hide.png")} style={{width:"30px"}}></img>
                             :
-                            <img src={require("../media/RIAH_show.png")} style={{width:"30px", marginTop:"50%"}}></img>
+                            <img src={require("../media/RIAH_show.png")} style={{width:"30px"}}></img>
                             }
                         </button>
                     </div>

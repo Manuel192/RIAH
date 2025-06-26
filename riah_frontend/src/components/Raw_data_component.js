@@ -5,6 +5,7 @@ import VideoPlayer from './video_player';
 import Tabs from './Tabs_component';
 import '../css/Raw_data_component.css';
 import '../App.css';
+import PointsScene from  './3DPointsScene';
 
 function Modal({ onClose, onConfirm }) {
   return (
@@ -46,7 +47,6 @@ function Raw_data({redirect}) {
   const [endDate, setEndDate] = useState("");
   const [games, setGames] = useState([]);
   const [game, setGame] = useState("");
-  const [selectedSessions, setSelectedSessions] = useState([]);
 
   const [selectedDataItems, setSelectedDataItems] = useState([]);
   const [selectedDataItemsIndex, setSelectedDataItemsIndex] = useState([]);
@@ -142,15 +142,26 @@ function Raw_data({redirect}) {
     try{
       const url=process.env.REACT_APP_GENERAL_URL+"/session/loadFilteredSessions?firstDate="+stDate+"&lastDate="+lDate+"&gameId="+gameId+"&patientId="+patient.id;
       const response = await fetch(url);
-      if(!response.ok){
+      const sessionData = await response.json();
+      if(sessionData.length<1){
         setSessions([]);
+        setactiveSession();
+        setDataItems();
+        setTabs();
         alert("El paciente no ha realizado sesiones que cumplan con el filtro establecido.");
         return;
       }
-      const sessionData = await response.json();
       setSessions(sessionData);
+      const item = sessionData[0];
+      handleTabChange(item?.game+", "+item?.date, sessionData);
+      setTabs(sessionData.map(s=>s.game+", "+s.date));
     }catch(error){
       alert("La web no funciona por el momento. Inténtelo más tarde.")
+      setSessions([]);
+      setactiveSession();
+      setDataItems();
+      setTabs();
+      return;
     }
   };
 
@@ -168,35 +179,7 @@ function Raw_data({redirect}) {
     setIsModalOpen(false);
   };
 
-  const toggleSelection = async (item, listType) => {
-    if (listType === "sessions") {
-      if(activeSession?.id===item.id){
-        setDataItems([]);
-        setSelectedDataItems([]);
-        setactiveSession();
-        setactiveSessionData();
-        setVideoSource();
-      }else if(selectedSessions.length===0){
-        const sessionData=await obtainRawData(item);
-        if(!sessionData){
-          alert("No hay datos para esta sesión.");
-          return;
-        }
-        setDataItems(sessionData.dataTypes);
-        setactiveSession(item);
-        setactiveSessionData(sessionData);
-        setVideoSource(process.env.REACT_APP_SESSIONS_URL+"/video/loadVideo?id="+item.video_id);
-        const sessionVideo=document.getElementById("sessionVideo");
-        sessionVideo.load();
-      }
-      
-      setSelectedSessions(prev =>
-        prev.includes(item.id) ? prev.filter(i => i !== i.id) : [...prev, item.id]
-      );
-      setTabs(prev =>
-        prev.includes(item.game+", "+item.date) ? prev.filter(i => i !== (item.game+", "+item.date)) : [...prev, (item.game+", "+item.date)]
-      );
-    } else {
+  const toggleSelection = async (item) => {
       if(selectedDataItems.includes(item)){
         setSelectedDataItems(selectedDataItems.filter(i => i !== item));
         const newDataItemValues={...selectedDataItemsValues}
@@ -208,11 +191,9 @@ function Raw_data({redirect}) {
         var newSelectedDataItemsIndex=selectedDataItemsIndex.filter(i=>i.name!=item);
         newSelectedDataItemsIndex.push({name:item,value:"Frame"});
         setSelectedDataItemsIndex(newSelectedDataItemsIndex);
-        console.log(newSelectedDataItemsIndex);
         obtainFrames([item], activeSessionData);
       };
     }
-  };
 
   const obtainFrames = (items, sessionData) => {
     var newSelectedDataItemsValues=selectedDataItemsValues;
@@ -252,15 +233,17 @@ function Raw_data({redirect}) {
       return sessionData;
   }
 
-  const handleTabChange = async (index) => {
+  const handleTabChange = async (index, currentSessions) => {
     if(index!==activeSessionData?.game+", "+activeSessionData?.date){
-      const item = sessions.filter(i => index ===i.game+", "+i.date)[0];
+      const item = currentSessions.filter(i => index ===i.game+", "+i.date)[0];
       const sessionData=await obtainRawData(item);
       if(!sessionData){
         alert("No hay datos para esta sesión.");
         return;
       }
-      setDataItems(sessionData.dataTypes);
+      const newDataItems=sessionData.dataTypes.filter
+      (dataItem=>!(sessionData.frames[0].dataValues[dataItem].trim().length<1 || sessionData.frames[0].dataValues[dataItem].trim().isNaN));
+      setDataItems(newDataItems);
       setactiveSession(item);
       setactiveSessionData(sessionData);
       obtainFrames(selectedDataItems,sessionData);
@@ -281,14 +264,6 @@ function Raw_data({redirect}) {
 
   const handleHomePanel = () => {
     navigate('/')
-  }
-
-  const loadThreeDPoints = () => {
-    navigate('/user/3d-points', {state:{dataItems: dataItems, activeSessionData: activeSessionData}});
-  }
-
-  const loadThreeDModel = () => {
-    navigate('/user/3d-model', {state:{dataItems: dataItems, activeSessionData: activeSessionData}});
   }
 
   const handleCommonGraphChanged = (event,index) => {
@@ -361,37 +336,26 @@ function Raw_data({redirect}) {
         </div>
       </div>
           <div className="list-sections">
-            <div className="list-container" style={{width: "100%"}}>
-              <div className="scrollable-list">
-                {sessions.length<1? (<h1 class="main-title">No hay gráficas disponibles</h1>): sessions.map((session, index) => (
-                  <div
-                    key={index}
-                    className={`list-item ${selectedSessions.includes(session.id) ? "selected" : ""}`}
-                    onClick={() => toggleSelection(session, "sessions")}
-                  >
-                    {session.game+ ", "+session.date.substring(0,10)+" "+session.date.substring(11,19)}
-                    <label className="secondary-txt">{session.id}</label>
-                  </div>
-                  ))}
-              </div>
-            </div>
-            {selectedSessions?.length>0 &&
+            {dataItems?.length>0 && (
             <div className="list-container sticky-data">
               <div className="scrollable-list" style={{height: "100%"}}>
-                {dataItems.length>0 && dataItems.sort().map((data, index) => (
+                {selectedDataItems.length>0&&(
+                  <button className="button-export" onClick={exportDataToCsv} disabled={selectedDataItems.length<1}>Exportar datos seleccionados</button>
+                )}
+                {dataItems?.sort().map((data, index) => (
                   <div
                     key={index}
                     className={`list-item ${selectedDataItems.includes(data) ? "selected" : ""}`}
-                    onClick={() => toggleSelection(data, "dataItems")}
+                    onClick={() => toggleSelection(data)}
                   >
                     {data}
                   </div>
                 ))}
               </div>
             </div>
-            }
+            )}
           </div>
-            {!activeSession?
+            {activeSessionData.frames===undefined || !activeSession?
               (<div class="rectangle" style={{width: "100%"}}>
                 <h1 class="main-title">Selecciona una sesión</h1>
               </div>):(
@@ -408,20 +372,6 @@ function Raw_data({redirect}) {
                 <label class="session-info">Autor: {patient.name}</label>
                 <br></br>
                 <br></br>
-                <h3 class="title">Opciones</h3>
-                {activeSession &&(
-                  <div className="button-bar">
-                    <div>
-                      <button className="button-export" onClick={exportDataToCsv} disabled={selectedDataItems.length<1}>Exportar datos seleccionados</button>
-                    </div>
-                    <div>
-                      <button className="button-export" onClick={loadThreeDPoints}>Vista 3D Puntos</button>
-                    </div>
-                    <div>
-                      <button className="button-export" onClick={loadThreeDModel}>Vista 3D Simulación</button>
-                    </div>
-                  </div>
-                )}
                 <h3 class="title">Vídeo resumen</h3>
                 {videoSource && (
                   <div style={{justifyItems: "center"}}>
@@ -430,8 +380,12 @@ function Raw_data({redirect}) {
                     </video>
                   </div>
                 )}
+
+                <h3 class="title">Gráfica 3D</h3>
+                <PointsScene dataItems={dataItems} activeSessionData={activeSessionData}></PointsScene>
+
                 <div>
-                <h3 class="title">Gráficas de datos</h3>
+                <h3 class="title">Gráficas individuales</h3>
                 {selectedDataItems?.map((dataItem, index) => (
                   <Card className="tremor-Card">
                     <h3 class="title">{dataItem}</h3>
@@ -439,7 +393,6 @@ function Raw_data({redirect}) {
                       data={activeSessionData.frames.map(frame=>(frame.dataValues))}
                       index="Frame"
                       categories={[dataItem]}
-                      onValueChange={(v) => console.log(v)}
                       maxValue={Number(selectedDataItemsValues[dataItem].max)}
                       minValue={Number(selectedDataItemsValues[dataItem].min)}
                       xLabel="Frame"
@@ -454,10 +407,10 @@ function Raw_data({redirect}) {
 
               {isModalOpen && <Modal onClose={handleCloseModal} onConfirm={handleConfirm} />}
               
-              <Tabs tabs={tabs} onTabChange={handleTabChange} />
+              <Tabs tabs={tabs} onTabChange={(i)=>handleTabChange(i,sessions)} />
               {selectedDataItems.length>0 && (
               <div className="tremor-card-full-width">
-                <h3 class="title">Comparativa de gráficas</h3>
+                <h3 class="title">Comparación</h3>
                 <div class="add-parameters-section">
                   {commonGraphDataItems.map((c,index)=>(
                     <select id="dropdown" value={c} className='input-parameter' onChange={(e)=>handleCommonGraphChanged(e,index)}>
@@ -478,7 +431,6 @@ function Raw_data({redirect}) {
                     data={activeSessionData.frames.map(frame=>(frame.dataValues))}
                     index="Frame"
                     categories={commonGraphDataItems}
-                    onValueChange={(v) => console.log(v)}
                     xLabel="Frame"
                     yLabel="Value"
                     maxValue={Number(commonGraphMax)}
@@ -490,6 +442,7 @@ function Raw_data({redirect}) {
                 </Card>
               </div>
               )}
+
           <h3 class="title">Tabla de datos</h3>
               {selectedDataItems.length>0 &&
               <div className="table-container">

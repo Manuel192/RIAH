@@ -20,7 +20,7 @@
   .button-import {
     height: 40px;
     display: inline-block;
-    background-color: #22bbd6;
+    background-color: #8de7f7;
     color: white;
     font-size: 1.5rem;
     padding-left: 15px;
@@ -38,7 +38,7 @@
     max-width: 300px;
     max-height: 300px;
     overflow: hidden;
-    color: rgb(1, 110, 129);
+    color: #8de7f7;
     opacity: 40%;
     margin-top: 20px;
  }
@@ -73,7 +73,7 @@
 
   .button-create-session {
     padding: 15px;
-    background-color: #22bbd6;
+    background-color: #8de7f7;
     color: white;
     border-radius: 5px;
     margin-top: 20px;
@@ -81,5 +81,5 @@
   }
   
   .button-create-session:hover {
-    background-color: #217c88;
+    background-color: #8de7f7;
   }

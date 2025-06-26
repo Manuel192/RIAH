@@ -62,9 +62,6 @@ public class TokenController {
 				return ResponseEntity.ok(tokenO.get().getUserID());
 			}else {
 				adminTokens.remove(tokenO.get());
-				return ResponseEntity
-			            .status(HttpStatus.GONE)
-			            .body("La sesión ha expirado por razones de seguridad. Por favor, inicie sesión nuevamente.");
 			}
 		}
 		return ResponseEntity

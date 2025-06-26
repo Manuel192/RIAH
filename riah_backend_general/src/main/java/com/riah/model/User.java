@@ -35,6 +35,17 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
     
+    @Column(name = "is_admin", nullable = false)
+    private boolean isAdmin;
+    
+
+	public boolean isAdmin() {
+		return isAdmin;
+	}
+
+	public void setAdmin(boolean isAdmin) {
+		this.isAdmin = isAdmin;
+	}
 
 	public User(UUID id) {
 		this.id=id;
@@ -50,6 +61,7 @@ public class User {
 		this.hospital=hospital;
 		this.email=email;
 		this.password=password;
+		this.isAdmin=false;
 	}
 	
 	public User(UUID id, String name, String gender, Hospital hospital, String email, String password) {
@@ -59,6 +71,7 @@ public class User {
 		this.hospital=hospital;
 		this.email=email;
 		this.password=password;
+		this.isAdmin=false;
 	}
 
 	public User(String email, String password) {

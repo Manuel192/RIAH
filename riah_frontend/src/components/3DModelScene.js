@@ -60,7 +60,7 @@ const ModelScene = ({redirect}) => {
       }
     }
     init();
-  }, [isPlaying, activeSessionData.frames.length, 1000/fps]);
+  }, [isPlaying, activeSessionData.frames.length, fps]);
 
   const handlePlayPause = () => {
     setIsPlaying((prev) => !prev);

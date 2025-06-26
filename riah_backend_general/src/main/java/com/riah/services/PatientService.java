@@ -12,9 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.riah.dao.PatientDAO;
+import com.riah.dao.RecordDAO;
 import com.riah.model.Hospital;
 import com.riah.model.Patient;
 import com.riah.model.PatientDTO;
+import com.riah.model.Recordd;
 import com.riah.model.User;
 
 @Service
@@ -22,6 +24,9 @@ public class PatientService {
 	
 	@Autowired
 	private PatientDAO patientDAO;
+	
+	@Autowired
+	private RecordDAO recordDAO;
 
 	public String insertPatient(String patient) {
 		JSONObject json = new JSONObject(patient);
@@ -30,6 +35,7 @@ public class PatientService {
 		String name=json.getString("name");
 		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
 		String dateString=json.getString("birthdate");
+		String recordID=json.getString("recordID");
 		Date birthdate=null;
 		try {
 			birthdate = sdf.parse(dateString);
@@ -39,6 +45,8 @@ public class PatientService {
 		String gender=json.getString("gender");
 		Patient patientToInsert=new Patient(name,birthdate,gender,new Hospital(hospitalID),new User(userID));
 		Patient savedPatient=patientDAO.save(patientToInsert);
+		Recordd recordToInsert=new Recordd(savedPatient.getId(),recordID);
+		recordDAO.save(recordToInsert);
 		return savedPatient.getId().toString();
 	}
 

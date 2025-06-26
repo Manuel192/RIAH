@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,13 +31,20 @@ public class RecordController {
 	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@GetMapping("/loadRecord")
-    public ResponseEntity<RecordDTO> loadRecord() throws ParseException{
-		RecordDTO record=recordService.loadRecord();
-		if(!(record==null))
+    public ResponseEntity<RecordDTO> loadRecord(@RequestParam String id) throws ParseException{
+		RecordDTO record=recordService.loadRecord(id);
+		if(record!=null)
 			return ResponseEntity.ok(record);
     	else
     		return ResponseEntity.ofNullable(null);
     }
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@PostMapping("/insertRecord")
+	public ResponseEntity<String> insertRecord () throws ParseException{
+		String recordID=recordService.insertRecord();
+		return ResponseEntity.ok(recordID);
+	}
 	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@PutMapping("/updateRecord")

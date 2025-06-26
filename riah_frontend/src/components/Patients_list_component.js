@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import Create_session from './Create_session_component';
 import '../css/Patients_list_component.css';
 import '../App.css';
 
@@ -40,10 +41,6 @@ function Patients_list({redirect}) {
     navigate('/user/raw-data', { state: {patient:selectedPatient}})
   }
 
-  const handleCreateSession = () => {
-    navigate('/user/create-session', { state: {patient:selectedPatient}})
-  }
-
   const handleEvolution = () => {
     navigate('/user/evolution', { state: {patient:selectedPatient}});
   }
@@ -64,7 +61,7 @@ function Patients_list({redirect}) {
     </div>
     <div class="app">
     <h1 class="main-title">Listado de pacientes</h1>
-      <div class={selectedPatient?"patients-menu-selected":"patients-menu"}>
+      <div class={"patients-menu"}>
         <div className="list-container">
           <div className="scrollable-list-patients">
             <input
@@ -83,38 +80,33 @@ function Patients_list({redirect}) {
               </div>
             ))}
             {filteredPatients.length<1&&(
-               <h3 class={"introduction-text"}>¡Buenas! Ya puedes empezar a crear los perfiles de tus pacientes para realizar análisis de sus sesiones.</h3>
+               <h3 class={"introduction-text"}>¡Bienvenid@! Ya puedes empezar a crear los perfiles de tus pacientes para realizar análisis de sus sesiones.</h3>
             )}
             </div>
-            <button className="button-new-patient" onClick={handleAddPatient}>
-                +
-            </button>
           </div>
-        {selectedPatient && (
+        {!selectedPatient?
         <div class={"rectangle"}>
-          <h3 class={"patient-name title"}>{selectedPatient.name}</h3>
-            <>
-            <div style={{textAlign: "center", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", justifyItems: "center",  marginBottom:"40px"}}>
-              <h3 class="title">Sexo</h3>
-              <h3 class="title">Fecha de nacimiento</h3>
-              <img style={{width:"100px"}} src={require("../media/RIAH_"+selectedPatient.gender+".png")}/>
-              <label>{selectedPatient.birthdate.substring(8,10)+"/"+selectedPatient.birthdate.substring(5,7)+"/"+selectedPatient.birthdate.substring(0,4)+
-              " ("+Math.floor(((new Date()).getTime () - (new Date(selectedPatient.birthdate.substring(0,10))).getTime()) / (365 * 24 * 60 * 60 * 1000))+
-              " años)"}</label>
-            </div>
-            <hr></hr>
-            <div style={{textAlign: "center", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", justifyItems: "center", marginTop:"40px"}}>
-              <button class="button-patient-option" onClick={handleCreateSession}>
-              <img src={require("../media/RIAH_"+(selectedPatient.gender==="Masculino"?"M":"W")+"_SessionCreation.png")}></img>
-              </button>
-              <button class="button-patient-option" onClick={handleEvolution}>
-                <img src={require("../media/RIAH_"+(selectedPatient.gender==="Masculino"?"M":"W")+"_Evolution.png")}></img>
-              </button>
-              <button class="button-patient-option" onClick={handleRawData}>
-              <img src={require("../media/RIAH_"+(selectedPatient.gender==="Masculino"?"M":"W")+"_SessionManagement.png")}></img>
-              </button>
-            </div>
-            </>
+          <button onClick={handleAddPatient}>
+            <img style={{marginLeft:"25%", marginRight:"25%"}} src={require("../media/RIAH_Patient_Select.png")}></img>
+          </button>
+        </div>
+        :
+        (
+        <div class={"rectangle"}>
+          <div style={{display:"flex", justifyContent:"center"}}>
+            <h3 class={"patient-name"}>{selectedPatient.name}</h3>
+            <img style={{width:"50px", height:"70px"}} src={require("../media/RIAH_"+selectedPatient.gender+".png")}/>
+            <label>{selectedPatient.birthdate.substring(8,10)+"/"+selectedPatient.birthdate.substring(5,7)+"/"+selectedPatient.birthdate.substring(0,4)+
+                " ("+Math.floor(((new Date()).getTime () - (new Date(selectedPatient.birthdate.substring(0,10))).getTime()) / (365 * 24 * 60 * 60 * 1000))+
+                " años)"}</label>
+          </div>
+          <button className="button-new-patient" onClick={handleEvolution}>
+              Gestionar evolución
+            </button>
+            <button className="button-new-patient" style={{marginTop:"10px"}} onClick={handleRawData}>
+              Gestionar sesiones
+            </button>
+          <Create_session patient={selectedPatient}></Create_session>
         </div>
         )}
       </div>

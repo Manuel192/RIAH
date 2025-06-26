@@ -40,7 +40,7 @@ function SignIn({redirect,userID=""}) {
         }
 
         try {
-            const response=await fetch(process.env.REACT_APP_GENERAL_URL+'/user/login', {
+            const response=await fetch(process.env.REACT_APP_GENERAL_URL+'/user/loginUser', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -54,7 +54,21 @@ function SignIn({redirect,userID=""}) {
                 sessionStorage.setItem("token", token);
                 navigate('/user/patients-list');
             }else{
-                setError("El correo o la contraseña no son correctos. Asegúrese de rellenarlos correctamente.");
+                const responseAdmin=await fetch(process.env.REACT_APP_GENERAL_URL+'/user/loginAdmin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email, password: password }),
+                })
+                if(responseAdmin.ok){
+                    const userID=await response.text();
+                    const responseToken = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/createAdminToken?id="+userID);
+                    const token = await responseToken.text();
+                    sessionStorage.setItem("token", token);
+                    navigate("/admin");
+                }else
+                    setError("El correo o la contraseña no son correctos. Asegúrese de rellenarlos correctamente.");
             }
         } catch (error) {
             alert(error);
@@ -62,8 +76,7 @@ function SignIn({redirect,userID=""}) {
     }
 
     const handleSetEmail = (value) => {
-        if(value.toLowerCase()===value)
-            setEmail(value);
+        setEmail(value.toLowerCase());
     }
 
     const handleCloseError = () => {
