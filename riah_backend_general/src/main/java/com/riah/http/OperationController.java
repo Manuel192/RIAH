@@ -25,12 +25,9 @@ public class OperationController {
 	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@GetMapping("/loadOperations")
-    public ResponseEntity<List<OperationDTO>> loadOperations(@RequestParam String gameId) throws ParseException{
-		List<OperationDTO> calculatedData=operationService.loadOperations(gameId);
-    	if(!calculatedData.isEmpty())
-			return ResponseEntity.ok(calculatedData);
-    	else
-    		return ResponseEntity.ofNullable(null);
+    public ResponseEntity<List<OperationDTO>> loadOperations() throws ParseException{
+		List<OperationDTO> calculatedData=operationService.loadOperations();
+		return ResponseEntity.ofNullable(calculatedData);
     }
 	
 	@CrossOrigin(origins = "http://localhost:3000")

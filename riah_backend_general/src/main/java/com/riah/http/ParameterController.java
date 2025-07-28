@@ -25,8 +25,8 @@ public class ParameterController {
 	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@GetMapping("/loadParameters")
-    public ResponseEntity<List<ParameterDTO>> loadParameters(@RequestParam String gameId) throws ParseException{
-		List<ParameterDTO> parameters=parameterService.loadParameters(gameId);
+    public ResponseEntity<List<ParameterDTO>> loadParameters() throws ParseException{
+		List<ParameterDTO> parameters=parameterService.loadParameters();
     	if(!parameters.isEmpty())
 			return ResponseEntity.ok(parameters);
     	else
@@ -34,9 +34,9 @@ public class ParameterController {
     }
 	
 	@CrossOrigin(origins = "http://localhost:3000")
-	@PostMapping("/insertParameter")
-	public ResponseEntity<ParameterDTO> insertSession(@RequestBody String parameter){
-		ParameterDTO result=parameterService.insertParameter(parameter);
+	@PostMapping("/insertParameters")
+	public ResponseEntity<List<ParameterDTO>> insertParameter(@RequestBody String parameters){
+		List<ParameterDTO> result=parameterService.insertParameters(parameters);
 		return ResponseEntity.ok(result); 
 	}
 }

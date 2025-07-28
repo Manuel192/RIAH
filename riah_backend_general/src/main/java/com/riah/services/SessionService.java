@@ -1,5 +1,7 @@
 package com.riah.services;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -11,6 +13,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +27,7 @@ import com.riah.model.Game;
 import com.riah.model.Patient;
 import com.riah.model.Session;
 import com.riah.model.SessionDTO;
+import com.riah.model.User;
 
 @Service
 public class SessionService {
@@ -41,8 +48,11 @@ public class SessionService {
             SessionDTO sessionDTO = new SessionDTO();
             sessionDTO.setId(session.getId());
             sessionDTO.setDate(session.getDate());
-            sessionDTO.setPatient(session.getPatient().getName());
-            sessionDTO.setGame(session.getGame().getName());
+            try {
+				sessionDTO.setPatient(session.getPatient().getName());
+			} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException
+					| BadPaddingException e) {}
+            sessionDTO.setVersion(session.getVersion().getName());
             sessionDTO.setVideoID(session.getVideoID());
             sessionDTO.setDataID(session.getDataID());
             return sessionDTO;
@@ -70,7 +80,7 @@ public class SessionService {
 
 	public String insertSession(String session) {
 		JSONObject json = new JSONObject(session);
-		UUID gameId=UUID.fromString(json.getString("game"));
+		UUID versionId=UUID.fromString(json.getString("version"));
 		UUID patientId=UUID.fromString(json.getString("patient"));
 		String videoId="";
 		try {
@@ -79,16 +89,14 @@ public class SessionService {
 		}
 		String dataId=json.getString("data_id");
 		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		System.out.print(session);
 		String dateString=json.getString("date");
 		Date date=null;
 		try {
 			date = sdf.parse(dateString);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Session sessionToInsert=new Session(gameId,patientId,date,videoId,dataId);
+		Session sessionToInsert=new Session(versionId,patientId,date,videoId,dataId);
 		Session savedSession=sessionDAO.save(sessionToInsert);
 		return savedSession.getId().toString();
 	}

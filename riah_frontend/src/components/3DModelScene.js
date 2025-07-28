@@ -1,5 +1,5 @@
 // src/Scene.jsx
-import React from "react";
+  import React from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { CameraControls, OrbitControls, PerspectiveCamera, Stars } from "@react-three/drei";
 import { useNavigate, useLocation} from "react-router-dom";
@@ -18,7 +18,7 @@ const ModelScene = ({redirect}) => {
   const navigate=useNavigate();
   const location=useLocation();
 
-  const {dataItems, activeSessionData}=location.state;
+  const {dataItems, activeSessionData}=location.state || {};
 
   const [hideBodyPanel,setHideBodyPanel]=useState([true,false,false,false,false,false]);
 
@@ -33,7 +33,7 @@ const ModelScene = ({redirect}) => {
   const headRef=useRef(null);
   const rHandRef=useRef(null);
   const lHandRef=useRef(null);
-
+  
   const [fps, setFps]=useState(10);
   const [frame, setFrame] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -41,9 +41,11 @@ const ModelScene = ({redirect}) => {
   const [previewActivated, setPreviewActivated] = useState(false);
   const intervalRef = useRef(null);
 
+  
+
   useEffect(() => {
     const init = async () => {
-      const userID=await redirect();
+      await redirect();
       if (isPlaying) {
         intervalRef.current = setInterval(() => {
           setFrame((prevIndex) => {
@@ -136,9 +138,9 @@ const ModelScene = ({redirect}) => {
         }
         if(rHandRef.current){
           rHandRef.current.parent.worldToLocal(rHandRef.current.position);
-          rHandRef.current.position.x=Number(currentFrameData.dataValues[rHandPos[0]])+Number(geometries[2].pos[0])
+          rHandRef.current.position.x=Number(currentFrameData.dataValues[rHandPos[0]])*4+Number(geometries[2].pos[0])
           rHandRef.current.position.y=Number(currentFrameData.dataValues[rHandPos[1]])+Number(geometries[2].pos[1])
-          rHandRef.current.position.z=Number(currentFrameData.dataValues[rHandPos[2]])+Number(geometries[2].pos[2])
+          rHandRef.current.position.z=Number(currentFrameData.dataValues[rHandPos[2]])*4+Number(geometries[2].pos[2])
           rHandRef.current.rotation.x=Number(currentFrameData.dataValues[rHandRot[0]])*Math.PI/180+Number(geometries[2].rot[0])||0;
           rHandRef.current.rotation.y=Number(currentFrameData.dataValues[rHandRot[1]])*Math.PI/180+Number(geometries[2].rot[1])||0;
           rHandRef.current.rotation.z=Number(currentFrameData.dataValues[rHandRot[2]])*Math.PI/180+Number(geometries[2].rot[2])||0;
@@ -461,7 +463,7 @@ const ModelScene = ({redirect}) => {
               transition: "width 0.05s ease",
             }}
           ></div>
-        </div>
+        </div>*
       </div>
       <div style={{width:"20%"}}>
         <h1 class="main-title">PREVIEW</h1>

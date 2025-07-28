@@ -1,4 +1,4 @@
-	package com.riah.sessions.model;
+package com.riah.sessions.model;
 
 import java.util.ArrayList;
 import java.util.List;

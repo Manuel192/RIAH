@@ -372,15 +372,17 @@ const PointsScene = ({dataItems, activeSessionData}) => {
   }
 
   return(
-  <div style={{justifyItems: "center", display:"flex", width:"80%"}}>
-    <VideoVariables/>
-    <Suspense>
-      <Canvas gl={{preserveDrawingBuffer:true}} camera={{zoom:0.3, fov:20}} style={{ marginLeft:"20px", height:"500px", position:"relative", alignSelf:"center", backgroundColor:"#192124"}}>
-        <VideoScene/>
-      </Canvas>
-    </Suspense>
-  </div>
-  );
+    <div style={{justifyItems: "center", display:"flex", width:"80%"}}>
+      {dataItems.length>0&&(
+        <VideoVariables/>
+      )}
+      <Suspense>
+        <Canvas gl={{preserveDrawingBuffer:true}} camera={{zoom:0.3, fov:20}} style={{ marginLeft:"20px", height:dataItems.length>0?"500px":"0", position:"relative", alignSelf:"center", backgroundColor:"#192124"}}>
+            <VideoScene/>
+        </Canvas>        
+      </Suspense>
+    </div>
+  )
 }
 
 export default PointsScene;

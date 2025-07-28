@@ -19,8 +19,8 @@ public class SessionDTO{
 	@JsonProperty("data_id")
 	private String dataID;
 	
-	@JsonProperty("game")
-	private String game;
+	@JsonProperty("version")
+	private String version;
 	
 	@JsonProperty("patient")
     private String patient;
@@ -49,12 +49,12 @@ public class SessionDTO{
 		this.dataID = dataID;
 	}
 
-	public String getGame() {
-		return game;
+	public String getVersion() {
+		return version;
 	}
 
-	public void setGame(String game) {
-		this.game = game;
+	public void setVersion(String version) {
+		this.version = version;
 	}
 
 	public String getPatient() {

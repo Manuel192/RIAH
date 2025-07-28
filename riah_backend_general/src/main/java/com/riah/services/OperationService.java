@@ -23,10 +23,9 @@ public class OperationService {
 	@Autowired
 	private SessionService sessionService;
 		
-	public List<OperationDTO> loadOperations(String id) throws ParseException {
-		Game game=new Game(UUID.fromString(id));
-		List<Operation> operations= operationDAO.findByGame(game);
-		if(operations==null) return null;
+	public List<OperationDTO> loadOperations() throws ParseException {
+		List<Operation> operations= operationDAO.findAll();
+		if(operations.size()==0) return null;
 		List<OperationDTO> parsedOperations= mapOperations(operations);
 		return parsedOperations;
 	}

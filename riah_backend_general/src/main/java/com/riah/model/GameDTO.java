@@ -10,6 +10,9 @@ public class GameDTO{
 
 	@JsonProperty("name")
     private String name;
+	
+	@JsonProperty("thumbnail")
+    private String thumbnail;
 
 	public UUID getId() {
 		return id;
@@ -26,5 +29,13 @@ public class GameDTO{
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getThumbnail() {
+		return thumbnail;
+	}
+
+	public void setThumbnail(String thumbnail) {
+		this.thumbnail = thumbnail;
 	}
 }

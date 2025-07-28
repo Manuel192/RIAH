@@ -24,18 +24,61 @@ public class PatientController {
 	private PatientService patientService;
 	
 	@CrossOrigin(origins = "http://localhost:3000")
-	@PostMapping("/insertPatient")
-	public ResponseEntity<String> insertSession(@RequestBody String patient){
-		String id=patientService.insertPatient(patient);
-		return ResponseEntity.ok(id);
-	}
-	
-	@CrossOrigin(origins = "http://localhost:3000")
-	@GetMapping("/loadPatients")
-    public ResponseEntity<List<PatientDTO>> loadPatients(@RequestParam String user) throws ParseException{
-		List<PatientDTO> patients=patientService.loadPatients(user);
+	@GetMapping("/loadAccessiblePatients")
+    public ResponseEntity<List<PatientDTO>> loadAccessiblePatients(@RequestParam String user) throws ParseException{
+		List<PatientDTO> patients=patientService.loadAccessiblePatients(user);
     	if(!patients.isEmpty())
 			return ResponseEntity.ok(patients);
+    	else
+    		return ResponseEntity.ofNullable(null);
+    }
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@GetMapping("/loadRequestedPatients")
+    public ResponseEntity<List<PatientDTO>> loadRequestedPatients(@RequestParam String user) throws ParseException{
+		List<PatientDTO> patients=patientService.loadRequestedPatients(user);
+    	if(!patients.isEmpty())
+			return ResponseEntity.ok(patients);
+    	else
+    		return ResponseEntity.ofNullable(null);
+    }
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@GetMapping("/loadHospitalPatients")
+    public ResponseEntity<List<PatientDTO>> loadHospitalPatients(@RequestParam String user) throws ParseException{
+		List<PatientDTO> patients=patientService.loadHospitalPatients(user);
+    	if(!patients.isEmpty())
+			return ResponseEntity.ok(patients);
+    	else
+    		return ResponseEntity.ofNullable(null);
+    }
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@GetMapping("/loadPatient")
+    public ResponseEntity<PatientDTO> loadPatient(@RequestParam String patientID) throws ParseException{
+		PatientDTO patient=patientService.loadPatient(patientID);
+    	if(!(patient==null))
+			return ResponseEntity.ok(patient);
+    	else
+    		return ResponseEntity.ofNullable(null);
+    }
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@PostMapping("/acceptRequest")
+    public ResponseEntity<String> acceptRequest(@RequestParam String user, @RequestBody String therapistId) throws ParseException{
+		boolean correctRequest=patientService.acceptRequest(user,therapistId);
+    	if(correctRequest)
+			return ResponseEntity.ok("");
+    	else
+    		return ResponseEntity.ofNullable(null);
+    }
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@PostMapping("/rejectRequest")
+    public ResponseEntity<String> rejectRequest(@RequestParam String user, @RequestBody String therapistId) throws ParseException{
+		boolean correctRequest=patientService.rejectRequest(user,therapistId);
+    	if(correctRequest)
+			return ResponseEntity.ok("");
     	else
     		return ResponseEntity.ofNullable(null);
     }

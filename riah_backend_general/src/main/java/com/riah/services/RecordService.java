@@ -17,6 +17,7 @@ import com.riah.model.Parameter;
 import com.riah.model.ParameterDTO;
 import com.riah.model.Patient;
 import com.riah.model.Recordd;
+import com.riah.model.User;
 
 @Service
 public class RecordService {
@@ -27,6 +28,15 @@ public class RecordService {
 	public String loadRecord(String patientID) throws ParseException {
 		Patient patient=new Patient(UUID.fromString(patientID));
 		Recordd recordID= recordDAO.findByPatient(patient).get(0);
+		if(recordID==null) {
+			return null;
+		}
 		return recordID.getDataID().toString();
+	}
+
+	public String insertRecord(String patient, String dataID) {
+		Recordd record=new Recordd(UUID.fromString(patient),dataID);
+		Recordd savedRecord= recordDAO.save(record);
+		return savedRecord.getId().toString();
 	}
 }

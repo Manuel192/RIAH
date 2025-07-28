@@ -1,11 +1,12 @@
 .App {
-  background: linear-gradient(135deg, white, #d8f6ff);
+  background-image: url("media/bg.webp");
+  background-size: cover;
+  min-height: 96dvh;
 }
 
 .app {
   font-family: Arial, sans-serif;
   padding: 40px;
-  min-height: 800px;
 }
 
 .main-title{
@@ -124,9 +125,12 @@
 }
 
 .rights-sub-banner {
+  position:relative;
+  bottom: 0px;
+  width: 100%;
   padding: 10px 20px;
   background-color: #e9eeef;
-  color: #666666;
+  color: #005c74;
   font-size: 0.9em;
   text-align: left;
   border-top: 1px solid #cccccc;

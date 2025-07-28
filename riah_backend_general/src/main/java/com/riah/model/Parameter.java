@@ -16,9 +16,9 @@ import jakarta.persistence.Table;
 	@Table(name = "Parameters")
 	public class Parameter {
 
-		public Parameter(String name, Game game) {
+		public Parameter(String name, Version version) {
 			this.name = name;
-			this.game = game;
+			this.version = version;
 		}
 		
 		public Parameter() {
@@ -37,8 +37,8 @@ import jakarta.persistence.Table;
 	    private String name;
 	    
 	    @ManyToOne
-	    @JoinColumn(name = "game_id", nullable = false)
-	    private Game game;
+	    @JoinColumn(name = "version_id", nullable = false)
+	    private Version version;
 	    
 	    @PrePersist
 	    public void prePersist() {
@@ -61,11 +61,12 @@ import jakarta.persistence.Table;
 			this.name = name;
 		}
 
-		public Game getGame() {
-			return game;
+		public Version getVersion() {
+			return version;
 		}
 
-		public void setGame(Game game) {
-			this.game = game;
+		public void setVersion(Version version) {
+			this.version = version;
 		}
+		
 	}

@@ -1,0 +1,18 @@
+.button-patients-list{
+    padding: 20px 20px;
+    margin: 20px 5px;
+    border: none;
+    border-radius: 4px;
+    font-size: 20px;
+    cursor: pointer;
+    color: white;
+    background-color: #8de7f7;
+  }
+  
+  .preview-text{
+    width: 60%;
+    font-size: 20px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    text-align: center;
+    margin: auto;
+  }

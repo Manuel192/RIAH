@@ -1,6 +1,6 @@
 import React, { act, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import '../css/Admin_component.css';
+import '../css/AdminComponent.css';
 import '../App.css';
 
 function Modal_Python({ onClose, onConfirm }) {
@@ -23,7 +23,7 @@ function Modal_Python({ onClose, onConfirm }) {
   );
 }
 
-function Admin() {    
+function Dev() {    
   // Estado para la búsqueda y la selección
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
@@ -53,7 +53,7 @@ function Admin() {
   useEffect(() => {
     const fetchGames = async () => {
       try{
-        const responseGames = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames");
+        const responseGames = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames?token="+sessionStorage.getItem("token"));
         if(!responseGames.ok){
           setGames([]);
           alert("No pudieron cargarse los juegos.");
@@ -213,7 +213,7 @@ function Admin() {
   }
 
   const addGame = name => async () => {
-    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/insertGame", {
+    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/insertGame?token="+sessionStorage.getItem("token"), {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
@@ -323,7 +323,7 @@ function Admin() {
             </div>
             <div class="list-item">
               <label className="button-import-python" htmlFor="import-python">
-              +º
+              +
               {importedFileName && <p className="filename">{importedFileName}</p>}
               </label>
               <input
@@ -431,4 +431,4 @@ function Admin() {
   );
  }
 
-export default Admin;
+export default Dev;

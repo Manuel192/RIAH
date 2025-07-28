@@ -11,15 +11,15 @@ public class ParameterDTO{
 	@JsonProperty("name")
     private String name;
 	
-	@JsonProperty("game_id")
-	private UUID gameId;
-	
-	public UUID getGameId() {
-		return gameId;
+	@JsonProperty("version_id")
+	private UUID versionId;
+
+	public UUID getVersionId() {
+		return versionId;
 	}
 
-	public void setGameId(UUID gameId) {
-		this.gameId = gameId;
+	public void setVersionId(UUID versionId) {
+		this.versionId = versionId;
 	}
 
 	public UUID getId() {

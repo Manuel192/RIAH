@@ -1,0 +1,70 @@
+const TreeNode = ({ node, game }) => {
+    return (
+    <div>
+        {node.type && node.returnType==="list" && node.type==="Operation" &&
+        <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleOperationChanged(e,node)}>
+            <option value="">Selecciona una operación</option>
+            {simpleOperations?.filter(o=>o.return_type==="list").sort(function(a, b) {
+                if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                return 0;
+            }).map((option, index) =>
+            <option key={index} value={option.id+"#"+option.name}>
+                {option.name}
+            </option>
+            )}
+        </select>
+        }
+        {node.type && node.returnType==="list" && node.type==="Parameter" &&
+        <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleParameterChanged(e,node)}>
+            <option value="">Selecciona un parámetro</option>
+            {parameters.filter(p=>p.id===game.id)[0]?.data.sort(function(a, b) {
+                if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                return 0;
+            }).map((parameter, index) => (
+            <option key={index} value={parameter.id+"#"+parameter.name}>
+                {parameter.name}
+            </option>
+            ))}
+        </select>
+        }
+        {node.type && node.returnType==="value" && node.type==="Operation" &&
+        <select id="dropdown" value={node.value} className='input-parameter' onChange={(e)=>handleOperationChanged(e,node)}>
+            <option value="">Selecciona una operación</option>
+            {simpleOperations?.filter(o=>o.return_type==="value").sort(function(a, b) {
+                if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                return 0;
+            }).map((option, index) =>
+            <option key={index} value={option.id+"#"+option.name}>
+                {option.name}
+            </option>
+            )}
+        </select>
+        }
+        {node.type && node.returnType==="value" && node.type==="Parameter" &&
+        <input value={node.value} className='input-parameter' placeholder="Escribe un valor" onChange={(e)=>handleParameterChanged(e,node)}/>
+        }
+        {node.type && node.level>0 && (
+            node.type==="Operation"?
+            <button className="button-admin-change-parameter" onClick={(e)=>handleFieldChanged(e,node,"Parameter")}> Parámetro </button>
+            :
+            <button className="button-admin-change-parameter" onClick={(e)=>handleFieldChanged(e,node,"Operation")}> Operación </button>
+        )}
+        {node.children && node.children.length>0 && (
+        <div class="non-bg-rectangle" style={{backgroundColor: operationColors[node.level%operationColors.length]}}>
+            {node.children.sort(function(a, b) {
+                if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                return 0;
+            }).map((child, index) => (
+            <TreeNode key={index} node={child} game={game} />
+            ))}
+        </div>
+        )}
+    </div>
+    );
+};
+
+export default TreeNode;

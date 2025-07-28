@@ -22,69 +22,81 @@ import org.springframework.web.bind.annotation.RestController;
 import com.riah.model.GameDTO;
 import com.riah.model.Token;
 import com.riah.services.GameService;
+import com.riah.services.PatientService;
+import com.riah.services.TokenService;
 
 @RestController
 @RequestMapping("/token")
 public class TokenController {
 	
-	private int MINUTES=30;
-	
-	private List<Token> userTokens = new ArrayList<>();
-	private List<Token> adminTokens = new ArrayList<>();
+	@Autowired
+	private TokenService tokenService;
 	
 	@Autowired
 	private GameService gameService;
 	
 	@CrossOrigin(origins = "http://localhost:3000")
-	@GetMapping("/checkUserToken")
-    public ResponseEntity<String> checkUserToken(@RequestParam String token) throws ParseException{
-		Optional<Token> tokenO=userTokens.stream().filter(o -> o.getId().toString().contentEquals(token)).findFirst();
-		if(tokenO.isPresent()) {
-			Date currentTime=new Date(System.currentTimeMillis());
-			if(tokenO.get().getLimit().after(currentTime)) {
-				return ResponseEntity.ok(tokenO.get().getUserID());
-			}else {
-				userTokens.remove(tokenO.get());
-			}
-		}
+	@GetMapping("/checkPatientToken")
+    public ResponseEntity<String> checkPatientToken(@RequestParam String token) throws ParseException{
+		String oToken=tokenService.checkPatientToken(token);
+		if(oToken.length()>0) {
+			return ResponseEntity.ok(oToken);
+		}else {
 		return ResponseEntity
 	            .status(HttpStatus.FORBIDDEN)
 	            .body("Token inválido");
+		}
+    }
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@GetMapping("/checkTherapistToken")
+    public ResponseEntity<String> checkTherapistToken(@RequestParam String token) throws ParseException{
+		String oToken=tokenService.checkTherapistToken(token);
+		if(oToken.length()>0) {
+			return ResponseEntity.ok(oToken);
+		}else {
+		return ResponseEntity
+	            .status(HttpStatus.FORBIDDEN)
+	            .body("Token inválido");
+		}
     }
 	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@GetMapping("/checkAdminToken")
     public ResponseEntity<String> checkAdminToken(@RequestParam String token) throws ParseException{
-		Optional<Token> tokenO=adminTokens.stream().filter(o -> o.getId().toString().contentEquals(token)).findFirst();
-		if(tokenO.isPresent()) {
-			Date currentTime=new Date(System.currentTimeMillis());
-			if(tokenO.get().getLimit().after(currentTime)) {
-				return ResponseEntity.ok(tokenO.get().getUserID());
-			}else {
-				adminTokens.remove(tokenO.get());
-			}
-		}
+		String oToken=tokenService.checkAdminToken(token);
+		if(oToken.length()>0) {
+			return ResponseEntity.ok(oToken);
+		}else {
 		return ResponseEntity
 	            .status(HttpStatus.FORBIDDEN)
 	            .body("Token inválido");
+		}
     }
 	@CrossOrigin(origins = "http://localhost:3000")
-	@GetMapping("/createUserToken")
-    public ResponseEntity<String> createUserToken(@RequestParam String id) throws ParseException{
-		Date limit=new Date(System.currentTimeMillis()+1000*60*MINUTES);
-		UUID tokenID=UUID.randomUUID();
-		Token newToken= new Token(tokenID,id,limit);
-		userTokens.add(newToken);
-		return ResponseEntity.ok(newToken.getId().toString());
+	@GetMapping("/createPatientToken")
+    public ResponseEntity<String> createPatientToken(@RequestParam String id) throws ParseException{
+		String oToken=tokenService.createPatientToken(id);
+		return ResponseEntity.ok(oToken);
+	}
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@GetMapping("/createTherapistToken")
+    public ResponseEntity<String> createTherapistToken(@RequestParam String id) throws ParseException{
+		String oToken=tokenService.createTherapistToken(id);
+		return ResponseEntity.ok(oToken);
 	}
 	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@GetMapping("/createAdminToken")
     public ResponseEntity<String> createAdminToken(@RequestParam String id) throws ParseException{
-		Date limit=new Date(System.currentTimeMillis()+1000*60*MINUTES);
-		UUID tokenID=UUID.randomUUID();
-		Token newToken= new Token(tokenID,id,limit);
-		adminTokens.add(newToken);
-		return ResponseEntity.ok(newToken.getId().toString());
+		String oToken=tokenService.createAdminToken(id);
+		return ResponseEntity.ok(oToken);
+	}
+	@CrossOrigin(origins = "http://localhost:3000")
+	@GetMapping("/createToken")
+    public ResponseEntity<String> createToken(@RequestParam String id, @RequestParam String role) throws ParseException{
+		String oToken=tokenService.createToken(id,role);
+		return ResponseEntity.ofNullable(oToken);
 	}
 }
