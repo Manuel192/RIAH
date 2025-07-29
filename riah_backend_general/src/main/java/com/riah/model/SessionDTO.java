@@ -22,6 +22,9 @@ public class SessionDTO{
 	@JsonProperty("version")
 	private String version;
 	
+	@JsonProperty("game")
+	private String game;
+	
 	@JsonProperty("patient")
     private String patient;
 
@@ -78,6 +81,14 @@ public class SessionDTO{
 	    return Objects.hash(id);
 	}
 	
+	public String getGame() {
+		return game;
+	}
+
+	public void setGame(String game) {
+		this.game = game;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if(obj==this) return true;

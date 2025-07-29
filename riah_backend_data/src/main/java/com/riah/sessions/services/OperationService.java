@@ -28,6 +28,7 @@ import com.riah.sessions.so.PythonService;
 import com.riah.sessions.model.Graph;
 import com.riah.sessions.model.Operation;
 import com.riah.sessions.model.OperationDB;
+import com.riah.sessions.model.OperationDTO;
 
 @Service
 public class OperationService {
@@ -53,17 +54,7 @@ public class OperationService {
 		List<SimpleOperationDTO> parsedOperations=mapSimpleOperations(operations);
 		return parsedOperations;
 	}
-	/*
-	public boolean insertSimpleOperation(String operation) {
-		JSONObject json = new JSONObject(operation);
-		String id=json.getString("id");
-		String[] lines=json.getString("python").split("\n");
-		List<String> parsedLines=Arrays.asList(lines);
-		SimpleOperation op=new SimpleOperation(id,parsedLines);
-		soperationDAO.insertOperation(op);
-		return true;
-	}
-	*/
+	
 	public String insertOperation(String operationJson) {
 		JSONObject json = new JSONObject(operationJson);
 		Operation op= obtainOperationPython(json);
@@ -96,18 +87,26 @@ public class OperationService {
     			variables.addAll(soc.getVariables());
     			method_call+=soc.getMethod_call();
     		}else if(type.matches("Parameter")) {
-    			try {
-    				variables.add(children.getJSONObject(i).getString("valueName").trim());
-    				method_call+=children.getJSONObject(i).getString("valueName").trim();
-    			}catch(JSONException jsone) {
-    				method_call+=children.getJSONObject(i).getString("value").trim();
-    			}
-    		}
+    			String parameterValue=children.getJSONObject(i).getString("value").trim();
+    			if(!isNumeric(parameterValue))
+    				variables.add(parameterValue);
+				method_call+=parameterValue;
+			}
     	}
     	method_call+=")";
     	Operation result=new Operation(imports,method,method_name,variables,method_call);
     	return result;
 	}
+	
+    public static boolean isNumeric(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
 	
 	private List<SimpleOperationDTO> mapSimpleOperations(List<SimpleOperation> operations) {
 		return operations.stream().map(op -> {
@@ -121,5 +120,21 @@ public class OperationService {
             newOp.setReturn_type(op.getReturn_type());
             return newOp;
         }).collect(Collectors.toList());
+	}
+	
+	private List<OperationDTO> mapOperations(List<Operation> operations) {
+		return operations.stream().map(op -> {
+			OperationDTO newOp = new OperationDTO();
+			newOp.setId(op.get_id().toString());
+            newOp.setVariables(op.getVariables().toArray(new String[0]));
+            return newOp;
+        }).collect(Collectors.toList());
+	}
+
+	public List<OperationDTO> loadOperationsParameters() {
+		List<Operation> operations=operationDAO.loadOperationsParameters();
+		if(operations==null) return null;
+		return mapOperations(operations);
+	
 	}
 }

@@ -25,6 +25,9 @@ public class OperationDTO{
 	
 	@JsonProperty("session_dates")
     private Map<String,Date> sessionDates;
+	
+	@JsonProperty("session_versions")
+    private Map<String,String> sessionVersions;
     
 	public UUID getGameId() {
 		return gameId;
@@ -73,5 +76,13 @@ public class OperationDTO{
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Map<String, String> getSessionVersions() {
+		return sessionVersions;
+	}
+
+	public void setSessionVersions(Map<String, String> sessionVersions) {
+		this.sessionVersions = sessionVersions;
 	}
 }

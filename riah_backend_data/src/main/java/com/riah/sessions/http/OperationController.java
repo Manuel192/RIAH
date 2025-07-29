@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.riah.sessions.model.Operation;
+import com.riah.sessions.model.OperationDTO;
 import com.riah.sessions.model.Session;
 import com.riah.sessions.model.SessionDTO;
 import com.riah.sessions.model.SimpleOperation;
@@ -44,6 +45,12 @@ public class OperationController {
 	@GetMapping("/loadSimpleOperations")
 	public ResponseEntity<List<SimpleOperationDTO>> loadSimpleOperations () throws ParseException{
 		return ResponseEntity.ok(operationService.loadSimpleOperations());
+	} 
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@GetMapping("/loadOperationsParameters")
+	public ResponseEntity<List<OperationDTO>> loadOperationsParameters () throws ParseException{
+		return ResponseEntity.ok(operationService.loadOperationsParameters());
 	} 
 	
 	@CrossOrigin(origins = "http://localhost:3000")

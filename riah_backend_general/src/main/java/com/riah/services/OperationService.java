@@ -53,6 +53,7 @@ public class OperationService {
 			operationDTO.setOperation(operations.get(i).getOperation());
 			operationDTO.setSessions(sessionService.getSessionsByGame(operations.get(i).getGame().getId()));
 			operationDTO.setSessionDates(sessionService.getSessionDatesByGame(operations.get(i).getGame().getId()));
+			operationDTO.setSessionVersions(sessionService.getSessionVersionsByGame(operations.get(i).getGame().getId()));
             result.add(operationDTO);
 		}  
             return result;

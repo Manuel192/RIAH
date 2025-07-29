@@ -38,4 +38,8 @@ public class OperationDAO {
 	public OperationDB insertOperation(OperationDB operationToInsert) {
 		return mongoTemplate.save(operationToInsert, operationsCollection);
 	}
+
+	public List<Operation> loadOperationsParameters() {
+		return mongoTemplate.findAll(Operation.class);
+	}
 }

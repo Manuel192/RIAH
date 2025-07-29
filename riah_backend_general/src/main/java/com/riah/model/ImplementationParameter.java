@@ -43,6 +43,12 @@ import jakarta.persistence.Table;
 			this.implementation = implementation;
 			this.parameter = parameter;
 		}
+		
+		public ImplementationParameter(String alias, Implementation implementation, Parameter parameter) {
+			this.alias = alias;
+			this.implementation=implementation;
+			this.parameter = parameter;
+		}
 
 		public ImplementationParameter() {
 		}

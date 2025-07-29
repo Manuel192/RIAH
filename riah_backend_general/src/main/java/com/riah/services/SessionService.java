@@ -53,6 +53,7 @@ public class SessionService {
 			} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException
 					| BadPaddingException e) {}
             sessionDTO.setVersion(session.getVersion().getName());
+            sessionDTO.setGame(session.getVersion().getGame().getName());
             sessionDTO.setVideoID(session.getVideoID());
             sessionDTO.setDataID(session.getDataID());
             return sessionDTO;
@@ -108,6 +109,17 @@ public class SessionService {
 		for(int i=0;i<sessions.size();i++) {
 			Session session=sessions.get(i);
 			result.put(session.getDataID().toString(), session.getDate());
+		}
+		return result;
+	}
+	
+	public Map<String,String> getSessionVersionsByGame(UUID gameId) {
+		Game game=new Game(gameId);
+		List<Session> sessions= sessionDAO.findByGame(game);
+		Map<String,String> result=new HashMap<>();
+		for(int i=0;i<sessions.size();i++) {
+			Session session=sessions.get(i);
+			result.put(session.getDataID().toString(), session.getVersion().getId().toString());
 		}
 		return result;
 	}

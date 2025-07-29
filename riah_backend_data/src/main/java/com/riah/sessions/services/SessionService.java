@@ -1,5 +1,6 @@
 package com.riah.sessions.services;
 
+import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,8 +15,11 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.riah.sessions.dao.SessionDAO;
 import com.riah.sessions.model.Frame;
+import com.riah.sessions.model.ImplementationParameterDTO;
 import com.riah.sessions.model.OperationDB;
 import com.riah.sessions.model.Session;
 import com.riah.sessions.model.SessionDB;
@@ -84,6 +88,14 @@ public class SessionService {
 		Map<String, String> results=new HashMap<>();
 		JSONObject json = new JSONObject(sessionsParameters);
 		JSONArray sessions=json.getJSONArray("sessions");
+		String implementationParameters=json.getJSONArray("implementationParameters").toString();
+		JSONObject sessionVersions=json.getJSONObject("sessionVersions");
+		
+	    Type listType = new TypeToken<List<ImplementationParameterDTO>>() {}.getType();
+		List<ImplementationParameterDTO> implementationParametersParsed=new Gson().fromJson(implementationParameters,listType);
+		if(implementationParametersParsed.size()==0) {
+			return null;
+		}
 		OperationDB operation=operationService.loadOperation(opId);
 		List<String> codeLines=operation.getCode();
 		String basicCode="";
@@ -91,11 +103,19 @@ public class SessionService {
 			basicCode+=codeLines.get(i)+"\n";
 		for(int i=0;i<sessions.length();i++) {
 			String code=basicCode;
+			String version=sessionVersions.getString(sessions.getString(i));
+			Map<String,String> versionParsedVariables=new HashMap<>();
+			for(ImplementationParameterDTO ip:implementationParametersParsed) {
+				if(ip.getVersion().contentEquals(version)){
+					versionParsedVariables.put(ip.getAlias(), ip.getParameter());
+				}
+			}
 			SessionDB session=loadSessionParameters(sessions.getString(i));
 			List<String> variables=operation.getVariables();
 			Map<String,String[]> parameterList=session.getParameters();
 			for(int j=0;j<variables.size();j++) {
-				code+=variables.get(j)+"=["+String.join(",",parameterList.get(variables.get(j)))+"]\n";
+				String variable=versionParsedVariables.get(variables.get(j));
+				code+=variables.get(j)+"=["+String.join(",",parameterList.get(variable))+"]\n";
 			}
 			code+=operation.getMethod_call();
 			results.put(sessions.get(i).toString(), PythonService.execute(code));

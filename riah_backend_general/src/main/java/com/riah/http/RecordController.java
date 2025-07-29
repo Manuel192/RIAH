@@ -29,7 +29,10 @@ public class RecordController {
 	@GetMapping("/loadRecord")
     public ResponseEntity<String> loadRecord(@RequestParam String patient) throws ParseException{
 		String recordID=recordService.loadRecord(patient);
-		return ResponseEntity.ofNullable(recordID);
+		if(recordID.length()>0)
+			return ResponseEntity.ok(recordID);
+		else
+			return ResponseEntity.ofNullable(null);
     }
 	
 	@CrossOrigin(origins = "http://localhost:3000")

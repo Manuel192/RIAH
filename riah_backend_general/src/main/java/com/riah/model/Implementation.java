@@ -39,6 +39,11 @@ import jakarta.persistence.Table;
 			this.operation = operation;
 			this.version = version;
 		}
+		
+		public Implementation(Operation operation, Version version) {
+			this.operation = operation;
+			this.version = version;
+		}
 
 		public Implementation() {
 		}

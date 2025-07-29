@@ -64,6 +64,9 @@ public class SessionController {
 	@PutMapping("/calculateData")
 	public ResponseEntity<Map<String, String>> calculateData (@RequestParam String operation, @RequestBody String sessions) throws ParseException{
 		Map<String,String> sessionData=sessionService.calculateData(sessions, operation);
+		if(sessionData.size()==0) {
+			ResponseEntity.ofNullable(null);
+		}
 		return ResponseEntity.ok(sessionData);
 	}
 } 
