@@ -11,7 +11,12 @@ public class Frame {
         return dataValues;
     }
     
-    public void addDataValue(String dataName, String dataValue) {
-    	dataValues.put(dataName, dataValue);
-    }
+    public void setDataValues(Map<String, String> dataValues) {
+		this.dataValues = dataValues;
+	}
+
+	public Frame(Map<String, String> dataValues) {
+		super();
+		this.dataValues = dataValues;
+	}
 }

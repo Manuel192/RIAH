@@ -35,11 +35,11 @@ public class Session {
     private Patient patient;
 
     @ManyToOne
-    @JoinColumn(name = "game_id", nullable = false)
-    private Game game;
+    @JoinColumn(name = "version_id", nullable = false) 
+    private Version version;
     
-    public Session(UUID game, UUID patient, Date date, String videoID, String dataID) {
-    	this.game=new Game(game);
+    public Session(UUID version, UUID patient, Date date, String videoID, String dataID) {
+    	this.version=new Version(version);
     	this.date=date;
     	this.patient=new Patient(patient);
     	this.videoID=videoID;
@@ -82,12 +82,12 @@ public class Session {
 		this.patient = patient;
 	}
 
-	public Game getGame() {
-		return game;
+	public Version getVersion() {
+		return version;
 	}
 
-	public void setGame(Game game) {
-		this.game = game;
+	public void setVersion(Version version) {
+		this.version = version;
 	}
 
 	public String getVideoID() {

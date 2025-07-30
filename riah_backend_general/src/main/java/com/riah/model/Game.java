@@ -22,12 +22,23 @@ public class Game {
     @Column(name = "name", nullable = false)
     private String name;
     
+    @Column(name = "thumbnail_id", nullable = false)
+    private String thumbnailID;
+    
     @PrePersist
     public void prePersist() {
       id = UUID.randomUUID();
     }
     
-    public Game(UUID id) {
+    public String getThumbnailID() {
+		return thumbnailID;
+	}
+
+	public void setThumbnailID(String thumbnailID) {
+		this.thumbnailID = thumbnailID;
+	}
+
+	public Game(UUID id) {
     	this.id=id;
     }
     
@@ -49,7 +60,8 @@ public class Game {
 		this.name = name;
 	}
 
-	public Game(String name) {
+	public Game(String name, String thumbnailID) {
 		this.name = name;
+		this.thumbnailID=thumbnailID;
 	}
 }

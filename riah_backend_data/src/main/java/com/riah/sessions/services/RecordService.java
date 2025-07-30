@@ -24,9 +24,14 @@ public class RecordService {
 	
 	@Autowired
 	private RecordDAO recordDAO;
+	
+	public String insertRecord() {
+		String recordID=recordDAO.insertRecord();
+		return recordID;
+	}
 
-	public RecordDTO loadRecord() throws ParseException {
-		Recordd record=recordDAO.loadRecord();
+	public RecordDTO loadRecord(String id) throws ParseException {
+		Recordd record=recordDAO.loadRecord(id);
 		if(record==null) return null;
 		List<String> data=record.getData();
 		
@@ -46,15 +51,9 @@ public class RecordService {
 	public boolean updateRecord(String record) {
 		JSONObject json = new JSONObject(record);
 		JSONArray graphs=json.getJSONArray("data");
-		try{
-			String id=json.getString("id");
-			RecordInsert recordToUpdate=new RecordInsert(id,graphs.toList());
-			recordDAO.updateRecord(recordToUpdate);
-		}catch (JSONException jsone) {
-			RecordInsert recordToUpdate=new RecordInsert(graphs.toList());
-			recordDAO.updateRecord(recordToUpdate);
-		}
-		
+		String id=json.getString("id");
+		RecordInsert recordToUpdate=new RecordInsert(id,graphs.toList());
+		recordDAO.updateRecord(recordToUpdate);
 		return true;
 	}
 }

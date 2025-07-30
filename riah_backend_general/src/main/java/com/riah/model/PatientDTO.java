@@ -16,9 +16,6 @@ public class PatientDTO {
 	@JsonProperty("gender")
     private String gender;
     
-	@JsonProperty("birthdate")
-    private Date birthdate;
-    
 	@JsonProperty("hospital")
     private String hospital;
     
@@ -61,14 +58,6 @@ public class PatientDTO {
 
 	public void setGender(String gender) {
 		this.gender = gender;
-	}
-
-	public Date getBirthdate() {
-		return birthdate;
-	}
-
-	public void setBirthdate(Date birthdate) {
-		this.birthdate = birthdate;
 	}
 	
 	

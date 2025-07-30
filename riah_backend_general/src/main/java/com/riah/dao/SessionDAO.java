@@ -21,10 +21,10 @@ public interface SessionDAO extends JpaRepository<Session, Integer> {
     @Query("SELECT s FROM Session s WHERE s.date >=:firstDate AND s.date<=:lastDate")
 	List<Session> loadDateFilteredSessions(@Param("firstDate") Date firstDate, @Param("lastDate") Date lastDate);
     
-    @Query("SELECT s FROM Session s WHERE s.game = :game AND s.patient=:patientID")
+    @Query("SELECT s FROM Session s, Version v WHERE s.version = v AND v.game = :game AND s.patient=:patientID")
 	List<Session> findByGamePatient(@Param("game") Game game, @Param("patientID") Patient patient);
     
-    @Query("SELECT s FROM Session s WHERE s.game = :game")
+    @Query("SELECT s FROM Session s, Version v WHERE s.version = v AND v.game = :game")
 	List<Session> findByGame(@Param("game") Game game);
     
     @Query("SELECT s FROM Session s WHERE s.patient=:patientID")

@@ -9,14 +9,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "Sessions")
 public class Session {
 	private ObjectId _id;
-    private ArrayList<String> data;
+    private String data;
+    private String parameters;
 
-    public ArrayList<String> getData() {
+    public String getData() {
         return data;
     }
     
-    public Session(ArrayList<String> data) {
+    public Session(String data, String parameters) {
     	this.data=data;
+    	this.parameters=parameters;
     }
 
 	public ObjectId get_id() {
@@ -26,5 +28,16 @@ public class Session {
 	public void set_id(ObjectId _id) {
 		this._id = _id;
 	}
-    
+
+	public String getParameters() {
+		return parameters;
+	}
+
+	public void setParameters(String parameters) {
+		this.parameters = parameters;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
 }

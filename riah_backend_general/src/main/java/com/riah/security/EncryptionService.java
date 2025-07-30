@@ -54,7 +54,7 @@ import jakarta.mail.internet.MimeMessage;
 @Service
 public class EncryptionService {
 	
-	private static String secret_key="yP*57->WGWwxkuMP";
+	private static String secret_key=System.getProperty("ENCRYPTION_CODE");
 	
 	public static String encrypt(String data) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException  {
 		SecretKeySpec key = new SecretKeySpec(secret_key.getBytes(), "AES");

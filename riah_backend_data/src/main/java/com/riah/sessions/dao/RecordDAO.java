@@ -1,10 +1,12 @@
 package com.riah.sessions.dao;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import org.bson.types.Binary;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -27,6 +29,12 @@ public class RecordDAO {
     
 	String recordsCollection="Records";
 	
+	public String insertRecord() {
+		RecordInsert recordToInsert=new RecordInsert(new ArrayList<>());
+		String recordID=mongoTemplate.insert(recordToInsert).getId();
+		return recordID;
+	}
+	
 	public void updateRecord(RecordInsert record){
 		try {
 			Query query=new Query(Criteria.where("_id").is(record.getId()));
@@ -39,8 +47,9 @@ public class RecordDAO {
 		}
 	}
 
-	public Recordd loadRecord() {
-		List<Recordd> record=mongoTemplate.findAll(Recordd.class, recordsCollection);
+	public Recordd loadRecord(String id) {
+		Query query=new Query(Criteria.where("_id").is(id));
+		List<Recordd> record=mongoTemplate.find(query, Recordd.class, recordsCollection);
 		return record.getFirst();
 	}
 }

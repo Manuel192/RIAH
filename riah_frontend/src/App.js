@@ -1,19 +1,20 @@
 import './App.css';
-import Register from './components/Register_component';
-import Register2FA from './components/Register_2FA_component';
-import SignIn from './components/Sign_in_component';
-import HomePanel from './components/Home_panel_component';
-import Create_session from './components/Create_session_component';
-import Evolution from './components/Evolution_component';
-import Patients_list from './components/Patients_list_component';
-import Raw_data from "./components/Raw_data_component"
+import Register from './components/RegisterComponent';
+import Register2FA from './components/Register2FAComponent';
+import SignIn from './components/SignInComponent';
+import HomePanel from './components/HomePanelComponent';
+import CreateSession from './components/CreateSessionComponent';
+import Evolution from './components/EvolutionComponent';
+import Patients_list from './components/PatientsListComponent';
+import Raw_data from "./components/RawDataComponent"
 import ModelScene from './components/3DModelScene';
-import PointsScene from './components/3DPointsScene';
-import Create_Patient from './components/Create_patient_component';
+import RegisterCompleted from './components/RegisterCompletedComponent';
+import Patient_view from './components/PatientViewController';
 import { useNavigate } from 'react-router-dom';
 import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import Admin from './components/Admin_component';
+import Admin from './components/AdminComponent';
+import Versions from './components/VersionsComponent';
 
 function App() {
   const navigate=useNavigate();
@@ -27,41 +28,68 @@ function App() {
 
   const RedirectRoute = async () => {
       if(sessionStorage.getItem("token")){
-        const responseToken = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/checkUserToken?token="+sessionStorage.getItem("token"));
-        if(responseToken.ok){
-          navigate("/user/patients-list");
+        const responsePatientToken = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/checkPatientToken?token="+sessionStorage.getItem("token"));
+        if(responsePatientToken.ok){
+          navigate("/patient");
         }
-        const responseToken2 = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/checkAdminToken?token="+sessionStorage.getItem("token"));
-        if(responseToken2.ok){
-          navigate(process.env.REACT_APP_ADMIN_URL);
+        const responseTherapistToken = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/checkTherapistToken?token="+sessionStorage.getItem("token"));
+        if(responseTherapistToken.ok){
+          navigate("/therapist/patients-list");
+        }
+        const responseAdminToken = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/checkAdminToken?token="+sessionStorage.getItem("token"));
+        if(responseAdminToken.ok){
+          navigate("/admin");
         }
     }
   };
 
-  const ProtectedUserRoute = async () => {
-      if(sessionStorage.getItem("token")){
-        const responseToken = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/checkUserToken?token="+sessionStorage.getItem("token"));
-        if(!responseToken.ok){
-          navigate("/");
-        }else{
-          const newUserID = await responseToken.text();
-          setUserID(newUserID)
-          return newUserID;
-        }
+  const ProtectedPatientRoute = async () => {
+    if(sessionStorage.getItem("token")){
+      const responseToken = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/checkPatientToken?token="+sessionStorage.getItem("token"));
+      if(!responseToken.ok){
+        navigate("/");
+      }else{
+        const newUserID = await responseToken.text();
+        setUserID(newUserID)
+        return newUserID;
       }
+    }else{
+      navigate("/");
     }
+  }
+
+  const ProtectedTherapistRoute = async () => {
+    if(sessionStorage.getItem("token")){
+      const responseToken = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/checkTherapistToken?token="+sessionStorage.getItem("token"));
+      if(!responseToken.ok){
+        navigate("/");
+      }else{
+        const newUserID = await responseToken.text();
+        setUserID(newUserID)
+        return newUserID;
+      }
+    }else{
+      navigate("/");
+    }
+  }
 
   const ProtectedAdminRoute = async () => {
       if(sessionStorage.getItem("token")){
         const responseToken = await fetch(process.env.REACT_APP_GENERAL_URL+"/token/checkAdminToken?token="+sessionStorage.getItem("token"));
         if(!responseToken.ok){
             navigate("/");
-          }
+        }else{
+          const newUserID = await responseToken.text();
+          setUserID(newUserID)
+          return newUserID;
+        }
+      }else{
+        navigate("/");
       }
     };
   
-  const handleShowCloseSession = () => {
-    setMenuOpen(!menuOpen);
+  const handleHome = () => {
+    navigate("/");
   }
 
   const handleCloseSession = () => {
@@ -72,48 +100,58 @@ function App() {
   }
   
   return (
+    <>
     <div className="App">
-       <header className="header">
-        <div className="left-section">
-          <img src={require('./media/RIAH_default_icon.png')} width={60} alt="Logo" className="logo" />
-          <h1 className="title">&nbsp;RIAH</h1>
+       {/* Header */}
+      <header className="relative z-20 flex justify-between bg-cyan-600 items-center px-8 py-6 text-white">
+        <div className="flex items-center gap-8">
+          <img src={require("./media/Logo.png")} onClick={handleHome} alt="RIAH" className="h-10" />
         </div>
-        {userID &&(
-        <div className="right-section">
-          <button className="nav-button">Rehab-Immersive</button>
-          <button className="nav-button">Sobre Nosotros</button>
-          <button className="nav-button" onClick={handlePanel}>Mi panel</button>
-          <button onClick={handleShowCloseSession}>
-            <img src={require('./media/RIAH_profile.png')} alt="Profile" className="profile-pic" />
-          </button>
-        </div>
-        )}
+
+        <nav className="flex gap-6 font-medium text-sm ">
+          <a href="#home" className="hover:underline">Home</a>
+          <div className="relative group">
+            <button className="hover:underline">What it offers</button>
+          </div>
+          <a href="#plan" className="hover:underline">Project Plan</a>
+          <a href="#arch" className="hover:underline">Architecture</a>
+          <div className="relative group">
+            <button className="hover:underline">Results</button>
+          </div>
+          <a href="#people" className="hover:underline">People</a>
+        </nav>
       </header>
-      {menuOpen && (
+      {userID && (
         <div class="rectangle close-session-panel">
           <button class="close-session" onClick={handleCloseSession}>Cerrar sesión</button>
         </div>
       )}
       <Routes>
-        <Route path="/" element={<HomePanel />} />
+        <Route path="/" element={<HomePanel/>} />
+        <Route path="/register-completed" element={<RegisterCompleted/>} />
         <Route path="/register" element={<Register redirect={()=>RedirectRoute()} setUser={(user)=>setUserID(user)}/>} />
         <Route path="/register-2fa" element={<Register2FA redirect={()=>RedirectRoute()} userID={userID}/>} />
         <Route path="/sign-in" element={<SignIn redirect={()=>RedirectRoute()} userID={userID}/>} />
-        <Route path="/user/3d-model" element={ <ModelScene redirect={()=>ProtectedUserRoute()}/>} />
-        <Route path="/user/3d-points" element={<PointsScene redirect={()=>ProtectedUserRoute()}/>} />
-        <Route path="/user/patients-list" element={ <Patients_list redirect={()=>ProtectedUserRoute()} userID={userID}/>} />
-        <Route path="/user/raw-data" element={ <Raw_data redirect={()=>ProtectedUserRoute()}/>} />
-        <Route path="/user/evolution" element={ <Evolution redirect={()=>ProtectedUserRoute()}/>} />
-        <Route path="/user/create-session" element={ <Create_session redirect={()=>ProtectedUserRoute()}/>} />
-        <Route path="/user/create-patient" element={ <Create_Patient  redirect={()=>ProtectedUserRoute()} userID={userID}/>} />
+        
+        <Route path="/therapist/patients-list" element={ <Patients_list redirect={()=>ProtectedTherapistRoute()} userID={userID}/>} />
+        <Route path="/therapist/raw-data" element={ <Raw_data redirect={()=>ProtectedTherapistRoute()}/>} />
+        <Route path="/therapist/evolution" element={ <Evolution redirect={()=>ProtectedTherapistRoute()}/>} />
+        
+        <Route path="/patient/raw-data" element={ <Raw_data redirect={()=>ProtectedPatientRoute()}/>} />
+        <Route path="/patient/evolution" element={ <Evolution redirect={()=>ProtectedPatientRoute()}/>} />
+        <Route path="/patient" element={ <Patient_view redirect={()=>ProtectedPatientRoute()} userID={userID}/>} />
+        
         <Route path="/admin" element={<Admin redirect={()=>ProtectedAdminRoute()} />} />
+        
+        <Route path="/versions" element={ <Versions/>} />
+        <Route path="/3d-model" element={ <ModelScene/>} />
         <Route path="*" element={<HomePanel/>}/>
       </Routes>
-      <div className="rights-sub-banner">
-        &copy; 2024 Grupo AIR - Todos los derechos reservados
-      </div>
     </div>
-
+    <div className="rights-sub-banner">
+        &copy; 2025 Grupo AIR - Todos los derechos reservados
+      </div>
+      </>
   );
 }
 

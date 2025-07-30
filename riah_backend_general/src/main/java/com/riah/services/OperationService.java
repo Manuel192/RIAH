@@ -13,6 +13,7 @@ import com.riah.dao.OperationDAO;
 import com.riah.model.Game;
 import com.riah.model.Operation;
 import com.riah.model.OperationDTO;
+import com.riah.model.Session;
 
 @Service
 public class OperationService {
@@ -23,10 +24,12 @@ public class OperationService {
 	@Autowired
 	private SessionService sessionService;
 		
-	public List<OperationDTO> loadOperations(String id) throws ParseException {
-		Game game=new Game(UUID.fromString(id));
-		List<Operation> operations= operationDAO.findByGame(game);
-		if(operations==null) return null;
+	@Autowired
+	private ImplementationService implementationService;
+	
+	public List<OperationDTO> loadOperations() throws ParseException {
+		List<Operation> operations= operationDAO.findAll();
+		if(operations.size()==0) return null;
 		List<OperationDTO> parsedOperations= mapOperations(operations);
 		return parsedOperations;
 	}
@@ -47,13 +50,16 @@ public class OperationService {
 	private List<OperationDTO> mapOperations(List<Operation> operations) {
 		List<OperationDTO> result= new ArrayList<>();
 		for(int i=0;i<operations.size();i++) {
+			List<Session> gameSessions=sessionService.getRawSessionsByGame(operations.get(i).getGame().getId());
 			OperationDTO operationDTO = new OperationDTO();
 			operationDTO.setId(operations.get(i).getId());
 			operationDTO.setName(operations.get(i).getName());
 			operationDTO.setGameId(operations.get(i).getGame().getId());
 			operationDTO.setOperation(operations.get(i).getOperation());
-			operationDTO.setSessions(sessionService.getSessionsByGame(operations.get(i).getGame().getId()));
-			operationDTO.setSessionDates(sessionService.getSessionDatesByGame(operations.get(i).getGame().getId()));
+			operationDTO.setVersions(implementationService.getOperationImplementedVersions(operations.get(i).getId()));
+			operationDTO.setSessions(sessionService.getSessionsByGame(gameSessions));
+			operationDTO.setSessionDates(sessionService.getSessionDatesByGame(gameSessions));
+			operationDTO.setSessionVersions(sessionService.getSessionVersionsByGame(gameSessions));
             result.add(operationDTO);
 		}  
             return result;

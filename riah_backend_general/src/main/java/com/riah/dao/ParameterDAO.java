@@ -9,9 +9,10 @@ import org.springframework.stereotype.Repository;
 
 import com.riah.model.Game;
 import com.riah.model.Parameter;
+import com.riah.model.Version;
 
 @Repository
 public interface ParameterDAO extends JpaRepository<Parameter, Integer> {
-	@Query("SELECT p FROM Parameter p WHERE p.game = :game")
-	List<Parameter> findByGame(@Param("game") Game game);
+	@Query("SELECT p FROM Parameter p WHERE p.version = :version")
+	List<Parameter> findByVersion(@Param("version") Version version);
 }
