@@ -59,7 +59,7 @@ function Register2FA({redirect, userID=""}) {
                     alert("Has realizado demasiados intentos. Este registro queda invalidado. Prueba a registrarte más tarde");
                     return;
                 }
-                alert("El código introducido no es correcto o ha expirado. Por favor, repita la operación o reintente el registro.");
+                alert("El código introducido no es correcto o ha expirado. Por favor, repita la operación o modifique el registro.");
             }
         } catch (error) {
             alert(error);

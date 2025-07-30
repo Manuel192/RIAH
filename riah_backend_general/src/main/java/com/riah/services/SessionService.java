@@ -101,10 +101,14 @@ public class SessionService {
 		Session savedSession=sessionDAO.save(sessionToInsert);
 		return savedSession.getId().toString();
 	}
-
-	public Map<String,Date> getSessionDatesByGame(UUID gameId) {
+	
+	public List<Session> getRawSessionsByGame(UUID gameId){
 		Game game=new Game(gameId);
 		List<Session> sessions= sessionDAO.findByGame(game);
+		return sessions;
+	}
+
+	public Map<String,Date> getSessionDatesByGame(List<Session> sessions) {
 		Map<String,Date> result=new HashMap<>();
 		for(int i=0;i<sessions.size();i++) {
 			Session session=sessions.get(i);
@@ -113,9 +117,7 @@ public class SessionService {
 		return result;
 	}
 	
-	public Map<String,String> getSessionVersionsByGame(UUID gameId) {
-		Game game=new Game(gameId);
-		List<Session> sessions= sessionDAO.findByGame(game);
+	public Map<String,String> getSessionVersionsByGame(List<Session> sessions) {
 		Map<String,String> result=new HashMap<>();
 		for(int i=0;i<sessions.size();i++) {
 			Session session=sessions.get(i);
@@ -124,9 +126,7 @@ public class SessionService {
 		return result;
 	}
 	
-	public List<String> getSessionsByGame(UUID gameId) {
-		Game game=new Game(gameId);
-		List<Session> sessions= sessionDAO.findByGame(game);
+	public List<String> getSessionsByGame(List<Session> sessions) {
 		sessions.sort(new Comparator<Session>() {
 			@Override
 			public int compare(Session o1, Session o2) {

@@ -16,7 +16,11 @@ const handleDownload = async (apkName) => {
 useEffect(() => {
     const init = async () => {
       try{
-        const responseGames = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames?token="+sessionStorage.getItem("token"));
+        const responseGames = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames", {
+            headers: {
+                'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+            },
+          })
         if(!responseGames.ok){
           setGames([]);
           return;
@@ -25,7 +29,11 @@ useEffect(() => {
         const gamesParsed = await responseGames.json();
         setGames(gamesParsed);
 
-        const responseVersions = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadVersions?token="+sessionStorage.getItem("token"));
+        const responseVersions = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadVersions?token="+sessionStorage.getItem("token"),{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
         if(!responseVersions.ok){
           setVersions([]);
           return;

@@ -81,7 +81,7 @@ public class UserService {
 	@Value("${spring.mail.username}")
     private String from;
 	
-	private static final String CLIENT_SECRET_PATH = System.getenv("CLIENT_SECRET_PATH");
+	private static final String CLIENT_SECRET_PATH = System.getProperty("CLIENT_SECRET_PATH");
     private static final String TOKENS_DIRECTORY = "src/main/resources/Tokens";
     private static final String SCOPE = "https://mail.google.com/";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();

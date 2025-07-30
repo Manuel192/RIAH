@@ -45,7 +45,6 @@ const ModelScene = ({redirect}) => {
 
   useEffect(() => {
     const init = async () => {
-      await redirect();
       if (isPlaying) {
         intervalRef.current = setInterval(() => {
           setFrame((prevIndex) => {

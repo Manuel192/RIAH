@@ -57,7 +57,11 @@ function CreateSession({patient}) {
     useEffect(() => {
         const init = async () => {
             try{
-                const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames?token="+sessionStorage.getItem("token"));
+                const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames", {
+                headers: {
+                    'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+                },
+            });
                 if(!response.ok){
                     setGames([]);
                     return;
@@ -66,7 +70,11 @@ function CreateSession({patient}) {
                 const responseData = await response.json();
                 setGames(responseData);
 
-                const responseVersions = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadVersions?token="+sessionStorage.getItem("token"));
+                const responseVersions = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadVersions", {
+                headers: {
+                    'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+                },
+            });
                 if(!responseVersions.ok){
                     setGames([]);
                     return;
@@ -158,6 +166,7 @@ function CreateSession({patient}) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
             },
             body: JSON.stringify({ frames: importedData }),
         });
@@ -172,6 +181,7 @@ function CreateSession({patient}) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': 'Bearer '+sessionStorage.getItem("token"),
                 },
                 body: JSON.stringify({ frames: importedData }),
             });
@@ -183,6 +193,7 @@ function CreateSession({patient}) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': 'Bearer '+sessionStorage.getItem("token"),
                 },
                 body: JSON.stringify({ version: selectedVersion, date: selectedDate+" "+selectedHour+":"+selectedMinute+":"+selectedSecond, patient:patient.id, video_id:videoObtained, data_id: dataId }),
             });
@@ -212,6 +223,9 @@ function CreateSession({patient}) {
         try{
             const response = await fetch(process.env.REACT_APP_SESSIONS_URL+"/video/uploadVideo", {
             method: "POST",
+            headers: {
+                'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+            },
             body: formData,
             });
 

@@ -22,18 +22,13 @@ public class SessionDAO {
 	MongoTemplate mongoTemplate;
     
 	String sessionsCollection="Sessions";
-
-	public SessionDB loadSessionParameters(String id) {
-		Query query = new Query(Criteria.where("_id").is(new ObjectId(id)));
-		return mongoTemplate.findOne(query, SessionDB.class, sessionsCollection);
-	}
 	
 	public Session loadSessionRawData(String id) {
 			Query query = new Query(Criteria.where("_id").is(new ObjectId(id)));
 			return mongoTemplate.findOne(query, Session.class, sessionsCollection);
 		}
 
-	public SessionDB insertSession(SessionDB sessionToInsert) {
+	public Session insertSession(Session sessionToInsert) {
 		return mongoTemplate.save(sessionToInsert, sessionsCollection);
 	}
 }

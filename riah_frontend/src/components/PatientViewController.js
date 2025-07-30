@@ -16,20 +16,32 @@ function Patient_view({redirect}) {
   useEffect(()=>{
     const init = async () => {
       const patientID=await redirect();
-      const responsePatient = await fetch(process.env.REACT_APP_GENERAL_URL+"/patient/loadPatient?patientID="+patientID);
+      const responsePatient = await fetch(process.env.REACT_APP_GENERAL_URL+"/patient/loadPatient?patientID="+patientID,{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
       if(!responsePatient.ok){
         navigate("/");
       }
       const patientParsed = await responsePatient.json();
       setPatient(patientParsed);
 
-      const responseRequestedTherapists = await fetch(process.env.REACT_APP_GENERAL_URL+"/therapist/loadRequestedTherapists?user="+patientID);
+      const responseRequestedTherapists = await fetch(process.env.REACT_APP_GENERAL_URL+"/therapist/loadRequestedTherapists?user="+patientID,{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
       if(responseRequestedTherapists.ok){
         const requestedTherapistsParsed = await responseRequestedTherapists.json();
         setRequestedTherapists(requestedTherapistsParsed);
       }
 
-      const responseTherapists = await fetch(process.env.REACT_APP_GENERAL_URL+"/therapist/loadTherapists?user="+patientID);
+      const responseTherapists = await fetch(process.env.REACT_APP_GENERAL_URL+"/therapist/loadTherapists?user="+patientID,{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
       if(responseTherapists.ok){
         const therapistsParsed = await responseTherapists.json();
         setTherapists(therapistsParsed);
@@ -59,6 +71,7 @@ function Patient_view({redirect}) {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer '+sessionStorage.getItem("token"),
       },
       body:therapist.id
     });
@@ -73,6 +86,7 @@ function Patient_view({redirect}) {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer '+sessionStorage.getItem("token"),
       },
       body:therapist.id
     });

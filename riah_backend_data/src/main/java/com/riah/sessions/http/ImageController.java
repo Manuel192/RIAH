@@ -2,6 +2,7 @@ package com.riah.sessions.http;
 
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.riah.sessions.services.ImageService;
+import com.riah.sessions.services.TokenAuthService;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,9 @@ public class ImageController {
     
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadImage(@RequestParam String name, @RequestParam("file") MultipartFile file) {
-        try {
+    public ResponseEntity<String> uploadImage(@RequestHeader ("Authorization") String token,@RequestParam String name, @RequestParam("file") MultipartFile file) {
+    	if(!TokenAuthService.isValidToken(token.substring(7), false, false, true)) return ResponseEntity.ofNullable(null);
+    	try {
             String id = imageService.uploadImage(name, file);
             return ResponseEntity.ok(id);
         } catch (Exception e) {
@@ -33,8 +35,9 @@ public class ImageController {
 
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/{id}")
-    public ResponseEntity<InputStreamResource> getImage(@PathVariable String id) {
-        try {
+    public ResponseEntity<InputStreamResource> getImage(@RequestHeader ("Authorization") String token,@PathVariable String id) {
+    	if(!TokenAuthService.isValidToken(token.substring(7), true, true, true)) return ResponseEntity.ofNullable(null);
+    	try {
             InputStream stream = imageService.getImage(id);
             return ResponseEntity.ok()
             .contentType(MediaType.IMAGE_JPEG)

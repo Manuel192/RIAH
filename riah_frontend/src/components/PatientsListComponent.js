@@ -22,19 +22,31 @@ function Patients_list({redirect}) {
       setUserID(newUserID);
 
       var newUnaccessiblePatients=[];
-      const responseHospitalPatients = await fetch(process.env.REACT_APP_GENERAL_URL+"/patient/loadHospitalPatients?user="+newUserID);
+      const responseHospitalPatients = await fetch(process.env.REACT_APP_GENERAL_URL+"/patient/loadHospitalPatients?user="+newUserID,{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
       if(responseHospitalPatients.ok){
         newUnaccessiblePatients=await responseHospitalPatients.json();
       }else return;
 
-       const responseaccessiblePatients = await fetch(process.env.REACT_APP_GENERAL_URL+"/patient/loadAccessiblePatients?user="+newUserID);
+       const responseaccessiblePatients = await fetch(process.env.REACT_APP_GENERAL_URL+"/patient/loadAccessiblePatients?user="+newUserID,{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
       if(responseaccessiblePatients.ok){
         const accessiblePatientsParsed = await responseaccessiblePatients.json();
         setaccessiblePatients(accessiblePatientsParsed);
         newUnaccessiblePatients=newUnaccessiblePatients-accessiblePatientsParsed;
       }
 
-      const responseRequestedPatients = await fetch(process.env.REACT_APP_GENERAL_URL+"/patient/loadRequestedPatients?user="+newUserID);
+      const responseRequestedPatients = await fetch(process.env.REACT_APP_GENERAL_URL+"/patient/loadRequestedPatients?user="+newUserID,{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
       if(responseRequestedPatients.ok){
         const requestedPatientsParsed = await responseRequestedPatients.json();
         setRequestedPatients(requestedPatientsParsed);
@@ -74,6 +86,7 @@ function Patients_list({redirect}) {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer '+sessionStorage.getItem("token"),
       },
       body:patient.name
     });

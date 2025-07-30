@@ -28,6 +28,7 @@ const Evolution = ({redirect}) => {
   const [selectedData, setSelectedData] = useState([]);
   const [selectedInitDate, setSelectedInitDate] = useState([]);
   const [selectedEndDate, setSelectedEndDate] = useState([]);
+  const [implementationParameters, setImplementationParameters] = useState([]);
   const [games, setGames] = useState([]);
   const [dataOptions, setDataOptions] = useState([[],[],[],[]]);
   const [recordID,setRecordID] = useState({});
@@ -48,42 +49,53 @@ const Evolution = ({redirect}) => {
     const init = async () => {
         await redirect();
         try{
-            console.log(patient);
-            const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames?token="+sessionStorage.getItem("token"));
+           const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames", {
+                headers: {
+                    'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+                },
+              });
             if(!response.ok){
                 setGames([]);
                 alert("No pudieron cargarse los juegos para filtrar.");
                 return;
             }
-            // convert data to json
             const responseData = await response.json();
             setGames(responseData);
         }catch(error){
             alert(error)
         }
-        var response = await fetch(process.env.REACT_APP_GENERAL_URL+'/record/loadRecord?patient='+patient.id);
-        var responseData = "";
         
+        var response = await fetch(process.env.REACT_APP_GENERAL_URL+'/record/loadRecord?patient='+patient.id,{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
+        var responseData = "";
         if(!response.ok){
           response= await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/insertRecord',{
             method: 'POST',
             headers: {
-          'Content-Type': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
           }})
           responseData=await response.text();
           const responseRecordRelations=await fetch(process.env.REACT_APP_GENERAL_URL+"/record/insertRecord?patient="+patient.id+"&dataID="+responseData,{
             method: 'POST',
             headers: {
-          'Content-Type': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
           }})
         }else{
           responseData=await response.text();
         }
-        const responseRecord =  await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/loadRecord?id='+responseData);
-
-        const responsRecordData = await responseRecord.json();
-        setRecordID(responsRecordData.id);
-        const obtainedGraphs=responsRecordData.graphs;
+        const responseRecord =  await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/loadRecord?id='+responseData,{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
+        const responseRecordData = await responseRecord.json();
+        setRecordID(responseRecordData.id);
+        const obtainedGraphs=responseRecordData.graphs;
         for(var i=0;i<obtainedGraphs.length;i++){
           selectedGame.push(obtainedGraphs[i].game || "");
           selectedData.push(obtainedGraphs[i].operation || "");
@@ -91,8 +103,20 @@ const Evolution = ({redirect}) => {
           selectedEndDate.push(obtainedGraphs[i].endDate || "");
           graphs.push("area");
         }
+        const responseImplementationParameters = await fetch(process.env.REACT_APP_GENERAL_URL+"/implementation/loadImplementationParameters",{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
+        if(!responseImplementationParameters.ok){
+          alert("Algo ha ido mal. Algunos datos no han cargado correctamente.");
+          return;
+        }
+        const implementationParametersParsed = await responseImplementationParameters.json();
+        setImplementationParameters(implementationParametersParsed);
+
         const obtainedDataOptions=await fetchAll(obtainedGraphs);
-        const newGraphData=await calculateAll(obtainedGraphs, obtainedDataOptions);
+        const newGraphData=await calculateAll(obtainedGraphs, obtainedDataOptions,implementationParametersParsed);
         setGraphData(newGraphData);
         setIsLoading(false);
     }
@@ -111,7 +135,11 @@ const Evolution = ({redirect}) => {
   const fetchAll = async (obtainedGraphs) => {
     const newDataOptions=[...dataOptions];
     for(var i=0;i<obtainedGraphs.length;i++){
-      const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations?gameId="+obtainedGraphs[i].game);
+      const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations?gameId="+obtainedGraphs[i].game,{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
       if(!response.ok){
         newDataOptions[i]=[];
         setDataOptions(newDataOptions);
@@ -129,7 +157,11 @@ const Evolution = ({redirect}) => {
   }
 
   const fetchCalculatedData = async (gameId, index) => {
-    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations?gameId="+gameId);
+    const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/operation/loadOperations?gameId="+gameId,{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
     if(!response.ok){
       const newDataOptions=[...dataOptions];
       newDataOptions[index]=[];
@@ -146,10 +178,10 @@ const Evolution = ({redirect}) => {
     setDataOptions(newDataOptions);
   }
 
-  const calculateAll = async (obtainedGraphs, obtainedDataOptions) => {
+  const calculateAll = async (obtainedGraphs, obtainedDataOptions,implementationParametersParsed) => {
     var newGraphData = [];
     for(var i=0;i<obtainedGraphs.length;i++){
-      const obtainedGraphData=await obtainDynamicCalculus(obtainedGraphs[i].operation,i,obtainedDataOptions);
+      const obtainedGraphData=await obtainDynamicCalculus(obtainedGraphs[i].operation,i,obtainedDataOptions,implementationParametersParsed);
       if(obtainedGraphData!=null){
         if(obtainedGraphData.length>0) newGraphData=[...newGraphData, ...obtainedGraphData];
         else newGraphData.push({"index":i,"session":"","value":0, "date":""});
@@ -158,24 +190,27 @@ const Evolution = ({redirect}) => {
     return newGraphData;
   }
 
-  const obtainDynamicCalculus = async (dataId,index,obtainedDataOptions) => {
+  const obtainDynamicCalculus = async (dataId,index,obtainedDataOptions,implementationParametersParsed) => {
     const optionToObtain=obtainedDataOptions[index].filter(data=>data.id===dataId).at(0);
-    try{ 
+    try{
+      const structuredImplementationParameters=implementationParametersParsed.filter(ip=>ip.operation===optionToObtain.id);
       const response = await fetch(process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/calculateData?operation="+optionToObtain.operation, {
           method: 'PUT',
           headers: {
               'Content-Type': 'application/json',
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
           },
-          body: JSON.stringify({"sessions":optionToObtain.sessions}),
+          body: JSON.stringify({"versions":optionToObtain.versions,"sessions":optionToObtain.sessions, "sessionVersions":optionToObtain.session_versions, "implementationParameters":structuredImplementationParameters}),
       });
       if(!response.ok){
-        return;
+        alert("La operación que está utilizando no es compatible con ninguna de sus sesiones actuales. Contacte con un administrador para corregirlo.")
       }
       const responseData = await response.json();
       const newGraphData = [];
-      for(var i=0;i<optionToObtain.sessions.length;i++){
-        await newGraphData.push({"index":index,"session":optionToObtain.sessions[i],
-        "value":Math.round(responseData[optionToObtain.sessions[i]]*1000)/1000, "date":optionToObtain.session_dates[optionToObtain.sessions[i]].split('T')[0]});
+      for(var i=0;i<Object.keys(responseData).length;i++){
+        const idSession=Object.keys(responseData)[i];
+        await newGraphData.push({"index":index,"session":idSession,
+        "value":Math.round(responseData[idSession]*1000)/1000, "date":optionToObtain.session_dates[idSession].split('T')[0]});
       }
       return newGraphData;
     }catch(error){
@@ -242,11 +277,12 @@ const Evolution = ({redirect}) => {
     if(newData===""){
       setGraphData(graphData.filter(graph => graph.index!=index));
     }
-
+    
     const responseCheck = await fetch(process.env.REACT_APP_SESSIONS_URL+'/record/updateRecord', {
       method: 'PUT',
       headers: {
           'Content-Type': 'application/json',
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
       },
       body: JSON.stringify({ id: recordID, data: data }),
     });
@@ -319,7 +355,7 @@ return (
         <div className="field">
         <label style={{fontWeight: "bold"}}>DATO</label>
           <select id="dropdown" value={selectedData[index]} className="dropdown" onChange={handleDataOptionChanged(index)} disabled={selectedGame[index]===""}>
-              <option value="" disabled="true">Ninguno</option>
+              <option value="">Ninguno</option>
                   {dataOptions[index]?.map((option, index) => (
                       <option key={index} value={option.id}>
                       {option.name}
@@ -338,7 +374,7 @@ return (
         </div>
         {graph==="area"?(
           <AreaChart
-          data={graphData.filter(graph=>graph.index===index&&(selectedInitDate[index].length<1 || selectedInitDate[index]<=graph.date)&&(selectedEndDate[index].length<1 || selectedEndDate[index]>=graph.date))}
+          data={graphData.filter(graph=>graph.index===index&&(selectedInitDate[index].length<1 || selectedInitDate[index]<=graph.date)&&(selectedEndDate[index].length<1 || selectedEndDate[index]>=graph.date) || {})}
           index="date"
           categories={["value"]}
           onValueChange={(v) => console.log(v)}
@@ -351,7 +387,7 @@ return (
         ):""}
         {graph==="bar"?(
           <BarChart
-          data={graphData.filter(graph=>graph.index===index&&(selectedInitDate[index].length<1 || selectedInitDate[index]<=graph.date)&&(selectedEndDate[index].length<1 || selectedEndDate[index]>=graph.date))}
+          data={graphData.filter(graph=>graph.index===index&&(selectedInitDate[index].length<1 || selectedInitDate[index]<=graph.date)&&(selectedEndDate[index].length<1 || selectedEndDate[index]>=graph.date)  || {})}
           index="date"
           categories={['value']}
           colors={getRandomColors(1,index)}

@@ -85,7 +85,11 @@ function Raw_data({redirect}) {
     const init = async () => {
         await redirect();
         try{
-            const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames?token="+sessionStorage.getItem("token"));
+           const response = await fetch(process.env.REACT_APP_GENERAL_URL+"/game/loadGames", {
+                headers: {
+                    'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+                },
+              })
             if(!response.ok){
                 setGames([]);
                 alert("No pudieron cargarse los juegos para filtrar.");
@@ -111,7 +115,7 @@ function Raw_data({redirect}) {
   }
 
   const handleModel = () => {
-    navigate('/therapist/3d-model', { state: {dataItems:dataItems,activeSessionData:activeSessionData}})
+    navigate('/3d-model', { state: {dataItems:dataItems,activeSessionData:activeSessionData}})
   }
 
   const loadSessions = async () => {
@@ -129,7 +133,11 @@ function Raw_data({redirect}) {
     const gameId=game?game:"X";
     try{
       const url=process.env.REACT_APP_GENERAL_URL+"/session/loadFilteredSessions?firstDate="+stDate+"&lastDate="+lDate+"&gameId="+gameId+"&patientId="+patient.id;
-      const response = await fetch(url);
+      const response = await fetch(url,{
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      });
       const sessionData = await response.json();
       if(sessionData.length<1){
         setSessions([]);
@@ -199,7 +207,11 @@ function Raw_data({redirect}) {
 
   const obtainRawData = async (item) => {
     const url=process.env.REACT_APP_SESSIONS_URL+"/rawDataSession/loadSessionRawData?id="+item.data_id;
-      const response = await fetch(url);
+      const response = await fetch(url, {
+          headers: {
+              'Authorization': 'Bearer '+sessionStorage.getItem("token"),
+          },
+      })
       if(!response.ok){
         return null;
       }
@@ -216,7 +228,7 @@ function Raw_data({redirect}) {
         return;
       }
       const newDataItems=sessionData.dataTypes.filter
-      (dataItem=>!(sessionData.frames[0].dataValues[dataItem].trim().length<1 || sessionData.frames[0].dataValues[dataItem].trim().isNaN));
+      (dataItem=>!(sessionData.frames[0].dataValues[dataItem].trim().length<1 || isNaN(sessionData.frames[0].dataValues[dataItem].trim())));
       setDataItems(newDataItems);
       setactiveSession(item);
       setactiveSessionData(sessionData);
@@ -359,7 +371,7 @@ function Raw_data({redirect}) {
                   <Card className="tremor-Card">
                     <h3 class="title">{dataItem}</h3>
                     <AreaChart
-                      data={activeSessionData.frames.map(frame=>(frame.dataValues))}
+                      data={activeSessionData.frames.map(frame=>(frame.dataValues || {}))}
                       index="Frame"
                       categories={[dataItem]}
                       maxValue={Number(selectedDataItemsValues[dataItem].max)}
@@ -402,7 +414,7 @@ function Raw_data({redirect}) {
                 </div>
                 <Card>
                   <AreaChart
-                    data={activeSessionData.frames.map(frame=>(frame.dataValues))}
+                    data={activeSessionData.frames.map(frame=>(frame.dataValues || {}))}
                     index="Frame"
                     categories={commonGraphDataItems}
                     xLabel="Frame"

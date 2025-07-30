@@ -99,4 +99,22 @@ public class TokenController {
 		String oToken=tokenService.createToken(id,role);
 		return ResponseEntity.ofNullable(oToken);
 	}
+	
+	@CrossOrigin(origins = "http://localhost:3000")
+	@GetMapping("/checkToken")
+	public boolean checkToken(@RequestParam String token, @RequestParam boolean checkPatient, @RequestParam boolean checkTherapist, @RequestParam boolean checkAdmin) throws ParseException {
+    	if(checkPatient) {
+    		if(tokenService.checkPatientToken(token).length()>0)
+    			return true;
+    	}
+    	if(checkTherapist) {
+    		if(tokenService.checkTherapistToken(token).length()>0)
+    			return true;
+    	}
+    	if(checkAdmin) {
+    		if(tokenService.checkAdminToken(token).length()>0)
+    			return true;
+    	}
+    	return false;
+    }
 }

@@ -27,16 +27,16 @@ import com.riah.services.GameService;
 @Service
 public class TokenService {
 	
-	private int MINUTES=30;
+	private static int MINUTES=30;
 	
-	private List<Token> therapistTokens = new ArrayList<>();
-	private List<Token> patientTokens = new ArrayList<>();
-	private List<Token> adminTokens = new ArrayList<>();
+	private static List<Token> therapistTokens = new ArrayList<>();
+	private static List<Token> patientTokens = new ArrayList<>();
+	private static List<Token> adminTokens = new ArrayList<>();
 	
 	@Autowired
 	private GameService gameService;
 	
-    public String checkPatientToken(String token) throws ParseException{
+    public static String checkPatientToken(String token) throws ParseException{
 		Optional<Token> tokenO=patientTokens.stream().filter(o -> o.getId().toString().contentEquals(token)).findFirst();
 		if(tokenO.isPresent()) {
 			Date currentTime=new Date(System.currentTimeMillis());
@@ -53,7 +53,7 @@ public class TokenService {
 		return "";
     }
     
-    public String checkTherapistToken(String token) throws ParseException{
+    public static String checkTherapistToken(String token) throws ParseException{
 		Optional<Token> tokenO=therapistTokens.stream().filter(o -> o.getId().toString().contentEquals(token)).findFirst();
 		if(tokenO.isPresent()) {
 			Date currentTime=new Date(System.currentTimeMillis());
@@ -70,7 +70,7 @@ public class TokenService {
 		return "";
     }
 	
-    public String checkAdminToken(String token) throws ParseException{
+    public static String checkAdminToken(String token) throws ParseException{
 		Optional<Token> tokenO=adminTokens.stream().filter(o -> o.getId().toString().contentEquals(token)).findFirst();
 		if(tokenO.isPresent()) {
 			Date currentTime=new Date(System.currentTimeMillis());
@@ -112,7 +112,7 @@ public class TokenService {
 		return newToken.getId().toString();
 	}
     
-    public boolean checkTokens(String token, boolean checkPatient, boolean checkTherapist, boolean checkAdmin) throws ParseException {
+    public static boolean checkTokens(String token, boolean checkPatient, boolean checkTherapist, boolean checkAdmin) throws ParseException {
     	if(checkPatient) {
     		if(checkPatientToken(token).length()>0)
     			return true;

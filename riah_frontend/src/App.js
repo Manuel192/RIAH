@@ -133,19 +133,18 @@ function App() {
         <Route path="/register-2fa" element={<Register2FA redirect={()=>RedirectRoute()} userID={userID}/>} />
         <Route path="/sign-in" element={<SignIn redirect={()=>RedirectRoute()} userID={userID}/>} />
         
-        <Route path="/therapist/3d-model" element={ <ModelScene redirect={()=>ProtectedTherapistRoute()}/>} />
         <Route path="/therapist/patients-list" element={ <Patients_list redirect={()=>ProtectedTherapistRoute()} userID={userID}/>} />
         <Route path="/therapist/raw-data" element={ <Raw_data redirect={()=>ProtectedTherapistRoute()}/>} />
         <Route path="/therapist/evolution" element={ <Evolution redirect={()=>ProtectedTherapistRoute()}/>} />
         
         <Route path="/patient/raw-data" element={ <Raw_data redirect={()=>ProtectedPatientRoute()}/>} />
         <Route path="/patient/evolution" element={ <Evolution redirect={()=>ProtectedPatientRoute()}/>} />
-        <Route path="/patient/3d-model" element={ <ModelScene redirect={()=>ProtectedPatientRoute()}/>} />
         <Route path="/patient" element={ <Patient_view redirect={()=>ProtectedPatientRoute()} userID={userID}/>} />
         
         <Route path="/admin" element={<Admin redirect={()=>ProtectedAdminRoute()} />} />
-        <Route path="/versions" element={ <Versions/>} />
         
+        <Route path="/versions" element={ <Versions/>} />
+        <Route path="/3d-model" element={ <ModelScene/>} />
         <Route path="*" element={<HomePanel/>}/>
       </Routes>
     </div>

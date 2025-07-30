@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.riah.dao.ImplementationDAO;
 import com.riah.dao.ImplementationParameterDAO;
 import com.riah.dao.OperationDAO;
+import com.riah.dao.VersionDAO;
 import com.riah.model.Game;
 import com.riah.model.Implementation;
 import com.riah.model.ImplementationParameter;
@@ -23,6 +24,9 @@ import com.riah.model.Version;
 
 @Service
 public class ImplementationService {
+	
+	@Autowired
+	private VersionDAO versionDAO;
 	
 	@Autowired
 	private ImplementationDAO implementationDAO;
@@ -70,10 +74,19 @@ public class ImplementationService {
 		}  
             return result;
 	}
-
+ 
 	public List<ImplementationParameterDTO> loadImplementationParameters() {
 		List<ImplementationParameter> foundParameters=implementationParameterDAO.findAll();
 		List<ImplementationParameterDTO> parametersParsed=mapImplementationParameters(foundParameters);
 		return parametersParsed;
+	}
+
+	public List<String> getOperationImplementedVersions(UUID id) {
+		List<String> result=new ArrayList<>();
+		List<Version> versions=versionDAO.findVersionsByOperationImplementations(id);
+		for(int i=0;i<versions.size();i++) {
+			result.add(versions.get(i).getId().toString());
+		}
+		return result;
 	}
 }

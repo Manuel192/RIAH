@@ -26,13 +26,10 @@ public class GameController {
 	@Autowired
 	private GameService gameService;
 	
-	@Autowired
-	private TokenService tokenService;
-	
 	@CrossOrigin(origins = "http://localhost:3000")
 	@GetMapping("/loadGames")
     public ResponseEntity<List<GameDTO>> loadGames(@RequestHeader("Authorization") String token) throws ParseException{
-		if(!tokenService.checkTokens(token.substring(7),true,true,true)) return ResponseEntity.ofNullable(null);
+		if(!TokenService.checkTokens(token.substring(7),true,true,true)) return ResponseEntity.ofNullable(null);
 		List<GameDTO> games=gameService.loadGames();
     	if(!games.isEmpty())
 			return ResponseEntity.ok(games);
@@ -43,7 +40,7 @@ public class GameController {
 	@CrossOrigin(origins = "http://localhost:3000")
 	@GetMapping("/loadVersions")
     public ResponseEntity<List<VersionDTO>> loadVersions(@RequestHeader("Authorization") String token) throws ParseException{
-		if(!tokenService.checkTokens(token.substring(7),true,true,true)) return ResponseEntity.ofNullable(null);
+		if(!TokenService.checkTokens(token.substring(7),true,true,true)) return ResponseEntity.ofNullable(null);
 		List<VersionDTO> versions=gameService.loadVersions();
 		return ResponseEntity.ok(versions);
     }
@@ -51,7 +48,7 @@ public class GameController {
 	@CrossOrigin(origins = "http://localhost:3000")
 	@PostMapping("/insertGame")
 	public ResponseEntity<GameDTO> insertGame(@RequestHeader("Authorization") String token, @RequestBody String gameParams) throws ParseException{
-		if(!tokenService.checkTokens(token.substring(7),false,false,true)) return ResponseEntity.ofNullable(null);
+		if(!TokenService.checkTokens(token.substring(7),false,false,true)) return ResponseEntity.ofNullable(null);
 		GameDTO game=gameService.insertGame(gameParams);
 		return ResponseEntity.ok(game);
 	}
@@ -59,7 +56,7 @@ public class GameController {
 	@CrossOrigin(origins = "http://localhost:3000")
 	@PostMapping("/insertVersion")
 	public ResponseEntity<String> insertVersion(@RequestHeader("Authorization") String token, @RequestBody String version) throws ParseException{
-		if(!tokenService.checkTokens(token.substring(7),false,false,true)) return ResponseEntity.ofNullable(null);
+		if(!TokenService.checkTokens(token.substring(7),false,false,true)) return ResponseEntity.ofNullable(null);
 		String versionID=gameService.insertVersion(version);
 		return ResponseEntity.ok(versionID); 
 	}
