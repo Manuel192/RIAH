@@ -34,6 +34,7 @@ Para los datos estructurados se utiliza MySQL. Únicamente necesita crear una BB
 
 ### MONGODB
 Deberá crear su base de datos MongoDB y crear la estructura manualmente, además de introducir las respectivas credenciales. Para mayor referencia de la estructura, simplemente debe crear el siguiente conjunto de colecciones:
+
 <img width="180" height="200" alt="image" src="https://github.com/user-attachments/assets/1b2ec95f-e872-498f-9ff6-b96f41f43bf9" />
 
 ### AVISO: ESTE PROYECTO SIGUE EN DESARROLLO. LA INFORMACIÓN ACTUAL PUEDE VARIAR, EMITA UN ISSUE PARA RESOLVER CUALQUIER CUESTIÓN.
